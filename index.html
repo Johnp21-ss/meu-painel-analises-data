@@ -350,8 +350,9 @@
         const cidadeMap = {}, fornMap = {}, fiscalObsMap = {};
         const hFrota = {
             PROPRIO:  { r: 0, v: new Set(), gres: {} },
-            TERCEIRO: { r: 0, v: new Set(), gres: {} },
-            LOCADO:   { r: 0, v: new Set(), gres: {} }
+            PARCEIRO:  { r: 0, v: new Set(), gres: {} },
+            LOCADO: { r: 0, v: new Set(), gres: {} },
+            TERCEIRO:   { r: 0, v: new Set(), gres: {} }
         };
 
         dados.forEach(d => {
