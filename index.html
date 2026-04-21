@@ -2,7 +2,6 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BI Logística - John Petter</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
@@ -60,6 +59,7 @@
         .scroll-fornecedores { max-height: 180px; overflow-y: auto; padding-right: 5px; }
         .scroll-fornecedores::-webkit-scrollbar { width: 6px; }
         .scroll-fornecedores::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        #tFornecedores td { font-size: 11px; padding: 6px 4px; }
 
         .perc-bold { font-weight: bold; color: var(--success); }
         select { background: var(--bg); color: white; width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); font-size: 11px; }
@@ -74,16 +74,24 @@
         .obs-item { border-bottom: 1px solid var(--border); padding: 6px 0; font-size: 10px; }
         .obs-tag { font-size: 8px; background: var(--primary); padding: 2px 4px; border-radius: 3px; margin-right: 5px; font-weight: bold; color: #fff; }
 
+        /* Estilos de Expansão */
         .nested-row { display: none; background: rgba(0,0,0,0.15); }
         .show-row { display: table-row !important; }
         .pointer { cursor: pointer; }
         .indent-detail { padding-left: 25px !important; color: #dcdde1; font-size: 10px !important; }
         .arrow { display: inline-block; width: 12px; transition: transform 0.2s; font-size: 8px; color: var(--warning); }
-        .expanded > td > .arrow { transform: rotate(90deg); }
+        .expanded > td > .arrow, .expanded > .arrow { transform: rotate(90deg); }
         
+        /* Estilos das Ocorrências */
         .obs-fiscal-group { border-bottom: 1px solid var(--border); cursor: pointer; padding: 8px 5px; background: rgba(255,255,255,0.03); }
         .obs-gre-group { padding: 5px 15px; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.1); display: none; }
         .obs-content { padding: 5px 25px; display: none; background: rgba(0,0,0,0.2); }
+
+        /* Estilos Novos: Tecnologia/Origem */
+        .origem-header { background: rgba(255,255,255,0.05); padding: 10px; margin-top: 5px; border-radius: 5px; cursor: pointer; border-left: 4px solid var(--info); display: flex; justify-content: space-between; }
+        .origem-sub { margin-left: 20px; border-left: 1px dashed var(--border); padding-left: 10px; display: none; }
+        .badge-app { background: #2980b9; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .badge-rast { background: #27ae60; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
     </style>
 </head>
 <body id="conteudo-bi">
@@ -91,13 +99,13 @@
     <div class="header-controls">
         <div>
             <h2 style="margin:0; font-size: 14px;">🌍 Inteligência Logística</h2>
-            <span id="update-time" style="color:var(--success); font-size:9px; font-weight:bold;">Carregando dados...</span>
+            <span id="update-time" style="color:var(--success); font-size:9px; font-weight:bold;">Sincronizando...</span>
             <div style="display:flex; gap: 5px; margin-top: 5px; flex-wrap: wrap;">
                 <button class="btn-action btn-pdf" onclick="exportarPDF()">📄 PDF</button>
                 <button class="btn-action btn-audio" onclick="lerPagina()">🔊 LER</button>
                 <button class="btn-action btn-refresh" onclick="carregar()">🔄 ATUALIZAR</button>
                 <div class="sync-box">
-                    <input type="date" id="dataSync" class="input-date" onchange="processarDados()">
+                    <input type="date" id="dataSync" class="input-date">
                     <button id="btnSync" class="btn-action btn-sync" onclick="sincronizarAPI()">⚡ API</button>
                 </div>
             </div>
@@ -204,57 +212,84 @@
         </div>
     </div>
 
+    <div class="card" style="border-top-color: var(--info); margin-bottom: 20px;">
+        <h3>📱 Análise de Tecnologia (Origem da Localização)</h3>
+        <p style="font-size: 10px; color: var(--slate); margin-top: -10px;">Aderência ao App Motorista vs Rastreador Veicular.</p>
+        <div id="container-origem" style="max-height: 400px; overflow-y: auto;">
+            </div>
+    </div>
+
 <script>
     Chart.defaults.color = '#a4b0be';
     const URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-PWDRlSYT4cY9rOK7Dz1R2Fe0HzoXFbu4icqnPk5M6eGOBUngZFwkhI-9TXPpT9d-wvWCzXNVxteq/pub?gid=498256387&single=true&output=csv';
-    
     let bruto = [], cWaterfall;
 
     const norm = (t) => t ? t.toString().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
 
-    // FUNÇÃO AJUSTADA: Sem abrir abas, usando Fetch em segundo plano
-    async function sincronizarAPI() {
+    function toggleObsFiscal(idx) {
+        const el = document.getElementById('obs-fiscal-' + idx);
+        const arrow = document.getElementById('arrow-fiscal-' + idx);
+        const isHidden = el.style.display === 'none' || el.style.display === '';
+        el.style.display = isHidden ? 'block' : 'none';
+        arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
+    }
+
+    function toggleObsGre(fIdx, gIdx) {
+        const el = document.getElementById(`obs-content-${fIdx}-${gIdx}`);
+        const arrow = document.getElementById(`arrow-gre-${fIdx}-${gIdx}`);
+        const isHidden = el.style.display === 'none' || el.style.display === '';
+        el.style.display = isHidden ? 'block' : 'none';
+        arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
+    }
+
+    // FUNÇÃO PARA EXPANDIR BLOCO ORIGEM
+    function toggleOrigem(id) {
+        const el = document.getElementById(id);
+        const arrow = document.getElementById('a-' + id);
+        const isHidden = el.style.display === 'none' || el.style.display === '';
+        el.style.display = isHidden ? 'block' : 'none';
+        if(arrow) arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
+    }
+
+    function sincronizarAPI() {
         const campoData = document.getElementById("dataSync");
-        const valorData = campoData ? campoData.value : null;
         const btn = document.getElementById("btnSync");
         const timeLabel = document.getElementById('update-time');
+        const dataValor = campoData.value;
 
-        if (!valorData) {
-            alert("ERRO: Selecione uma data no calendário antes de clicar em API.");
-            return;
+        if (!dataValor) { 
+            alert("⚠️ Por favor, selecione uma data no calendário antes de clicar em ⚡ API."); 
+            return; 
         }
-
+        
         btn.disabled = true;
-        btn.innerText = "⏳ PROCESSANDO...";
-        timeLabel.innerText = "📡 Solicitando dados ocultamente para " + valorData + "...";
+        btn.innerText = "⏳...";
+        timeLabel.innerText = "📡 PROCESSANDO API PARA: " + dataValor;
+        timeLabel.style.color = "orange";
 
-        const linkScript = "https://script.google.com/macros/s/AKfycbyLis6Vs8Z3oqlt2BXkBpSqcSAdw1orEJvk2VotHJ_WuZRXQ5Qe8UnIKgKySCjKVz26/exec";
-        const urlFinal = linkScript + "?data=" + valorData;
-
-        // Envia o comando via Fetch (modo no-cors para evitar erros de segurança do navegador)
-        fetch(urlFinal, {
-            mode: 'no-cors',
-            method: 'GET'
-        }).then(() => {
-            timeLabel.innerText = "✅ API acionada! Aguarde 10s e clique em ATUALIZAR.";
-            btn.innerText = "⚡ API OK";
-            
-            setTimeout(() => {
-                btn.disabled = false;
-                btn.innerText = "⚡ API";
-            }, 5000);
-        }).catch(err => {
-            console.error(err);
-            timeLabel.innerText = "❌ Erro ao contactar API.";
-            btn.disabled = false;
-        });
+        google.script.run
+            .withSuccessHandler(function(res) { 
+                alert(res); 
+                btn.disabled = false; 
+                btn.innerText = "⚡ API"; 
+                timeLabel.style.color = "var(--success)";
+                carregar(); 
+            })
+            .withFailureHandler(function(err) { 
+                alert("❌ Erro no Servidor: " + err.message); 
+                btn.disabled = false; 
+                btn.innerText = "⚡ API"; 
+                timeLabel.innerText = "❌ ERRO NA SINCRONIZAÇÃO";
+                timeLabel.style.color = "var(--danger)";
+            })
+            .processarMonitoramentoPeloHTML(dataValor);
     }
 
     async function carregar() {
         const timeLabel = document.getElementById('update-time');
         const btnRefresh = document.querySelector(".btn-refresh");
         timeLabel.innerText = "🔄 Sincronizando com a Planilha...";
-        if(btnRefresh) btnRefresh.disabled = true;
+        btnRefresh.disabled = true;
 
         const forcedCacheBuster = URL + '&refresh=' + Math.random();
         
@@ -263,7 +298,7 @@
             header: true, 
             skipEmptyLines: true,
             complete: (r) => { 
-                if(btnRefresh) btnRefresh.disabled = false;
+                btnRefresh.disabled = false;
                 bruto = r.data.filter(d => (d.rota || d.ROTA || "").trim() !== "").map(d => {
                     d.rota = d.rota || d.ROTA || "";
                     d.data = (d.data || d.DATA || "").trim();
@@ -273,12 +308,13 @@
                     d.veiculo = d.veiculo || d.VEICULO || d.PLACA || "";
                     d.motorista = d.motorista || d.MOTORISTA || "";
                     d.isExtra = norm(d.rota).includes("EXTRA");
-                    d.fiscal_responsavel = d.fiscal_responsavel || d.FISCAL || "";
+                    d.fiscal_responsavel = d.fiscal_responsavel || d.FISCAL || "NÃO IDENTIFICADO";
                     d.observacao = d.observacao || d.OBS || "";
                     d.turno = d.turno || d.TURNO || "";
                     d.direcao = d.direcao || d.DIRECAO || "";
                     d.tipo_fornecedor = d.tipo_fornecedor || d.TIPO_FORNECEDOR || "";
                     d.fornecedor_motorista = d.fornecedor_motorista || d.FORNECEDOR || "";
+                    d.origem = d.origem || d.ORIGEM || "OUTROS";
                     return d;
                 });
                 popularFiltros(); 
@@ -290,7 +326,7 @@
     function popularFiltros() {
         const preencher = (id, campo) => {
             const el = document.getElementById(id);
-            if (!el || el.options.length > 1) return;
+            if (el.options.length > 1) return;
             const itens = [...new Set(bruto.map(d => d[campo]))].filter(v => v && v.trim() !== "").sort();
             itens.forEach(v => el.add(new Option(v, v)));
         };
@@ -303,7 +339,6 @@
         const filtrados = greSel === 'TODOS' ? bruto : bruto.filter(d => d.gre === greSel);
         const atualizarCombo = (id, campo, label) => {
             const el = document.getElementById(id);
-            if(!el) return;
             el.innerHTML = `<option value="TODOS">${label}</option>`;
             [...new Set(filtrados.map(d => d[campo]))].filter(v => v && v.trim() !== "").sort().forEach(v => el.add(new Option(v, v)));
         }
@@ -329,7 +364,7 @@
             dataFiltroStr = partes[2] + "/" + partes[1] + "/" + partes[0]; 
         } else if (bruto.length > 0) {
             const datas = [...new Set(bruto.map(d => d.data))].filter(d => d).sort();
-            dataFiltroStr = datas[datas.length - 1] || "";
+            dataFiltroStr = datas[datas.length - 1];
         }
 
         timeLabel.innerText = dataFiltroStr ? "✅ VISUALIZANDO DATA: " + dataFiltroStr : "✅ DADOS CARREGADOS";
@@ -355,6 +390,15 @@
 
         let concl = 0, pend = 0, extras = 0;
         const motUniq = new Set(), veiUniq = new Set(), fornMap = {}, cidadeMap = {};
+        const mapOrigem = {}; // Para o novo bloco de tecnologia
+
+        const hierarquiaFrota = {
+            PROPRIO: { r: 0, v: new Set(), gres: {} },
+            TERCEIRO: { r: 0, v: new Set(), gres: {} },
+            LOCADO: { r: 0, v: new Set(), gres: {} },
+            PARCEIRO: { r: 0, v: new Set(), gres: {} }
+        };
+
         const fiscalObsMap = {};
 
         dados.forEach(d => {
@@ -362,27 +406,62 @@
             const isOk = statusNormal.includes("CONCLUID") || statusNormal.includes("ANDAMENTO") || statusNormal.includes("EXECUTANDO");
             if (isOk) concl++; else pend++;
             if (d.isExtra) extras++;
+
             if(d.motorista) motUniq.add(d.motorista);
             if(d.veiculo && d.veiculo.length > 2) veiUniq.add(d.veiculo);
 
+            const mNome = d.motorista || "S/ NOME";
+            const cid = d.cidade || "SEM CIDADE";
+            const gr = d.gre || "SEM REGIONAL";
+            const fis = d.fiscal_responsavel || "NÃO IDENTIFICADO";
+
+            // Map para Origem (App vs Rastreador)
+            if (!mapOrigem[fis]) mapOrigem[fis] = {};
+            if (!mapOrigem[fis][gr]) mapOrigem[fis][gr] = {};
+            if (!mapOrigem[fis][gr][cid]) mapOrigem[fis][gr][cid] = { app: 0, rast: 0 };
+            const orig = norm(d.origem);
+            if (orig.includes("APP")) mapOrigem[fis][gr][cid].app++;
+            if (orig.includes("RASTREADOR")) mapOrigem[fis][gr][cid].rast++;
+
+            // Fornecedores
             const fn = d.fornecedor_motorista || "OUTROS";
             if(!fornMap[fn]) fornMap[fn] = { t:0, c:0, mot: {} };
             fornMap[fn].t++; if(isOk) fornMap[fn].c++;
+            if(!fornMap[fn].mot[mNome]) fornMap[fn].mot[mNome] = { t:0, c:0 };
+            fornMap[fn].mot[mNome].t++; if(isOk) fornMap[fn].mot[mNome].c++;
 
-            const cid = d.cidade || "SEM CIDADE";
+            // Cidades
             if(!cidadeMap[cid]) cidadeMap[cid] = { t:0, c:0, mot: {} };
             cidadeMap[cid].t++; if(isOk) cidadeMap[cid].c++;
+            if(!cidadeMap[cid].mot[mNome]) cidadeMap[cid].mot[mNome] = { t:0, c:0 };
+            cidadeMap[cid].mot[mNome].t++; if(isOk) cidadeMap[cid].mot[mNome].c++;
 
+            // Tipologia
+            let catOriginal = norm(d.tipo_fornecedor);
+            let cat = "TERCEIRO";
+            if (catOriginal.includes("PROPRIO")) cat = "PROPRIO";
+            else if (catOriginal.includes("LOCADO")) cat = "LOCADO";
+            else if (catOriginal.includes("PARCEIRO")) cat = "PARCEIRO";
+
+            hierarquiaFrota[cat].r++;
+            if(d.veiculo) hierarquiaFrota[cat].v.add(d.veiculo);
+            if(!hierarquiaFrota[cat].gres[gr]) hierarquiaFrota[cat].gres[gr] = { r:0, v: new Set(), cidades: {} };
+            hierarquiaFrota[cat].gres[gr].r++;
+            if(d.veiculo) hierarquiaFrota[cat].gres[gr].v.add(d.veiculo);
+            if(!hierarquiaFrota[cat].gres[gr].cidades[cid]) hierarquiaFrota[cat].gres[gr].cidades[cid] = { r:0, v: new Set() };
+            hierarquiaFrota[cat].gres[gr].cidades[cid].r++;
+            if(d.veiculo) hierarquiaFrota[cat].gres[gr].cidades[cid].v.add(d.veiculo);
+
+            // Observações
             if (d.observacao && d.observacao.length > 2) {
-                const fis = d.fiscal_responsavel || "NÃO IDENTIFICADO";
-                const reg = d.gre || "SEM REGIONAL";
                 if (!fiscalObsMap[fis]) fiscalObsMap[fis] = { total: 0, gres: {} };
                 fiscalObsMap[fis].total++;
-                if (!fiscalObsMap[fis].gres[reg]) fiscalObsMap[fis].gres[reg] = [];
-                fiscalObsMap[fis].gres[reg].push(d);
+                if (!fiscalObsMap[fis].gres[gr]) fiscalObsMap[fis].gres[gr] = [];
+                fiscalObsMap[fis].gres[gr].push(d);
             }
         });
 
+        // KPIs
         document.getElementById('k-total-filtrado').innerText = dados.length;
         document.getElementById('k-concluido').innerText = concl;
         document.getElementById('k-pendente').innerText = pend;
@@ -392,61 +471,132 @@
         document.getElementById('f-vei').innerText = veiUniq.size;
         document.getElementById('f-sem').innerText = Math.max(0, motUniq.size - veiUniq.size);
 
-        let htmlCidade = "";
+        // Renderização de Tabelas (Mantendo sua lógica original)
+        renderTabelaCidades(cidadeMap);
+        renderTabelaFornecedores(fornMap);
+        renderTabelaTipologia(hierarquiaFrota);
+        renderRank('tFiscal', 'fiscal_responsavel', 7, dados);
+        renderRank('tGre', 'gre', 10, dados);
+        renderFrotaPorGre(dados);
+        renderOcorrencias(fiscalObsMap);
+        
+        // NOVO: Renderização do Bloco de Origem
+        renderBlocoOrigem(mapOrigem);
+        
+        renderCharts(dados.length, concl, pend);
+    }
+
+    // --- FUNÇÕES DE RENDERIZAÇÃO PRESERVADAS E SEPARADAS ---
+
+    function renderTabelaCidades(cidadeMap) {
+        let html = "";
         Object.entries(cidadeMap).sort((a,b) => b[1].t - a[1].t).forEach(([cName, cData], idx) => {
             const rowId = `cid-${idx}`;
             const assid = ((cData.c/cData.t)*100).toFixed(1);
-            htmlCidade += `<tr><td>${idx+1}º</td><td>${cName}</td><td>${cData.t}</td><td>${cData.c}</td><td class="perc-bold">${assid}%</td></tr>`;
+            html += `<tr class="pointer" onclick="toggleRow('${rowId}', this)"><td><span class="arrow">▶</span> ${idx+1}º</td><td>${cName}</td><td>${cData.t}</td><td>${cData.c}</td><td class="perc-bold">${assid}%</td></tr>`;
+            Object.entries(cData.mot).sort((a,b) => b[1].t - a[1].t).forEach(([mName, mData]) => {
+                html += `<tr class="nested-row ${rowId}"><td class="indent-detail" colspan="2">• ${mName}</td><td>${mData.t}</td><td>${mData.c}</td><td style="color:#bdc3c7">${((mData.c/mData.t)*100).toFixed(1)}%</td></tr>`;
+            });
         });
-        document.getElementById('tbodyCidade').innerHTML = htmlCidade;
+        document.getElementById('tbodyCidade').innerHTML = html;
+    }
 
-        let htmlForn = "";
+    function renderTabelaFornecedores(fornMap) {
+        let html = "";
         Object.entries(fornMap).sort((a,b) => b[1].t - a[1].t).forEach(([fName, fData], idx) => {
-            const assid = ((fData.c/fData.t)*100).toFixed(1);
-            htmlForn += `<tr><td>${fName}</td><td align="right">${fData.t}</td><td align="right">${fData.c}</td><td align="right" class="perc-bold">${assid}%</td></tr>`;
+            const rowId = `forn-${idx}`;
+            html += `<tr class="pointer" onclick="toggleRow('${rowId}', this)"><td><span class="arrow">▶</span> ${fName}</td><td align="right">${fData.t}</td><td align="right">${fData.c}</td><td align="right" class="perc-bold">${((fData.c/fData.t)*100).toFixed(1)}%</td></tr>`;
+            Object.entries(fData.mot).sort((a,b) => b[1].t - a[1].t).forEach(([mName, mData]) => {
+                html += `<tr class="nested-row ${rowId}"><td class="indent-detail">• ${mName}</td><td align="right">${mData.t}</td><td align="right">${mData.c}</td><td align="right" style="color:#bdc3c7">${((mData.c/mData.t)*100).toFixed(1)}%</td></tr>`;
+            });
         });
-        document.getElementById('tbodyFornecedores').innerHTML = htmlForn;
+        document.getElementById('tbodyFornecedores').innerHTML = html;
+    }
 
-        renderCharts(dados.length, concl, pend);
-        
+    function renderTabelaTipologia(hierarquia) {
+        let html = "";
+        Object.entries(hierarquia).forEach(([cat, cInfo], cIdx) => {
+            if (cInfo.r === 0) return;
+            const cId = `cat-${cIdx}`;
+            html += `<tr class="pointer" onclick="toggleRow('${cId}', this)"><td><span class="arrow">▶</span> <b>${cat}</b></td><td align="center">${cInfo.r}</td><td align="center">${cInfo.v.size}</td></tr>`;
+            Object.entries(cInfo.gres).forEach(([gre, gInfo], gIdx) => {
+                const gId = `gre-${cIdx}-${gIdx}`;
+                html += `<tr class="nested-row ${cId} pointer" onclick="toggleRow('${gId}', this)"><td style="padding-left:15px; color:var(--info)"><span class="arrow">▶</span> ${gre}</td><td align="center">${gInfo.r}</td><td align="center">${gInfo.v.size}</td></tr>`;
+                Object.entries(gInfo.cidades).forEach(([cid, ciInfo]) => {
+                    html += `<tr class="nested-row ${gId}"><td style="padding-left:30px; color:var(--slate); font-style:italic;">• ${cid}</td><td align="center">${ciInfo.r}</td><td align="center">${ciInfo.v.size}</td></tr>`;
+                });
+            });
+        });
+        document.getElementById('tbodyFrota').innerHTML = html;
+    }
+
+    function renderRank(id, campo, limit, dados) {
+        const m = {};
+        dados.forEach(d => {
+            const ch = d[campo] || 'N/A';
+            if(!m[ch]) m[ch] = { t:0, c:0 };
+            m[ch].t++; if(norm(d.status).includes("CONCLUID")) m[ch].c++;
+        });
+        const list = Object.entries(m).map(([nm, s]) => ({ nm, t: s.t, c: s.c, p: (s.c/s.t)*100 })).sort((a,b) => b.p - a.p).slice(0, limit);
+        document.getElementById(id).querySelector('tbody').innerHTML = list.map((r, i) => `<tr><td>${i+1}º</td><td>${r.nm}</td><td>${r.t}</td><td>${r.c}</td><td class="perc-bold">${r.p.toFixed(1)}%</td></tr>`).join('');
+    }
+
+    function renderFrotaPorGre(dados) {
+        const greFrotaMap = {};
+        dados.forEach(d => {
+            const regional = d.gre || "N/A";
+            if (!greFrotaMap[regional]) greFrotaMap[regional] = { motoristas: new Set(), veiculos: new Set() };
+            if (d.motorista) greFrotaMap[regional].motoristas.add(d.motorista);
+            if (d.veiculo && d.veiculo.length > 2) greFrotaMap[regional].veiculos.add(d.veiculo);
+        });
+        document.getElementById('tbodyFrotaGre').innerHTML = Object.entries(greFrotaMap).sort((a,b) => a[0].localeCompare(b[0])).map(([gre, info]) => {
+            return `<tr><td style="color:#dcdde1;">${gre}</td><td align="center">${info.motoristas.size}</td><td align="center" style="color:var(--success)">${info.veiculos.size}</td><td align="center" style="color:var(--danger)">${Math.max(0, info.motoristas.size - info.veiculos.size)}</td></tr>`;
+        }).join('');
+    }
+
+    function renderOcorrencias(fiscalObsMap) {
         const containerObs = document.getElementById('container-obs');
         let htmlObs = "";
-        Object.entries(fiscalObsMap).sort((a,b) => b[1].total - a[1].total).forEach(([fiscal, data], fIdx) => {
-            htmlObs += `<div class="obs-fiscal-group" onclick="toggleObsFiscal(${fIdx})"><span id="arrow-fiscal-${fIdx}" class="arrow">▶</span> <b>${fIdx + 1}º ${fiscal}</b><span style="float:right; color:var(--warning)">${data.total} Obs.</span></div><div id="obs-fiscal-${fIdx}" style="display:none">`;
+        const fiscalSorted = Object.entries(fiscalObsMap).sort((a,b) => b[1].total - a[1].total);
+        if (fiscalSorted.length === 0) {
+            containerObs.innerHTML = "<div style='padding:10px; color:var(--slate)'>Nenhuma ocorrência.</div>";
+            return;
+        }
+        fiscalSorted.forEach(([fiscal, data], fIdx) => {
+            htmlObs += `<div class="obs-fiscal-group" onclick="toggleObsFiscal(${fIdx})"><span id="arrow-fiscal-${fIdx}" class="arrow">▶</span> <b>${fIdx + 1}º ${fiscal}</b> <span style="float:right; color:var(--warning)">${data.total} Obs.</span></div><div id="obs-fiscal-${fIdx}" style="display:none">`;
             Object.entries(data.gres).forEach(([gre, itens], gIdx) => {
                 htmlObs += `<div class="obs-gre-group" style="display:block" onclick="event.stopPropagation(); toggleObsGre(${fIdx}, ${gIdx})"><span id="arrow-gre-${fIdx}-${gIdx}" class="arrow">▶</span> <span style="color:var(--info)">GRE: ${gre}</span></div><div id="obs-content-${fIdx}-${gIdx}" class="obs-content">${itens.map(d => `<div class="obs-item"><span class="obs-tag">${d.rota}</span><b>${d.motorista}:</b> ${d.observacao}</div>`).join('')}</div>`;
             });
             htmlObs += `</div>`;
         });
-        containerObs.innerHTML = htmlObs || "<div style='padding:10px; color:var(--slate)'>Nenhuma ocorrência.</div>";
+        containerObs.innerHTML = htmlObs;
     }
 
-    function toggleObsFiscal(idx) {
-        const el = document.getElementById('obs-fiscal-' + idx);
-        const arrow = document.getElementById('arrow-fiscal-' + idx);
-        const isHidden = el.style.display === 'none';
-        el.style.display = isHidden ? 'block' : 'none';
-        arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
-    }
-
-    function toggleObsGre(fIdx, gIdx) {
-        const el = document.getElementById(`obs-content-${fIdx}-${gIdx}`);
-        const arrow = document.getElementById(`arrow-gre-${fIdx}-${gIdx}`);
-        const isHidden = el.style.display === 'none';
-        el.style.display = isHidden ? 'block' : 'none';
-        arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
+    // --- NOVA FUNÇÃO RENDERIZAÇÃO TECNOLOGIA ---
+    function renderBlocoOrigem(mapa) {
+        const container = document.getElementById('container-origem');
+        let html = "";
+        Object.entries(mapa).forEach(([fiscal, gres], fIdx) => {
+            html += `<div class="origem-header" onclick="toggleOrigem('ori-f-${fIdx}')"><span><span id="a-ori-f-${fIdx}" class="arrow">▶</span> <b>${fiscal}</b></span></div><div id="ori-f-${fIdx}" class="origem-sub">`;
+            Object.entries(gres).forEach(([gre, cidades], gIdx) => {
+                html += `<div class="origem-header" style="background:none; border:none" onclick="toggleOrigem('ori-g-${fIdx}-${gIdx}')"><span><span id="a-ori-g-${fIdx}-${gIdx}" class="arrow">▶</span> <span style="color:var(--success)">GRE: ${gre}</span></span></div><div id="ori-g-${fIdx}-${gIdx}" class="origem-sub"><table><thead><tr><th>Cidade</th><th width="80">App</th><th width="80">Rastreador</th></tr></thead><tbody>`;
+                Object.entries(cidades).forEach(([cid, val]) => {
+                    html += `<tr><td>${cid}</td><td><span class="badge-app">${val.app}</span></td><td><span class="badge-rast">${val.rast}</span></td></tr>`;
+                });
+                html += `</tbody></table></div>`;
+            });
+            html += `</div>`;
+        });
+        container.innerHTML = html || "<p style='padding:10px;'>Sem dados de tecnologia.</p>";
     }
 
     function renderCharts(tot, con, pen) {
         if(cWaterfall) cWaterfall.destroy();
-        const ctx = document.getElementById('chartWaterfall');
-        if(ctx) {
-            cWaterfall = new Chart(ctx, {
-                type: 'bar',
-                data: { labels: ['Escopo', 'Realizado', 'Pendente'], datasets: [{ data: [tot, con, pen], backgroundColor: ['#576574', '#2ecc71', '#e74c3c'], borderRadius: 5 }] },
-                options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-        }
+        cWaterfall = new Chart(document.getElementById('chartWaterfall'), {
+            type: 'bar',
+            data: { labels: ['Escopo', 'Realizado', 'Pendente'], datasets: [{ data: [tot, con, pen], backgroundColor: ['#576574', '#2ecc71', '#e74c3c'], borderRadius: 5 }] },
+            options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
     }
 
     function exportarPDF() {
@@ -456,7 +606,10 @@
 
     function lerPagina() {
         const assiduidade = document.getElementById('k-ass-perc').innerText;
-        window.speechSynthesis.speak(new SpeechSynthesisUtterance(`Resumo Logístico: Assiduidade atual de ${assiduidade}.`));
+        const texto = `Resumo Logístico: Assiduidade atual de ${assiduidade}.`;
+        const utterance = new SpeechSynthesisUtterance(texto);
+        utterance.lang = 'pt-BR';
+        window.speechSynthesis.speak(utterance);
     }
 
     carregar();
