@@ -239,7 +239,7 @@
             return;
         }
 
-        // Converte a data do calendário (AAAA-MM-DD) para o padrão da sua API (DD/MM/AAAA)
+        // Converte AAAA-MM-DD para DD/MM/AAAA
         const partes = dataInput.split("-");
         const dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
 
@@ -247,20 +247,22 @@
         btn.innerText = "⏳ ENVIANDO...";
         timeLabel.innerText = "📡 Abrindo comunicador com Google...";
 
-        // Sua URL de implantação do Google Apps Script
-        const urlScript = "https://script.google.com/macros/s/AKfycbyLis6Vs8Z3oqlt2BXkBpSqcSAdw1orEJvk2VotHJ_WuZRXQ5Qe8UnIKgKySCjKVz26/exec?data=" + dataFormatada;
+        // URL do Script (O encodeURIComponent garante que o Google receba a data corretamente)
+        const urlBase = "https://script.google.com/macros/s/AKfycbyLis6Vs8Z3oqlt2BXkBpSqcSAdw1orEJvk2VotHJ_WuZRXQ5Qe8UnIKgKySCjKVz26/exec";
+        const urlFinal = urlBase + "?data=" + encodeURIComponent(dataFormatada);
 
-        // Abre a execução em uma pequena janela pop-up para garantir o processamento
-        const win = window.open(urlScript, "Sincronizador", "width=400,height=300");
+        // Abre a execução em uma pequena janela pop-up
+        const win = window.open(urlFinal, "Sincronizador", "width=440,height=350");
 
-        alert("Solicitação enviada para a data: " + dataFormatada + "\n\nUma janela se abriu para processar os dados. Assim que aparecer 'Sucesso' nela, você pode fechá-la e clicar no botão ATUALIZAR azul.");
+        alert("Solicitação enviada para a data: " + dataFormatada + 
+              "\n\nUma janela se abriu. AGUARDE ela carregar a mensagem de sucesso antes de fechá-la.");
 
-        // Libera o botão novamente após 10 segundos
+        // Libera o botão novamente após 15 segundos (tempo médio da API Fleetbus)
         setTimeout(() => {
             btn.disabled = false;
             btn.innerText = "⚡ API";
-            timeLabel.innerText = "✅ Aguarde o sucesso na janela e clique em ATUALIZAR.";
-        }, 10000);
+            timeLabel.innerText = "✅ Se a janela deu 'Sucesso', clique em ATUALIZAR.";
+        }, 15000);
     }
 
     async function carregar() {
