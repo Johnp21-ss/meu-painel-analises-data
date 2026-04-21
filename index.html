@@ -230,33 +230,38 @@
 
     // FUNÇÃO DA API CORRIGIDA
     function sincronizarAPI() {
-        const inputData = document.getElementById("dataSync");
+        // Forçamos a leitura do elemento e do valor no momento do clique
+        const campoData = document.getElementById("dataSync");
+        const valorData = campoData ? campoData.value : null;
+        
         const btn = document.getElementById("btnSync");
         const timeLabel = document.getElementById('update-time');
 
-        if (!inputData || !inputData.value) {
-            alert("Por favor, selecione uma data no calendário primeiro.");
+        // Se o campo estiver vazio, ele para aqui e avisa
+        if (!valorData) {
+            alert("ERRO: Selecione uma data no calendário antes de clicar em API.");
             return;
         }
 
-        const dataOriginal = inputData.value; // Formato yyyy-mm-dd
         btn.disabled = true;
         btn.innerText = "⏳ ENVIANDO...";
-        timeLabel.innerText = "📡 Comunicando com o Servidor...";
-
+        
+        // Montagem da URL garantindo que 'valorData' seja exatamente o que está no input
         const linkScript = "https://script.google.com/macros/s/AKfycbyLis6Vs8Z3oqlt2BXkBpSqcSAdw1orEJvk2VotHJ_WuZRXQ5Qe8UnIKgKySCjKVz26/exec";
-        const urlFinal = `${linkScript}?data=${dataOriginal}`;
+        const urlFinal = linkScript + "?data=" + valorData;
 
-        // Abre a execução simulando o navegador
+        console.log("Data disparada para API:", valorData);
+        timeLabel.innerText = "📡 Enviando data: " + valorData;
+
+        // Abre a execução
         window.open(urlFinal, "Sincronizador", "width=400,height=300");
 
         setTimeout(() => {
             btn.disabled = false;
             btn.innerText = "⚡ API";
-            timeLabel.innerText = "✅ Verifique o 'Sucesso' na aba que abriu.";
+            timeLabel.innerText = "✅ Comando enviado para " + valorData;
         }, 10000);
     }
-
     async function carregar() {
         const timeLabel = document.getElementById('update-time');
         const btnRefresh = document.querySelector(".btn-refresh");
