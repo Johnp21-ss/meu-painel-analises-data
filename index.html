@@ -97,7 +97,7 @@
                 <button class="btn-action btn-audio" onclick="lerPagina()">🔊 LER</button>
                 <button class="btn-action btn-refresh" onclick="carregar()">🔄 ATUALIZAR</button>
                 <div class="sync-box">
-                    <input type="date" id="dataSync" class="input-date">
+                    <input type="date" id="dataSync" class="input-date" onchange="processarDados()">
                     <button id="btnSync" class="btn-action btn-sync" onclick="sincronizarAPI()">⚡ API</button>
                 </div>
             </div>
@@ -206,7 +206,6 @@
 
 <script>
     Chart.defaults.color = '#a4b0be';
-    // LINK PÚBLICO DA SUA PLANILHA
     const URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-PWDRlSYT4cY9rOK7Dz1R2Fe0HzoXFbu4icqnPk5M6eGOBUngZFwkhI-9TXPpT9d-wvWCzXNVxteq/pub?gid=498256387&single=true&output=csv';
     
     let bruto = [], cWaterfall;
@@ -229,40 +228,33 @@
         arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
     }
 
-    // --- FUNÇÃO CORRIGIDA ---
+    // FUNÇÃO DA API CORRIGIDA
     function sincronizarAPI() {
-        const dataInput = document.getElementById("dataSync").value;
+        const inputData = document.getElementById("dataSync");
         const btn = document.getElementById("btnSync");
         const timeLabel = document.getElementById('update-time');
 
-        if (!dataInput) {
-            alert("Por favor, selecione uma data ao lado do botão API.");
+        if (!inputData || !inputData.value) {
+            alert("Por favor, selecione uma data no calendário primeiro.");
             return;
         }
 
-        // Converte AAAA-MM-DD para DD/MM/AAAA (padrão que seu script usa para buscar na Fleetbus)
-        const partes = dataInput.split("-");
-        const dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
-
+        const dataOriginal = inputData.value; // Formato yyyy-mm-dd
         btn.disabled = true;
-        btn.style.opacity = "0.5";
         btn.innerText = "⏳ ENVIANDO...";
-        timeLabel.innerText = "📡 Chamando API do Google Sheets...";
+        timeLabel.innerText = "📡 Comunicando com o Servidor...";
 
-        // URL do Script Corrigida com o parâmetro ?data=
-        const urlScript = "https://script.google.com/macros/s/AKfycbyLis6Vs8Z3oqlt2BXkBpSqcSAdw1orEJvk2VotHJ_WuZRXQ5Qe8UnIKgKySCjKVz26/exec";
-        const urlFinal = urlScript + "?data=" + encodeURIComponent(dataFormatada);
+        const linkScript = "https://script.google.com/macros/s/AKfycbyLis6Vs8Z3oqlt2BXkBpSqcSAdw1orEJvk2VotHJ_WuZRXQ5Qe8UnIKgKySCjKVz26/exec";
+        const urlFinal = `${linkScript}?data=${dataOriginal}`;
 
-        // Abre em uma janela pop-up pequena
-        const popup = window.open(urlFinal, "Sincronizacao", "width=500,height=400");
+        // Abre a execução simulando o navegador
+        window.open(urlFinal, "Sincronizador", "width=400,height=300");
 
-        // Monitora o fechamento ou tempo de resposta
         setTimeout(() => {
             btn.disabled = false;
-            btn.style.opacity = "1";
             btn.innerText = "⚡ API";
-            timeLabel.innerText = "✅ Sincronização enviada! Verifique a janela aberta.";
-        }, 5000);
+            timeLabel.innerText = "✅ Verifique o 'Sucesso' na aba que abriu.";
+        }, 10000);
     }
 
     async function carregar() {
@@ -344,9 +336,11 @@
         let dataFiltroStr = "";
         
         if (dataInput) {
+            // Se o usuário selecionou uma data no calendário, formatamos para comparar com a planilha (DD/MM/AAAA)
             const partes = dataInput.split("-");
             dataFiltroStr = partes[2] + "/" + partes[1] + "/" + partes[0]; 
         } else if (bruto.length > 0) {
+            // Se não selecionou, pega a última data disponível nos dados
             const datas = [...new Set(bruto.map(d => d.data))].filter(d => d).sort();
             dataFiltroStr = datas[datas.length - 1] || "";
         }
