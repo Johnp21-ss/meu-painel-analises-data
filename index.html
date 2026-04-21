@@ -9,17 +9,10 @@
     
     <style>
         :root { 
-            --primary: #34495e; 
-            --success: #2ecc71; 
-            --warning: #f1c40f; 
-            --danger: #e74c3c; 
-            --bg: #1e272e; 
-            --card-bg: #2f3640; 
-            --text: #f5f6fa; 
-            --info: #3498db; 
-            --extra: #9b59b6; 
-            --border: #485460;
-            --slate: #95a5a6;
+            --primary: #34495e; --success: #2ecc71; --warning: #f1c40f; 
+            --danger: #e74c3c; --bg: #1e272e; --card-bg: #2f3640; 
+            --text: #f5f6fa; --info: #3498db; --extra: #9b59b6; 
+            --border: #485460; --slate: #95a5a6;
         }
 
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--text); overflow-x: hidden; }
@@ -29,7 +22,6 @@
             background: var(--card-bg); padding: 12px; border-radius: 12px; margin-bottom: 15px; align-items: center; 
         }
 
-        .sync-box { display: flex; gap: 5px; align-items: center; }
         .input-date { background: var(--bg); color: white; border: 1px solid var(--border); padding: 5px; border-radius: 5px; font-size: 11px; outline: none; }
         
         .grid-top { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
@@ -43,7 +35,7 @@
 
         .row-1 { height: 350px; } 
         .row-2 { height: 320px; }
-        .row-new { min-height: 250px; height: auto; }
+        .row-new { min-height: 280px; height: auto; }
 
         .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 10px; }
         .kpi-card { background: var(--card-bg); padding: 10px; border-radius: 12px; text-align: center; border-bottom: 4px solid var(--border); }
@@ -56,10 +48,9 @@
         th { text-align: left; padding: 8px; border-bottom: 2px solid var(--border); color: #a4b0be; font-size: 9px; }
         td { padding: 7px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        .scroll-fornecedores { max-height: 180px; overflow-y: auto; padding-right: 5px; }
-        .scroll-fornecedores::-webkit-scrollbar { width: 6px; }
-        .scroll-fornecedores::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-        #tFornecedores td { font-size: 11px; padding: 6px 4px; }
+        .scroll-area { max-height: 200px; overflow-y: auto; padding-right: 5px; }
+        .scroll-area::-webkit-scrollbar { width: 6px; }
+        .scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
         .perc-bold { font-weight: bold; color: var(--success); }
         select { background: var(--bg); color: white; width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); font-size: 11px; }
@@ -71,21 +62,17 @@
         .btn-refresh { background: var(--info); }
         .btn-sync { background: #8e44ad; }
 
-        .obs-item { border-bottom: 1px solid var(--border); padding: 6px 0; font-size: 10px; }
-        .obs-tag { font-size: 8px; background: var(--primary); padding: 2px 4px; border-radius: 3px; margin-right: 5px; font-weight: bold; color: #fff; }
-
         .nested-row { display: none; background: rgba(0,0,0,0.15); }
         .show-row { display: table-row !important; }
         .pointer { cursor: pointer; }
         .indent-detail { padding-left: 25px !important; color: #dcdde1; font-size: 10px !important; }
         .arrow { display: inline-block; width: 12px; transition: transform 0.2s; font-size: 8px; color: var(--warning); }
-        .expanded > td > .arrow, .expanded > .arrow { transform: rotate(90deg); }
+        .expanded .arrow { transform: rotate(90deg); }
         
-        .obs-fiscal-group { border-bottom: 1px solid var(--border); cursor: pointer; padding: 8px 5px; background: rgba(255,255,255,0.03); }
-        .obs-gre-group { padding: 5px 15px; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.1); display: none; }
-        .obs-content { padding: 5px 25px; display: none; background: rgba(0,0,0,0.2); }
+        .obs-item { border-bottom: 1px solid var(--border); padding: 6px 0; font-size: 10px; }
+        .obs-tag { font-size: 8px; background: var(--primary); padding: 2px 4px; border-radius: 3px; margin-right: 5px; font-weight: bold; color: #fff; }
 
-        /* Ajuste do Bloco de Tecnologia */
+        /* Estilo Tecnologia */
         .tech-table th { background: rgba(0,0,0,0.2); text-align: center; }
         .tech-table td { text-align: center; }
         .tech-table td:first-child { text-align: left; }
@@ -100,14 +87,12 @@
         <div>
             <h2 style="margin:0; font-size: 14px;">🌍 Inteligência Logística</h2>
             <span id="update-time" style="color:var(--success); font-size:9px; font-weight:bold;">Sincronizando...</span>
-            <div style="display:flex; gap: 5px; margin-top: 5px; flex-wrap: wrap;">
+            <div style="display:flex; gap: 5px; margin-top: 5px;">
                 <button class="btn-action btn-pdf" onclick="exportarPDF()">📄 PDF</button>
                 <button class="btn-action btn-audio" onclick="lerPagina()">🔊 LER</button>
                 <button class="btn-action btn-refresh" onclick="carregar()">🔄 ATUALIZAR</button>
-                <div class="sync-box">
-                    <input type="date" id="dataSync" class="input-date">
-                    <button id="btnSync" class="btn-action btn-sync" onclick="sincronizarAPI()">⚡ API</button>
-                </div>
+                <input type="date" id="dataSync" class="input-date">
+                <button id="btnSync" class="btn-action btn-sync" onclick="sincronizarAPI()">⚡ API</button>
             </div>
         </div>
         <select id="fTipo" onchange="processarDados()"><option value="TODOS">TIPO: TODOS</option><option value="REGULAR">REGULARES</option><option value="EXTRA">EXTRAS</option></select>
@@ -129,7 +114,7 @@
     <div class="grid-top">
         <div class="card row-1">
             <h3>👤 Performance Campo <small style="color:var(--info)">Top 7</small></h3>
-            <table id="tFiscal"><thead><tr><th width="30">Pos</th><th>Responsável</th><th width="45">Total</th><th width="45">Concl</th><th width="50">Assid..</th></tr></thead><tbody></tbody></table>
+            <table id="tFiscal"><thead><tr><th width="30">Pos</th><th>Responsável</th><th width="45">Total</th><th width="45">Concl</th><th width="50">Assid.</th></tr></thead><tbody></tbody></table>
         </div>
         <div class="card row-1">
             <h3>📊 Funil de Execução</h3>
@@ -138,42 +123,29 @@
     </div>
 
     <div class="grid-bottom">
-        <div class="card row-2" style="border-top-color: var(--info); height: 320px;">
+        <div class="card row-2" style="border-top-color: var(--info)">
             <h3>🚐 VAN Frota (Resumo)</h3>
             <div class="frota-container">
                 <div class="frota-item"><small>Mot.</small><h4 id="f-mot" style="margin:2px; font-size:20px;">0</h4></div>
                 <div class="frota-item"><small>Vei.</small><h4 id="f-vei" style="margin:2px; font-size:20px; color: var(--success)">0</h4></div>
                 <div class="frota-item"><small>Sem</small><h4 id="f-sem" style="margin:2px; font-size:20px; color: var(--danger)">0</h4></div>
             </div>
-            <div style="flex:1; overflow-y: auto; margin-top: 10px;" class="scroll-fornecedores">
-                <table id="tFrotaGre">
-                    <thead>
-                        <tr>
-                            <th>Regional (GRE)</th>
-                            <th style="text-align:center">Mot.</th>
-                            <th style="text-align:center">Com V.</th>
-                            <th style="text-align:center">Sem V.</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbodyFrotaGre"></tbody>
-                </table>
+            <div class="scroll-area">
+                <table id="tFrotaGre"><thead><tr><th>Regional (GRE)</th><th style="text-align:center">Mot.</th><th style="text-align:center">Com V.</th><th style="text-align:center">Sem V.</th></tr></thead><tbody id="tbodyFrotaGre"></tbody></table>
             </div>
         </div>
 
         <div class="card row-2">
             <h3>🏆 Rotas por Regional (GRE)</h3>
-            <div style="overflow-y: auto;">
+            <div class="scroll-area">
                 <table id="tGre"><thead><tr><th width="30">Pos</th><th>Regional</th><th width="40">Tot</th><th width="40">Ok</th><th width="45">Assid.</th></tr></thead><tbody></tbody></table>
             </div>
         </div>
 
         <div class="card row-2" style="border-top-color: var(--warning)">
             <h3>🏙️ Rotas por Município</h3>
-            <div style="overflow-y: auto;">
-                <table id="tCidade">
-                    <thead><tr><th width="30">Pos</th><th>Cidade</th><th width="40">Tot</th><th width="40">Ok</th><th width="45">Assid.</th></tr></thead>
-                    <tbody id="tbodyCidade"></tbody>
-                </table>
+            <div class="scroll-area">
+                <table id="tCidade"><thead><tr><th width="30">Pos</th><th>Cidade</th><th width="40">Tot</th><th width="40">Ok</th><th width="45">Assid.</th></tr></thead><tbody id="tbodyCidade"></tbody></table>
             </div>
         </div>
     </div>
@@ -181,51 +153,30 @@
     <div class="grid-new">
         <div class="card row-new" style="border-top-color: var(--extra)">
             <h3>🚛 Tipologia de Frota</h3>
-            <div style="max-height: 250px; overflow-y: auto;">
-                <table id="tComposicaoFrota">
-                    <thead><tr><th>Categoria / Regional / Cidade</th><th style="text-align:center" width="50">Rotas</th><th style="text-align:center" width="50">Vei.</th></tr></thead>
-                    <tbody id="tbodyFrota"></tbody>
-                </table>
+            <div class="scroll-area">
+                <table id="tComposicaoFrota"><thead><tr><th>Categoria / Regional</th><th style="text-align:center" width="50">Rotas</th><th style="text-align:center" width="50">Vei.</th></tr></thead><tbody id="tbodyFrota"></tbody></table>
             </div>
         </div>
         
         <div class="card row-new" style="border-top-color: #f39c12">
             <h3>🤝 Fornecedores</h3>
-            <div class="scroll-fornecedores">
-                <table id="tFornecedores">
-                    <thead>
-                        <tr>
-                            <th>Fornecedor</th>
-                            <th width="40" style="text-align:right">Rotas</th>
-                            <th width="40" style="text-align:right">Ok</th>
-                            <th width="50" style="text-align:right">Assid.</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbodyFornecedores"></tbody>
-                </table>
+            <div class="scroll-area">
+                <table id="tFornecedores"><thead><tr><th>Fornecedor</th><th width="40" style="text-align:right">Rotas</th><th width="40" style="text-align:right">Ok</th><th width="50" style="text-align:right">Assid.</th></tr></thead><tbody id="tbodyFornecedores"></tbody></table>
             </div>
         </div>
 
         <div class="card row-new" style="border-top-color: var(--info)">
-            <h3>📝 Ocorrências por Fiscal (Ranking)</h3>
-            <div id="container-obs" style="max-height: 200px; overflow-y: auto;"></div>
+            <h3>📝 Ocorrências por Fiscal</h3>
+            <div id="container-obs" class="scroll-area"></div>
         </div>
     </div>
 
     <div class="card" style="border-top-color: var(--success); margin-bottom: 20px;">
-        <h3>📱 Análise de Tecnologia (Origem da Localização)</h3>
-        <p style="font-size: 10px; color: var(--slate); margin-top: -10px;">Quantidade de motoristas que concluíram rotas via App vs Link.</p>
-        <div style="overflow-y: auto; max-height: 400px;">
+        <h3>📱 Análise de Tecnologia (Origem Localização)</h3>
+        <p style="font-size: 10px; color: var(--slate); margin-top: -10px;">Quantidade de motoristas únicos que concluíram rotas.</p>
+        <div class="scroll-area" style="max-height: 400px;">
             <table class="tech-table">
-                <thead>
-                    <tr>
-                        <th>Fiscal > GRE > Cidade > Motorista</th>
-                        <th width="85">Motoristas OK</th>
-                        <th width="75">Via App</th>
-                        <th width="75">Via Link</th>
-                        <th width="65">% App</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Fiscal > GRE > Cidade > Motorista</th><th width="85">Mots. OK</th><th width="75">Via App</th><th width="75">Via Link</th><th width="65">% App</th></tr></thead>
                 <tbody id="tbodyTecnologia"></tbody>
             </table>
         </div>
@@ -242,25 +193,11 @@
         const rows = document.querySelectorAll('.' + id);
         const isExpanding = !el.classList.contains('expanded');
         el.classList.toggle('expanded');
-        if(el.querySelector('.arrow')) el.querySelector('.arrow').style.transform = isExpanding ? 'rotate(90deg)' : 'rotate(0deg)';
         rows.forEach(row => row.classList.toggle('show-row', isExpanding));
     }
 
-    function sincronizarAPI() {
-        const campoData = document.getElementById("dataSync");
-        const btn = document.getElementById("btnSync");
-        const timeLabel = document.getElementById('update-time');
-        const dataValor = campoData.value;
-        if (!dataValor) { alert("⚠️ Selecione uma data."); return; }
-        btn.disabled = true; btn.innerText = "⏳...";
-        google.script.run
-            .withSuccessHandler(function(res) { alert(res); btn.disabled = false; btn.innerText = "⚡ API"; carregar(); })
-            .processarMonitoramentoPeloHTML(dataValor);
-    }
-
     async function carregar() {
-        const forcedCacheBuster = URL + '&refresh=' + Math.random();
-        Papa.parse(forcedCacheBuster, {
+        Papa.parse(URL + '&refresh=' + Math.random(), {
             download: true, header: true, skipEmptyLines: true,
             complete: (r) => { 
                 bruto = r.data.filter(d => (d.rota || d.ROTA || "").trim() !== "").map(d => {
@@ -313,13 +250,7 @@
     function processarDados() {
         const dataInput = document.getElementById("dataSync").value;
         const timeLabel = document.getElementById('update-time');
-        let dataFiltroStr = "";
-        if (dataInput) {
-            const partes = dataInput.split("-");
-            dataFiltroStr = partes[2] + "/" + partes[1] + "/" + partes[0]; 
-        } else if (bruto.length > 0) {
-            dataFiltroStr = [...new Set(bruto.map(d => d.data))].sort().pop();
-        }
+        let dataFiltroStr = dataInput ? dataInput.split("-").reverse().join("/") : (bruto.length ? [...new Set(bruto.map(d => d.data))].sort().pop() : "");
         timeLabel.innerText = "✅ DATA: " + dataFiltroStr;
 
         const f = {
@@ -339,7 +270,7 @@
 
         let concl = 0, pend = 0;
         const motUniq = new Set(), veiUniq = new Set(), cidadeMap = {}, fornMap = {}, fiscalObsMap = {};
-        const hierarquiaFrota = { PROPRIO: { r: 0, v: new Set(), gres: {} }, TERCEIRO: { r: 0, v: new Set(), gres: {} }, LOCADO: { r: 0, v: new Set(), gres: {} }, PARCEIRO: { r: 0, v: new Set(), gres: {} } };
+        const hFrota = { PROPRIO: { r: 0, v: new Set(), gres: {} }, TERCEIRO: { r: 0, v: new Set(), gres: {} }, LOCADO: { r: 0, v: new Set(), gres: {} } };
 
         dados.forEach(d => {
             const isOk = norm(d.status).includes("CONCLUID") || norm(d.status).includes("ANDAMENTO");
@@ -348,32 +279,31 @@
             if(d.veiculo && d.veiculo.length > 2) veiUniq.add(d.veiculo);
 
             // Cidades
-            const cid = d.cidade || "SEM CIDADE";
-            if(!cidadeMap[cid]) cidadeMap[cid] = { t:0, c:0, mot: {} };
-            cidadeMap[cid].t++; if(isOk) cidadeMap[cid].c++;
-            if(!cidadeMap[cid].mot[d.motorista]) cidadeMap[cid].mot[d.motorista] = { t:0, c:0 };
-            cidadeMap[cid].mot[d.motorista].t++; if(isOk) cidadeMap[cid].mot[d.motorista].c++;
+            if(!cidadeMap[d.cidade]) cidadeMap[d.cidade] = { t:0, c:0, mot: {} };
+            cidadeMap[d.cidade].t++; if(isOk) cidadeMap[d.cidade].c++;
+            if(!cidadeMap[d.cidade].mot[d.motorista]) cidadeMap[d.cidade].mot[d.motorista] = { t:0, c:0 };
+            cidadeMap[d.cidade].mot[d.motorista].t++; if(isOk) cidadeMap[d.cidade].mot[d.motorista].c++;
 
             // Fornecedores
-            const fn = d.fornecedor_motorista || "OUTROS";
-            if(!fornMap[fn]) fornMap[fn] = { t:0, c:0, mot: {} };
-            fornMap[fn].t++; if(isOk) fornMap[fn].c++;
+            if(!fornMap[d.fornecedor_motorista]) fornMap[d.fornecedor_motorista] = { t:0, c:0, mot: {} };
+            fornMap[d.fornecedor_motorista].t++; if(isOk) fornMap[d.fornecedor_motorista].c++;
+            if(!fornMap[d.fornecedor_motorista].mot[d.motorista]) fornMap[d.fornecedor_motorista].mot[d.motorista] = { t:0, c:0 };
+            fornMap[d.fornecedor_motorista].mot[d.motorista].t++; if(isOk) fornMap[d.fornecedor_motorista].mot[d.motorista].c++;
 
             // Tipologia
             let cat = norm(d.tipo_fornecedor).includes("PROPRIO") ? "PROPRIO" : (norm(d.tipo_fornecedor).includes("LOCADO") ? "LOCADO" : "TERCEIRO");
-            hierarquiaFrota[cat].r++; if(d.veiculo) hierarquiaFrota[cat].v.add(d.veiculo);
+            hFrota[cat].r++; hFrota[cat].v.add(d.veiculo);
+            if(!hFrota[cat].gres[d.gre]) hFrota[cat].gres[d.gre] = { r:0, v: new Set() };
+            hFrota[cat].gres[d.gre].r++; hFrota[cat].gres[d.gre].v.add(d.veiculo);
 
-            // Observações
             if (d.observacao && d.observacao.length > 2) {
-                const fis = d.fiscal_responsavel;
-                if (!fiscalObsMap[fis]) fiscalObsMap[fis] = { total: 0, gres: {} };
-                fiscalObsMap[fis].total++;
-                if (!fiscalObsMap[fis].gres[d.gre]) fiscalObsMap[fis].gres[d.gre] = [];
-                fiscalObsMap[fis].gres[d.gre].push(d);
+                if (!fiscalObsMap[d.fiscal_responsavel]) fiscalObsMap[d.fiscal_responsavel] = { total: 0, gres: {} };
+                fiscalObsMap[d.fiscal_responsavel].total++;
+                if (!fiscalObsMap[d.fiscal_responsavel].gres[d.gre]) fiscalObsMap[d.fiscal_responsavel].gres[d.gre] = [];
+                fiscalObsMap[d.fiscal_responsavel].gres[d.gre].push(d);
             }
         });
 
-        // KPIs e Tabelas Padrão
         document.getElementById('k-total-filtrado').innerText = dados.length;
         document.getElementById('k-concluido').innerText = concl;
         document.getElementById('k-pendente').innerText = pend;
@@ -386,79 +316,18 @@
         renderRank('tGre', 'gre', 10, dados);
         renderTabelaCidades(cidadeMap);
         renderTabelaFornecedores(fornMap);
-        renderTabelaTipologia(hierarquiaFrota);
+        renderTabelaTipologia(hFrota);
         renderFrotaPorGre(dados);
         renderOcorrencias(fiscalObsMap);
         renderCharts(dados.length, concl, pend);
-
-        // CHAMADA DA NOVA LOGICA DE TECNOLOGIA
         renderTecnologiaUnificada(dados);
     }
 
-    // --- BLOCO TECNOLOGIA (FISCAL > GRE > CIDADE > MOTORISTA) ---
-    function renderTecnologiaUnificada(dados) {
-        const tree = {};
-        // Considerar apenas motoristas que concluíram algo
-        const motoristasOk = dados.filter(d => norm(d.status).includes("CONCLUID") || norm(d.status).includes("ANDAMENTO"));
-
-        motoristasOk.forEach(d => {
-            const fis = d.fiscal_responsavel;
-            const gre = d.gre;
-            const cid = d.cidade;
-            const mot = d.motorista;
-            const viaApp = norm(d.origem).includes("APP");
-
-            if(!tree[fis]) tree[fis] = { gres: {} };
-            if(!tree[fis].gres[gre]) tree[fis].gres[gre] = { cidades: {} };
-            if(!tree[fis].gres[gre].cidades[cid]) tree[fis].gres[gre].cidades[cid] = { motoristas: {} };
-            
-            // Unifica motorista e sua tecnologia predominante
-            if(!tree[fis].gres[gre].cidades[cid].motoristas[mot]) {
-                tree[fis].gres[gre].cidades[cid].motoristas[mot] = viaApp ? "APP" : "LINK";
-            }
-        });
-
-        const calc = (node) => {
-            let m = 0, a = 0, l = 0;
-            if(node.motoristas) {
-                Object.values(node.motoristas).forEach(v => { m++; if(v==="APP") a++; else l++; });
-            } else {
-                Object.values(node.gres || node.cidades).forEach(child => {
-                    const res = calc(child); m += res.m; a += res.a; l += res.l;
-                });
-            }
-            return { m, a, l, p: m ? ((a/m)*100).toFixed(0) : 0 };
-        };
-
-        let html = "", fIdx = 0;
-        Object.entries(tree).sort().forEach(([fis, fData]) => {
-            const fId = `tec-f-${fIdx}`, fRes = calc(fData);
-            html += `<tr class="pointer" onclick="toggleRow('${fId}', this)" style="background:rgba(255,255,255,0.05)"><td><span class="arrow">▶</span> <b>${fis}</b></td><td class="col-mots">${fRes.m}</td><td class="col-app">${fRes.a}</td><td class="col-link">${fRes.l}</td><td>${fRes.p}%</td></tr>`;
-            
-            Object.entries(fData.gres).sort().forEach(([gre, gData], gIdx) => {
-                const gId = `tec-g-${fIdx}-${gIdx}`, gRes = calc(gData);
-                html += `<tr class="nested-row ${fId} pointer" onclick="toggleRow('${gId}', this)"><td><span style="margin-left:15px" class="arrow">▶</span> <span style="color:var(--info)">${gre}</span></td><td>${gRes.m}</td><td>${gRes.a}</td><td>${gRes.l}</td><td>${gRes.p}%</td></tr>`;
-                
-                Object.entries(gData.cidades).sort().forEach(([cid, cData], cIdx) => {
-                    const cId = `tec-c-${fIdx}-${gIdx}-${cIdx}`, cRes = calc(cData);
-                    html += `<tr class="nested-row ${gId} pointer" onclick="toggleRow('${cId}', this)"><td><span style="margin-left:30px" class="arrow">▶</span> ${cid}</td><td>${cRes.m}</td><td>${cRes.a}</td><td>${cRes.l}</td><td>${cRes.p}%</td></tr>`;
-                    
-                    Object.entries(cData.motoristas).sort().forEach(([mot, tec]) => {
-                        html += `<tr class="nested-row ${cId}"><td style="padding-left:55px; color:var(--slate)">• ${mot}</td><td>-</td><td class="col-app">${tec==="APP"?1:0}</td><td class="col-link">${tec==="LINK"?1:0}</td><td>${tec==="APP"?100:0}%</td></tr>`;
-                    });
-                });
-            });
-            fIdx++;
-        });
-        document.getElementById('tbodyTecnologia').innerHTML = html || "<tr><td colspan='5'>Sem dados.</td></tr>";
-    }
-
-    // --- FUNÇÕES DE SUPORTE PRESERVADAS ---
     function renderTabelaCidades(map) {
-        let h = "";
-        Object.entries(map).sort((a,b) => b[1].t - a[1].t).forEach(([nm, d], i) => {
-            const id = `cid-${i}`;
-            h += `<tr class="pointer" onclick="toggleRow('${id}', this)"><td><span class="arrow">▶</span> ${i+1}º</td><td>${nm}</td><td>${d.t}</td><td>${d.c}</td><td class="perc-bold">${((d.c/d.t)*100).toFixed(1)}%</td></tr>`;
+        let h = "", i = 0;
+        Object.entries(map).sort((a,b) => b[1].t - a[1].t).forEach(([nm, d]) => {
+            const id = `cid-${i++}`;
+            h += `<tr class="pointer" onclick="toggleRow('${id}', this)"><td><span class="arrow">▶</span> ${i}º</td><td>${nm}</td><td>${d.t}</td><td>${d.c}</td><td class="perc-bold">${((d.c/d.t)*100).toFixed(1)}%</td></tr>`;
             Object.entries(d.mot).forEach(([m, md]) => {
                 h += `<tr class="nested-row ${id}"><td class="indent-detail" colspan="2">• ${m}</td><td>${md.t}</td><td>${md.c}</td><td style="color:#95a5a6">${((md.c/md.t)*100).toFixed(1)}%</td></tr>`;
             });
@@ -467,20 +336,65 @@
     }
 
     function renderTabelaFornecedores(map) {
-        let h = "";
+        let h = "", i = 0;
         Object.entries(map).sort((a,b) => b[1].t - a[1].t).forEach(([nm, d]) => {
-            h += `<tr><td>${nm}</td><td align="right">${d.t}</td><td align="right">${d.c}</td><td align="right" class="perc-bold">${((d.c/d.t)*100).toFixed(1)}%</td></tr>`;
+            const id = `forn-${i++}`;
+            h += `<tr class="pointer" onclick="toggleRow('${id}', this)"><td><span class="arrow">▶</span> ${nm}</td><td align="right">${d.t}</td><td align="right">${d.c}</td><td align="right" class="perc-bold">${((d.c/d.t)*100).toFixed(1)}%</td></tr>`;
+            Object.entries(d.mot).forEach(([m, md]) => {
+                h += `<tr class="nested-row ${id}"><td class="indent-detail">• ${m}</td><td align="right">${md.t}</td><td align="right">${md.c}</td><td align="right" style="color:#95a5a6">${((md.c/md.t)*100).toFixed(1)}%</td></tr>`;
+            });
         });
         document.getElementById('tbodyFornecedores').innerHTML = h;
     }
 
     function renderTabelaTipologia(hie) {
-        let h = "";
-        Object.entries(hie).forEach(([cat, info], i) => {
+        let h = "", i = 0;
+        Object.entries(hie).forEach(([cat, info]) => {
             if(info.r === 0) return;
-            h += `<tr><td><b>${cat}</b></td><td align="center">${info.r}</td><td align="center">${info.v.size}</td></tr>`;
+            const id = `tip-${i++}`;
+            h += `<tr class="pointer" onclick="toggleRow('${id}', this)"><td><span class="arrow">▶</span> <b>${cat}</b></td><td align="center">${info.r}</td><td align="center">${info.v.size}</td></tr>`;
+            Object.entries(info.gres).forEach(([gr, gi]) => {
+                h += `<tr class="nested-row ${id}"><td class="indent-detail">GRE: ${gr}</td><td align="center">${gi.r}</td><td align="center">${gi.v.size}</td></tr>`;
+            });
         });
         document.getElementById('tbodyFrota').innerHTML = h;
+    }
+
+    function renderTecnologiaUnificada(dados) {
+        const tree = {};
+        const motsOk = dados.filter(d => norm(d.status).includes("CONCLUID") || norm(d.status).includes("ANDAMENTO"));
+        motsOk.forEach(d => {
+            if(!tree[d.fiscal_responsavel]) tree[d.fiscal_responsavel] = { gres: {} };
+            if(!tree[d.fiscal_responsavel].gres[d.gre]) tree[d.fiscal_responsavel].gres[d.gre] = { cidades: {} };
+            if(!tree[d.fiscal_responsavel].gres[d.gre].cidades[d.cidade]) tree[d.fiscal_responsavel].gres[d.gre].cidades[d.cidade] = { motoristas: {} };
+            tree[d.fiscal_responsavel].gres[d.gre].cidades[d.cidade].motoristas[d.motorista] = norm(d.origem).includes("APP") ? "APP" : "LINK";
+        });
+
+        const calc = (node) => {
+            let m = 0, a = 0, l = 0;
+            if(node.motoristas) { Object.values(node.motoristas).forEach(v => { m++; if(v==="APP") a++; else l++; }); }
+            else { Object.values(node.gres || node.cidades).forEach(c => { const r = calc(c); m+=r.m; a+=r.a; l+=r.l; }); }
+            return { m, a, l, p: m ? ((a/m)*100).toFixed(0) : 0 };
+        };
+
+        let html = "", fIdx = 0;
+        Object.entries(tree).sort().forEach(([fis, fData]) => {
+            const fId = `tec-f-${fIdx}`, fRes = calc(fData);
+            html += `<tr class="pointer" onclick="toggleRow('${fId}', this)"><td><span class="arrow">▶</span> <b>${fis}</b></td><td class="col-mots">${fRes.m}</td><td class="col-app">${fRes.a}</td><td class="col-link">${fRes.l}</td><td>${fRes.p}%</td></tr>`;
+            Object.entries(fData.gres).sort().forEach(([gre, gData], gIdx) => {
+                const gId = `tec-g-${fIdx}-${gIdx}`, gRes = calc(gData);
+                html += `<tr class="nested-row ${fId} pointer" onclick="toggleRow('${gId}', this)"><td><span style="margin-left:15px" class="arrow">▶</span> <span style="color:var(--info)">${gre}</span></td><td>${gRes.m}</td><td>${gRes.a}</td><td>${gRes.l}</td><td>${gRes.p}%</td></tr>`;
+                Object.entries(gData.cidades).sort().forEach(([cid, cData], cIdx) => {
+                    const cId = `tec-c-${fIdx}-${gIdx}-${cIdx}`, cRes = calc(cData);
+                    html += `<tr class="nested-row ${gId} pointer" onclick="toggleRow('${cId}', this)"><td><span style="margin-left:30px" class="arrow">▶</span> ${cid}</td><td>${cRes.m}</td><td>${cRes.a}</td><td>${cRes.l}</td><td>${cRes.p}%</td></tr>`;
+                    Object.entries(cData.motoristas).sort().forEach(([mot, tec]) => {
+                        html += `<tr class="nested-row ${cId}"><td style="padding-left:55px; color:var(--slate)">• ${mot}</td><td>-</td><td class="col-app">${tec==="APP"?1:0}</td><td class="col-link">${tec==="LINK"?1:0}</td><td>${tec==="APP"?100:0}%</td></tr>`;
+                    });
+                });
+            });
+            fIdx++;
+        });
+        document.getElementById('tbodyTecnologia').innerHTML = html || "<tr><td colspan='5'>Sem dados.</td></tr>";
     }
 
     function renderRank(id, campo, limit, dados) {
@@ -508,9 +422,10 @@
         const cont = document.getElementById('container-obs');
         let h = "";
         Object.entries(map).sort((a,b) => b[1].total - a[1].total).forEach(([fis, d], fIdx) => {
-            h += `<div class="obs-fiscal-group" onclick="toggleRow('obs-f-${fIdx}', this)"><span class="arrow">▶</span> <b>${fis}</b> <span style="float:right; color:var(--warning)">${d.total} Obs.</span></div>`;
-            Object.entries(d.gres).forEach(([gr, it], gIdx) => {
-                h += `<div class="nested-row obs-f-${fIdx} obs-gre-group" style="display:block"><b>GRE: ${gr}</b>${it.map(o => `<div class="obs-item"><span class="obs-tag">${o.rota}</span>${o.motorista}: ${o.observacao}</div>`).join('')}</div>`;
+            const id = `obs-f-${fIdx}`;
+            h += `<div class="pointer" style="padding:8px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--border)" onclick="toggleRow('${id}', this)"><span class="arrow">▶</span> <b>${fis}</b> <span style="float:right; color:var(--warning)">${d.total} Obs.</span></div>`;
+            Object.entries(d.gres).forEach(([gr, it]) => {
+                h += `<div class="nested-row ${id}" style="padding:10px 20px; background:rgba(0,0,0,0.2); width:100%; display:none;"><b>GRE: ${gr}</b>${it.map(o => `<div class="obs-item"><span class="obs-tag">${o.rota}</span>${o.motorista}: ${o.observacao}</div>`).join('')}</div>`;
             });
         });
         cont.innerHTML = h || "Sem ocorrências.";
@@ -525,14 +440,19 @@
         });
     }
 
+    function sincronizarAPI() {
+        const d = document.getElementById("dataSync").value;
+        if (!d) return alert("Selecione data");
+        google.script.run.withSuccessHandler(res => { alert(res); carregar(); }).processarMonitoramentoPeloHTML(d);
+    }
+
     function exportarPDF() {
-        const opt = { margin: 5, filename: 'BI_LOGISTICA.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
-        html2pdf().set(opt).from(document.body).save();
+        html2pdf().set({ margin: 5, filename: 'BI_LOGISTICA.pdf', jsPDF: { orientation: 'landscape' } }).from(document.body).save();
     }
 
     function lerPagina() {
         const ass = document.getElementById('k-ass-perc').innerText;
-        const u = new SpeechSynthesisUtterance(`Assiduidade atual de ${ass}.`);
+        const u = new SpeechSynthesisUtterance(`Assiduidade em ${ass}.`);
         u.lang = 'pt-BR'; window.speechSynthesis.speak(u);
     }
 
