@@ -72,7 +72,6 @@
         .obs-item { border-bottom: 1px solid var(--border); padding: 6px 0; font-size: 10px; }
         .obs-tag { font-size: 8px; background: var(--primary); padding: 2px 4px; border-radius: 3px; margin-right: 5px; font-weight: bold; color: #fff; }
 
-        /* Estilo Tecnologia */
         .tech-table th { background: rgba(0,0,0,0.2); text-align: center; }
         .tech-table td { text-align: center; }
         .tech-table td:first-child { text-align: left; }
@@ -196,6 +195,34 @@
         rows.forEach(row => row.classList.toggle('show-row', isExpanding));
     }
 
+    // --- FUNÇÃO API RESTAURADA ---
+    function sincronizarAPI() {
+        const campoData = document.getElementById("dataSync");
+        const btn = document.getElementById("btnSync");
+        if (!campoData.value) { alert("⚠️ Selecione uma data antes de sincronizar."); return; }
+        
+        btn.disabled = true;
+        btn.innerText = "⏳...";
+        
+        // Formata a data para o padrão DD/MM/YYYY que a API geralmente espera
+        const partes = campoData.value.split("-");
+        const dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
+
+        google.script.run
+            .withSuccessHandler(function(res) {
+                alert(res);
+                btn.disabled = false;
+                btn.innerText = "⚡ API";
+                carregar(); // Recarrega os dados após a API rodar
+            })
+            .withFailureHandler(function(err) {
+                alert("Erro na API: " + err);
+                btn.disabled = false;
+                btn.innerText = "⚡ API";
+            })
+            .processarMonitoramentoPeloHTML(dataFormatada);
+    }
+
     async function carregar() {
         Papa.parse(URL + '&refresh=' + Math.random(), {
             download: true, header: true, skipEmptyLines: true,
@@ -278,19 +305,16 @@
             if(d.motorista) motUniq.add(d.motorista);
             if(d.veiculo && d.veiculo.length > 2) veiUniq.add(d.veiculo);
 
-            // Cidades
             if(!cidadeMap[d.cidade]) cidadeMap[d.cidade] = { t:0, c:0, mot: {} };
             cidadeMap[d.cidade].t++; if(isOk) cidadeMap[d.cidade].c++;
             if(!cidadeMap[d.cidade].mot[d.motorista]) cidadeMap[d.cidade].mot[d.motorista] = { t:0, c:0 };
             cidadeMap[d.cidade].mot[d.motorista].t++; if(isOk) cidadeMap[d.cidade].mot[d.motorista].c++;
 
-            // Fornecedores
             if(!fornMap[d.fornecedor_motorista]) fornMap[d.fornecedor_motorista] = { t:0, c:0, mot: {} };
             fornMap[d.fornecedor_motorista].t++; if(isOk) fornMap[d.fornecedor_motorista].c++;
             if(!fornMap[d.fornecedor_motorista].mot[d.motorista]) fornMap[d.fornecedor_motorista].mot[d.motorista] = { t:0, c:0 };
             fornMap[d.fornecedor_motorista].mot[d.motorista].t++; if(isOk) fornMap[d.fornecedor_motorista].mot[d.motorista].c++;
 
-            // Tipologia
             let cat = norm(d.tipo_fornecedor).includes("PROPRIO") ? "PROPRIO" : (norm(d.tipo_fornecedor).includes("LOCADO") ? "LOCADO" : "TERCEIRO");
             hFrota[cat].r++; hFrota[cat].v.add(d.veiculo);
             if(!hFrota[cat].gres[d.gre]) hFrota[cat].gres[d.gre] = { r:0, v: new Set() };
@@ -438,12 +462,6 @@
             data: { labels: ['Escopo', 'Realizado', 'Pendente'], datasets: [{ data: [tot, con, pen], backgroundColor: ['#576574', '#2ecc71', '#e74c3c'], borderRadius: 5 }] },
             options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
-    }
-
-    function sincronizarAPI() {
-        const d = document.getElementById("dataSync").value;
-        if (!d) return alert("Selecione data");
-        google.script.run.withSuccessHandler(res => { alert(res); carregar(); }).processarMonitoramentoPeloHTML(d);
     }
 
     function exportarPDF() {
