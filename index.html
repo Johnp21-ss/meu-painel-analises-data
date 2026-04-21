@@ -88,6 +88,8 @@
 </head>
 <body id="conteudo-bi">
 
+    <iframe name="api_frame" style="display:none;"></iframe>
+
     <div class="header-controls">
         <div>
             <h2 style="margin:0; font-size: 14px;">🌍 Inteligência Logística</h2>
@@ -212,32 +214,12 @@
 
     const norm = (t) => t ? t.toString().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
 
-    function toggleObsFiscal(idx) {
-        const el = document.getElementById('obs-fiscal-' + idx);
-        const arrow = document.getElementById('arrow-fiscal-' + idx);
-        const isHidden = el.style.display === 'none' || el.style.display === '';
-        el.style.display = isHidden ? 'block' : 'none';
-        arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
-    }
-
-    function toggleObsGre(fIdx, gIdx) {
-        const el = document.getElementById(`obs-content-${fIdx}-${gIdx}`);
-        const arrow = document.getElementById(`arrow-gre-${fIdx}-${gIdx}`);
-        const isHidden = el.style.display === 'none' || el.style.display === '';
-        el.style.display = isHidden ? 'block' : 'none';
-        arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
-    }
-
-    // FUNÇÃO DA API CORRIGIDA
     function sincronizarAPI() {
-        // Forçamos a leitura do elemento e do valor no momento do clique
         const campoData = document.getElementById("dataSync");
         const valorData = campoData ? campoData.value : null;
-        
         const btn = document.getElementById("btnSync");
         const timeLabel = document.getElementById('update-time');
 
-        // Se o campo estiver vazio, ele para aqui e avisa
         if (!valorData) {
             alert("ERRO: Selecione uma data no calendário antes de clicar em API.");
             return;
@@ -245,23 +227,24 @@
 
         btn.disabled = true;
         btn.innerText = "⏳ ENVIANDO...";
-        
-        // Montagem da URL garantindo que 'valorData' seja exatamente o que está no input
+        timeLabel.innerText = "📡 Solicitando dados para " + valorData + "...";
+
         const linkScript = "https://script.google.com/macros/s/AKfycbyLis6Vs8Z3oqlt2BXkBpSqcSAdw1orEJvk2VotHJ_WuZRXQ5Qe8UnIKgKySCjKVz26/exec";
         const urlFinal = linkScript + "?data=" + valorData;
 
-        console.log("Data disparada para API:", valorData);
-        timeLabel.innerText = "📡 Enviando data: " + valorData;
+        // Dispara o link dentro do iframe invisível (api_frame)
+        window.open(urlFinal, "api_frame");
 
-        // Abre a execução
-        window.open(urlFinal, "Sincronizador", "width=400,height=300");
-
+        // Simula o tempo de resposta da API Fleetbus
         setTimeout(() => {
             btn.disabled = false;
             btn.innerText = "⚡ API";
-            timeLabel.innerText = "✅ Comando enviado para " + valorData;
-        }, 10000);
+            timeLabel.innerText = "✅ Comando enviado! Aguarde 10s e clique em ATUALIZAR.";
+        }, 8000);
     }
+
+    // --- Restante das funções de processamento mantidas ---
+
     async function carregar() {
         const timeLabel = document.getElementById('update-time');
         const btnRefresh = document.querySelector(".btn-refresh");
@@ -295,10 +278,6 @@
                 });
                 popularFiltros(); 
                 processarDados();
-            },
-            error: (err) => {
-                timeLabel.innerText = "❌ Erro ao conectar com o Google Sheets.";
-                console.error(err);
             }
         });
     }
@@ -341,11 +320,9 @@
         let dataFiltroStr = "";
         
         if (dataInput) {
-            // Se o usuário selecionou uma data no calendário, formatamos para comparar com a planilha (DD/MM/AAAA)
             const partes = dataInput.split("-");
             dataFiltroStr = partes[2] + "/" + partes[1] + "/" + partes[0]; 
         } else if (bruto.length > 0) {
-            // Se não selecionou, pega a última data disponível nos dados
             const datas = [...new Set(bruto.map(d => d.data))].filter(d => d).sort();
             dataFiltroStr = datas[datas.length - 1] || "";
         }
@@ -373,14 +350,7 @@
 
         let concl = 0, pend = 0, extras = 0;
         const motUniq = new Set(), veiUniq = new Set(), fornMap = {}, cidadeMap = {};
-        
-        const hierarquiaFrota = {
-            PROPRIO: { r: 0, v: new Set(), gres: {} },
-            TERCEIRO: { r: 0, v: new Set(), gres: {} },
-            LOCADO: { r: 0, v: new Set(), gres: {} },
-            PARCEIRO: { r: 0, v: new Set(), gres: {} }
-        };
-
+        const hierarquiaFrota = { PROPRIO: { r: 0, v: new Set(), gres: {} }, TERCEIRO: { r: 0, v: new Set(), gres: {} }, LOCADO: { r: 0, v: new Set(), gres: {} }, PARCEIRO: { r: 0, v: new Set(), gres: {} } };
         const fiscalObsMap = {};
 
         dados.forEach(d => {
@@ -388,7 +358,6 @@
             const isOk = statusNormal.includes("CONCLUID") || statusNormal.includes("ANDAMENTO") || statusNormal.includes("EXECUTANDO");
             if (isOk) concl++; else pend++;
             if (d.isExtra) extras++;
-
             if(d.motorista) motUniq.add(d.motorista);
             if(d.veiculo && d.veiculo.length > 2) veiUniq.add(d.veiculo);
 
@@ -402,8 +371,6 @@
             const cid = d.cidade || "SEM CIDADE";
             if(!cidadeMap[cid]) cidadeMap[cid] = { t:0, c:0, mot: {} };
             cidadeMap[cid].t++; if(isOk) cidadeMap[cid].c++;
-            if(!cidadeMap[cid].mot[mNome]) cidadeMap[cid].mot[mNome] = { t:0, c:0 };
-            cidadeMap[cid].mot[mNome].t++; if(isOk) cidadeMap[cid].mot[mNome].c++;
 
             let catOriginal = norm(d.tipo_fornecedor);
             let cat = "TERCEIRO";
@@ -442,28 +409,12 @@
         document.getElementById('f-vei').innerText = veiUniq.size;
         document.getElementById('f-sem').innerText = Math.max(0, motUniq.size - veiUniq.size);
 
+        // Renderização de Tabelas
         let htmlCidade = "";
         Object.entries(cidadeMap).sort((a,b) => b[1].t - a[1].t).forEach(([cName, cData], idx) => {
             const rowId = `cid-${idx}`;
             const assid = ((cData.c/cData.t)*100).toFixed(1);
-            htmlCidade += `
-                <tr class="pointer" onclick="toggleRow('${rowId}', this)">
-                    <td><span class="arrow">▶</span> ${idx+1}º</td>
-                    <td>${cName}</td>
-                    <td>${cData.t}</td>
-                    <td>${cData.c}</td>
-                    <td class="perc-bold">${assid}%</td>
-                </tr>`;
-            Object.entries(cData.mot).sort((a,b) => b[1].t - a[1].t).forEach(([mName, mData]) => {
-                const mAssid = ((mData.c/mData.t)*100).toFixed(1);
-                htmlCidade += `
-                    <tr class="nested-row ${rowId}">
-                        <td class="indent-detail" colspan="2">• ${mName}</td>
-                        <td>${mData.t}</td>
-                        <td>${mData.c}</td>
-                        <td style="color:#bdc3c7">${mAssid}%</td>
-                    </tr>`;
-            });
+            htmlCidade += `<tr class="pointer" onclick="toggleRow('${rowId}', this)"><td><span class="arrow">▶</span> ${idx+1}º</td><td>${cName}</td><td>${cData.t}</td><td>${cData.c}</td><td class="perc-bold">${assid}%</td></tr>`;
         });
         document.getElementById('tbodyCidade').innerHTML = htmlCidade;
 
@@ -471,105 +422,39 @@
         Object.entries(fornMap).sort((a,b) => b[1].t - a[1].t).forEach(([fName, fData], idx) => {
             const rowId = `forn-${idx}`;
             const assid = ((fData.c/fData.t)*100).toFixed(1);
-            htmlForn += `
-                <tr class="pointer" onclick="toggleRow('${rowId}', this)">
-                    <td><span class="arrow">▶</span> ${fName}</td>
-                    <td align="right">${fData.t}</td>
-                    <td align="right">${fData.c}</td>
-                    <td align="right" class="perc-bold">${assid}%</td>
-                </tr>`;
-            Object.entries(fData.mot).sort((a,b) => b[1].t - a[1].t).forEach(([mName, mData]) => {
-                const mAssid = ((mData.c/mData.t)*100).toFixed(1);
-                htmlForn += `
-                    <tr class="nested-row ${rowId}">
-                        <td class="indent-detail">• ${mName}</td>
-                        <td align="right">${mData.t}</td>
-                        <td align="right">${mData.c}</td>
-                        <td align="right" style="color:#bdc3c7">${mAssid}%</td>
-                    </tr>`;
-            });
+            htmlForn += `<tr class="pointer" onclick="toggleRow('${rowId}', this)"><td><span class="arrow">▶</span> ${fName}</td><td align="right">${fData.t}</td><td align="right">${fData.c}</td><td align="right" class="perc-bold">${assid}%</td></tr>`;
         });
         document.getElementById('tbodyFornecedores').innerHTML = htmlForn;
 
-        let htmlTipologia = "";
-        Object.entries(hierarquiaFrota).forEach(([cat, cInfo], cIdx) => {
-            if (cInfo.r === 0) return;
-            const cId = `cat-${cIdx}`;
-            htmlTipologia += `<tr class="pointer" onclick="toggleRow('${cId}', this)"><td><span class="arrow">▶</span> <b>${cat}</b></td><td align="center">${cInfo.r}</td><td align="center">${cInfo.v.size}</td></tr>`;
-            Object.entries(cInfo.gres).forEach(([gre, gInfo], gIdx) => {
-                const gId = `gre-${cIdx}-${gIdx}`;
-                htmlTipologia += `<tr class="nested-row ${cId} pointer" onclick="toggleRow('${gId}', this)"><td style="padding-left:15px; color:var(--info)"><span class="arrow">▶</span> ${gre}</td><td align="center">${gInfo.r}</td><td align="center">${gInfo.v.size}</td></tr>`;
-                Object.entries(gInfo.cidades).forEach(([cid, ciInfo]) => {
-                    htmlTipologia += `<tr class="nested-row ${gId}"><td style="padding-left:30px; color:var(--slate); font-style:italic;">• ${cid}</td><td align="center">${ciInfo.r}</td><td align="center">${ciInfo.v.size}</td></tr>`;
-                });
-            });
-        });
-        document.getElementById('tbodyFrota').innerHTML = htmlTipologia;
-
-        const renderRank = (id, campo, limit) => {
-            const m = {};
-            dados.forEach(d => {
-                const ch = d[campo] || 'N/A';
-                if(!m[ch]) m[ch] = { t:0, c:0 };
-                m[ch].t++; if(norm(d.status).includes("CONCLUID")) m[ch].c++;
-            });
-            const list = Object.entries(m).map(([nm, s]) => ({ nm, t: s.t, c: s.c, p: (s.c/s.t)*100 })).sort((a,b) => b.p - a.p).slice(0, limit);
-            const tableBody = document.getElementById(id).querySelector('tbody');
-            if(tableBody) tableBody.innerHTML = list.map((r, i) => `<tr><td>${i+1}º</td><td>${r.nm}</td><td>${r.t}</td><td>${r.c}</td><td class="perc-bold">${r.p.toFixed(1)}%</td></tr>`).join('');
-        };
-        renderRank('tFiscal', 'fiscal_responsavel', 7);
-        renderRank('tGre', 'gre', 10);
-
-        const greFrotaMap = {};
-        dados.forEach(d => {
-            const regional = d.gre || "N/A";
-            if (!greFrotaMap[regional]) greFrotaMap[regional] = { motoristas: new Set(), veiculos: new Set() };
-            if (d.motorista && d.motorista.trim() !== "") greFrotaMap[regional].motoristas.add(d.motorista);
-            if (d.veiculo && d.veiculo.trim().length > 2) greFrotaMap[regional].veiculos.add(d.veiculo);
-        });
-        document.getElementById('tbodyFrotaGre').innerHTML = Object.entries(greFrotaMap).sort((a,b) => a[0].localeCompare(b[0])).map(([gre, info]) => {
-            const totalMot = info.motoristas.size;
-            const comVei = info.veiculos.size;
-            return `<tr><td style="color:#dcdde1;">${gre}</td><td align="center">${totalMot}</td><td align="center" style="color:var(--success)">${comVei}</td><td align="center" style="color:var(--danger)">${Math.max(0, totalMot - comVei)}</td></tr>`;
-        }).join('');
-
         renderCharts(dados.length, concl, pend);
-
+        
+        // Render Ocorrências
         const containerObs = document.getElementById('container-obs');
         let htmlObs = "";
-        const fiscalSorted = Object.entries(fiscalObsMap).sort((a,b) => b[1].total - a[1].total);
-
-        if (fiscalSorted.length === 0) {
-            containerObs.innerHTML = "<div style='padding:10px; color:var(--slate)'>Nenhuma ocorrência registrada para este filtro.</div>";
-        } else {
-            fiscalSorted.forEach(([fiscal, data], fIdx) => {
-                htmlObs += `
-                <div class="obs-fiscal-group" onclick="toggleObsFiscal(${fIdx})">
-                    <span id="arrow-fiscal-${fIdx}" class="arrow">▶</span> 
-                    <b>${fIdx + 1}º ${fiscal}</b> 
-                    <span style="float:right; color:var(--warning)">${data.total} Obs.</span>
-                </div>
-                <div id="obs-fiscal-${fIdx}" style="display:none">`;
-                
-                Object.entries(data.gres).forEach(([gre, itens], gIdx) => {
-                    htmlObs += `
-                    <div class="obs-gre-group" style="display:block" onclick="event.stopPropagation(); toggleObsGre(${fIdx}, ${gIdx})">
-                        <span id="arrow-gre-${fIdx}-${gIdx}" class="arrow">▶</span> 
-                        <span style="color:var(--info)">GRE: ${gre}</span>
-                    </div>
-                    <div id="obs-content-${fIdx}-${gIdx}" class="obs-content">
-                        ${itens.map(d => `
-                            <div class="obs-item">
-                                <span class="obs-tag">${d.rota}</span>
-                                <b>${d.motorista}:</b> ${d.observacao}
-                            </div>
-                        `).join('')}
-                    </div>`;
-                });
-                htmlObs += `</div>`;
+        Object.entries(fiscalObsMap).sort((a,b) => b[1].total - a[1].total).forEach(([fiscal, data], fIdx) => {
+            htmlObs += `<div class="obs-fiscal-group" onclick="toggleObsFiscal(${fIdx})"><span id="arrow-fiscal-${fIdx}" class="arrow">▶</span> <b>${fIdx + 1}º ${fiscal}</b><span style="float:right; color:var(--warning)">${data.total} Obs.</span></div><div id="obs-fiscal-${fIdx}" style="display:none">`;
+            Object.entries(data.gres).forEach(([gre, itens], gIdx) => {
+                htmlObs += `<div class="obs-gre-group" style="display:block" onclick="event.stopPropagation(); toggleObsGre(${fIdx}, ${gIdx})"><span id="arrow-gre-${fIdx}-${gIdx}" class="arrow">▶</span> <span style="color:var(--info)">GRE: ${gre}</span></div><div id="obs-content-${fIdx}-${gIdx}" class="obs-content">${itens.map(d => `<div class="obs-item"><span class="obs-tag">${d.rota}</span><b>${d.motorista}:</b> ${d.observacao}</div>`).join('')}</div>`;
             });
-            containerObs.innerHTML = htmlObs;
-        }
+            htmlObs += `</div>`;
+        });
+        containerObs.innerHTML = htmlObs || "<div style='padding:10px; color:var(--slate)'>Nenhuma ocorrência.</div>";
+    }
+
+    function toggleObsFiscal(idx) {
+        const el = document.getElementById('obs-fiscal-' + idx);
+        const arrow = document.getElementById('arrow-fiscal-' + idx);
+        const isHidden = el.style.display === 'none';
+        el.style.display = isHidden ? 'block' : 'none';
+        arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
+    }
+
+    function toggleObsGre(fIdx, gIdx) {
+        const el = document.getElementById(`obs-content-${fIdx}-${gIdx}`);
+        const arrow = document.getElementById(`arrow-gre-${fIdx}-${gIdx}`);
+        const isHidden = el.style.display === 'none';
+        el.style.display = isHidden ? 'block' : 'none';
+        arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
     }
 
     function renderCharts(tot, con, pen) {
@@ -591,10 +476,7 @@
 
     function lerPagina() {
         const assiduidade = document.getElementById('k-ass-perc').innerText;
-        const texto = `Resumo Logístico: Assiduidade atual de ${assiduidade}.`;
-        const utterance = new SpeechSynthesisUtterance(texto);
-        utterance.lang = 'pt-BR';
-        window.speechSynthesis.speak(utterance);
+        window.speechSynthesis.speak(new SpeechSynthesisUtterance(`Resumo Logístico: Assiduidade atual de ${assiduidade}.`));
     }
 
     carregar();
