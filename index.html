@@ -377,7 +377,7 @@
             fornMap[fn].mot[d.motorista].t++; if (isOk) fornMap[fn].mot[d.motorista].c++;
 
             // Tipologia de frota
-            let cat = norm(d.tipo_fornecedor).includes("PROPRIO") ? "PROPRIO" : (norm(d.tipo_fornecedor).includes("LOCADO") ? "LOCADO" : "TERCEIRO");
+            let cat = norm(d.tipo_fornecedor).includes("PROPRIO") ? "PROPRIO" : norm(d.tipo_fornecedor).includes("PARCEIRO") ? "PARCEIRO" : (norm(d.tipo_fornecedor).includes("LOCADO") ? "LOCADO" : "TERCEIRO");
             hFrota[cat].r++;
             hFrota[cat].v.add(d.veiculo);
             if (!hFrota[cat].gres[d.gre]) hFrota[cat].gres[d.gre] = { r: 0, v: new Set() };
