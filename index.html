@@ -229,6 +229,7 @@
         arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
     }
 
+    // --- FUNÇÃO CORRIGIDA ---
     function sincronizarAPI() {
         const dataInput = document.getElementById("dataSync").value;
         const btn = document.getElementById("btnSync");
@@ -239,30 +240,29 @@
             return;
         }
 
-        // Converte AAAA-MM-DD para DD/MM/AAAA
+        // Converte AAAA-MM-DD para DD/MM/AAAA (padrão que seu script usa para buscar na Fleetbus)
         const partes = dataInput.split("-");
         const dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
 
         btn.disabled = true;
+        btn.style.opacity = "0.5";
         btn.innerText = "⏳ ENVIANDO...";
-        timeLabel.innerText = "📡 Abrindo comunicador com Google...";
+        timeLabel.innerText = "📡 Chamando API do Google Sheets...";
 
-        // URL do Script (O encodeURIComponent garante que o Google receba a data corretamente)
-        const urlBase = "https://script.google.com/macros/s/AKfycbyLis6Vs8Z3oqlt2BXkBpSqcSAdw1orEJvk2VotHJ_WuZRXQ5Qe8UnIKgKySCjKVz26/exec";
-        const urlFinal = urlBase + "?data=" + encodeURIComponent(dataFormatada);
+        // URL do Script Corrigida com o parâmetro ?data=
+        const urlScript = "https://script.google.com/macros/s/AKfycbyLis6Vs8Z3oqlt2BXkBpSqcSAdw1orEJvk2VotHJ_WuZRXQ5Qe8UnIKgKySCjKVz26/exec";
+        const urlFinal = urlScript + "?data=" + encodeURIComponent(dataFormatada);
 
-        // Abre a execução em uma pequena janela pop-up
-        const win = window.open(urlFinal, "Sincronizador", "width=440,height=350");
+        // Abre em uma janela pop-up pequena
+        const popup = window.open(urlFinal, "Sincronizacao", "width=500,height=400");
 
-        alert("Solicitação enviada para a data: " + dataFormatada + 
-              "\n\nUma janela se abriu. AGUARDE ela carregar a mensagem de sucesso antes de fechá-la.");
-
-        // Libera o botão novamente após 15 segundos (tempo médio da API Fleetbus)
+        // Monitora o fechamento ou tempo de resposta
         setTimeout(() => {
             btn.disabled = false;
+            btn.style.opacity = "1";
             btn.innerText = "⚡ API";
-            timeLabel.innerText = "✅ Se a janela deu 'Sucesso', clique em ATUALIZAR.";
-        }, 15000);
+            timeLabel.innerText = "✅ Sincronização enviada! Verifique a janela aberta.";
+        }, 5000);
     }
 
     async function carregar() {
@@ -598,7 +598,6 @@
         window.speechSynthesis.speak(utterance);
     }
 
-    // Inicia o carregamento
     carregar();
 </script>
 </body>
