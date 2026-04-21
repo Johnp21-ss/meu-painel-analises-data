@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Indicadores</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: #1a73e8; border-bottom: 2px solid #e8eaed; padding-bottom: 10px; }
+        #status { color: #666; font-style: italic; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background-color: #f8f9fa; color: #5f6368; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #e8eaed; text-align: left; }
+        tr:hover { background-color: #f1f3f4; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Relatório de Dados Real-time</h1>
+    <p id="status">Conectando à planilha...</p>
+    <div id="tabela-container">
+        </div>
+</div>
+
+<script>
+    // 1. AQUI VOCÊ VAI COLAR A URL QUE GEROU NO SHEETS DEPOIS
+    const URL_PLANILHA = "SUA_URL_DO_APPS_SCRIPT_AQUI";
+
+    async function carregarDados() {
+        try {
+            const resposta = await fetch(URL_PLANILHA);
+            const dados = await resposta.json();
+            
+            let html = "<table><thead><tr>";
+            
+            // Cria o cabeçalho (primeira linha da planilha)
+            dados[0].forEach(cabecalho => {
+                html += `<th>${cabecalho}</th>`;
+            });
+            html += "</tr></thead><tbody>";
+
+            // Cria as linhas de dados (restante da planilha)
+            for (let i = 1; i < dados.length; i++) {
+                html += "<tr>";
+                dados[i].forEach(celula => {
+                    html += `<td>${celula}</td>`;
+                });
+                html += "</tr>";
+            }
+            
+            html += "</tbody></table>";
+            document.getElementById('tabela-container').innerHTML = html;
+            document.getElementById('status').innerText = "Atualizado em: " + new Date().toLocaleString();
+
+        } catch (erro) {
+            document.getElementById('status').innerText = "Erro ao carregar dados. Verifique a permissão do Script.";
+            console.error(erro);
+        }
+    }
+
+    carregarDados();
+</script>
+
+</body>
+</html>
