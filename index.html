@@ -233,6 +233,44 @@
         alert("⚠️ A função de disparo de API é restrita ao ambiente AppScript interno. No GitHub, os dados são atualizados automaticamente via sincronização da Planilha Pública.");
     }
 
+    async function sincronizarAPI() {
+        const dataInput = document.getElementById("dataSync").value;
+        const btn = document.getElementById("btnSync");
+        const timeLabel = document.getElementById('update-time');
+
+        if (!dataInput) {
+            alert("Por favor, selecione uma data ao lado do botão API.");
+            return;
+        }
+
+        // Formata a data de AAAA-MM-DD para DD/MM/AAAA
+        const partes = dataInput.split("-");
+        const dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
+
+        btn.disabled = true;
+        btn.innerText = "⏳ PROCESSANDO...";
+        timeLabel.innerText = "📡 Enviando comando para o Google...";
+
+        const urlScript = "https://script.google.com/macros/s/AKfycbyLis6Vs8Z3oqlt2BXkBpSqcSAdw1orEJvk2VotHJ_WuZRXQ5Qe8UnIKgKySCjKVz26/exec?data=" + dataFormatada;
+
+        try {
+            // Usa mode no-cors ou tenta fetch direto
+            const response = await fetch(urlScript, { mode: 'no-cors' });
+            
+            // Como 'no-cors' não permite ler a resposta, avisamos o usuário para aguardar
+            alert("Comando enviado! Aguarde cerca de 10 a 20 segundos para o processamento e clique em ATUALIZAR.");
+            
+            timeLabel.innerText = "⏳ Processando API no Google...";
+            
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao disparar API. Verifique a conexão.");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "⚡ API";
+        }
+    }
+
     async function carregar() {
         const timeLabel = document.getElementById('update-time');
         const btnRefresh = document.querySelector(".btn-refresh");
