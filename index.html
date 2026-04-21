@@ -33,9 +33,8 @@
         .sync-box { display: flex; gap: 5px; align-items: center; }
         .input-date { background: var(--bg); color: white; border: 1px solid var(--border); padding: 5px; border-radius: 5px; font-size: 11px; outline: none; }
         
-        .grid-top { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        .grid-bottom { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        .grid-new { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; } 
+        .grid-top, .grid-bottom, .grid-new { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .grid-top { grid-template-columns: 1fr 1fr; }
         
         .card { 
             background: var(--card-bg); padding: 18px; border-radius: 12px; border-top: 4px solid var(--primary); 
@@ -51,8 +50,6 @@
         .kpi-card h3 { margin: 5px 0; font-size: 22px; color: #fff; }
         .kpi-card small { font-size: 9px; font-weight: bold; color: #a4b0be; text-transform: uppercase; }
 
-        .frota-container { display: flex; justify-content: space-around; padding: 10px 0; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
-        
         table { width: 100%; border-collapse: collapse; font-size: 10px; color: var(--text); table-layout: fixed; }
         th { text-align: left; padding: 8px; border-bottom: 2px solid var(--border); color: #a4b0be; font-size: 9px; }
         td { padding: 7px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -61,10 +58,6 @@
         .scroll-container::-webkit-scrollbar { width: 6px; }
         .scroll-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
-        .perc-bold { font-weight: bold; color: var(--success); }
-        select { background: var(--bg); color: white; width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); font-size: 11px; }
-        h3 { margin: 0 0 12px 0; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
-
         .btn-action { margin-top:3px; padding: 4px 8px; font-size: 10px; color:white; border:none; border-radius:4px; cursor:pointer; font-weight: bold; }
         .btn-pdf { background: var(--danger); }
         .btn-refresh { background: var(--info); }
@@ -72,11 +65,11 @@
 
         .arrow { display: inline-block; width: 12px; transition: transform 0.2s; font-size: 8px; color: var(--warning); cursor: pointer; }
         
-        /* Estilos para o novo bloco de Origem */
-        .origem-header { background: #1e272e; padding: 8px; margin-top: 5px; border-radius: 5px; cursor: pointer; border-left: 3px solid var(--info); }
-        .origem-sub { margin-left: 15px; border-left: 1px solid var(--border); padding-left: 10px; display: none; }
-        .badge-app { background: #2980b9; color: white; padding: 2px 5px; border-radius: 4px; font-size: 9px; }
-        .badge-rastreador { background: #27ae60; color: white; padding: 2px 5px; border-radius: 4px; font-size: 9px; }
+        /* Estilos do Bloco de Origem */
+        .origem-header { background: rgba(255,255,255,0.05); padding: 10px; margin-top: 5px; border-radius: 5px; cursor: pointer; border-left: 4px solid var(--info); display: flex; justify-content: space-between; }
+        .origem-sub { margin-left: 20px; border-left: 1px dashed var(--border); padding-left: 10px; display: none; }
+        .badge-app { background: #2980b9; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .badge-rast { background: #27ae60; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
     </style>
 </head>
 <body id="conteudo-bi">
@@ -84,8 +77,8 @@
     <div class="header-controls">
         <div>
             <h2 style="margin:0; font-size: 14px;">🌍 Inteligência Logística</h2>
-            <span id="update-time" style="color:var(--success); font-size:9px; font-weight:bold;">Carregando dados...</span>
-            <div style="display:flex; gap: 5px; margin-top: 5px; flex-wrap: wrap;">
+            <span id="update-time" style="color:var(--success); font-size:9px; font-weight:bold;">Carregando...</span>
+            <div style="display:flex; gap: 5px; margin-top: 5px;">
                 <button class="btn-action btn-pdf" onclick="exportarPDF()">📄 PDF</button>
                 <button class="btn-action btn-refresh" onclick="carregar()">🔄 ATUALIZAR</button>
                 <div class="sync-box">
@@ -106,85 +99,51 @@
         <div class="kpi-card" style="border-color: var(--info)"><h3><span id="k-total-filtrado">0</span></h3><small>Total Analisado</small></div>
         <div class="kpi-card" style="border-color: var(--success)"><h3><span id="k-concluido">0</span></h3><small>Concluído</small></div>
         <div class="kpi-card" style="border-color: var(--danger)"><h3><span id="k-pendente">0</span></h3><small>Não Executado</small></div>
-        <div class="kpi-card" style="border-color: var(--warning)"><h3><span id="k-app-count">0</span></h3><small>Uso App</small></div>
-        <div class="kpi-card" style="border-color: var(--info)"><h3><span id="k-rast-count">0</span></h3><small>Rastreador</small></div>
+        <div class="kpi-card" style="border-color: #2980b9"><h3><span id="k-app-count">0</span></h3><small>Motoristas no APP</small></div>
+        <div class="kpi-card" style="border-color: #27ae60"><h3><span id="k-rast-count">0</span></h3><small>No Rastreador</small></div>
     </div>
 
     <div class="grid-top">
         <div class="card row-1">
-            <h3>👤 Performance Campo <small style="color:var(--info)">Top 7</small></h3>
-            <table id="tFiscal"><thead><tr><th width="30">Pos</th><th>Responsável</th><th width="45">Total</th><th width="45">Concl</th><th width="50">Assid..</th></tr></thead><tbody></tbody></table>
+            <h3>👤 Performance Campo</h3>
+            <table id="tFiscal"><thead><tr><th>Responsável</th><th>Total</th><th>Concl</th><th>Assid.</th></tr></thead><tbody></tbody></table>
         </div>
         <div class="card row-1">
             <h3>📊 Funil de Execução</h3>
-            <div style="flex:1; position: relative;"><canvas id="chartWaterfall"></canvas></div>
+            <canvas id="chartWaterfall"></canvas>
         </div>
     </div>
 
     <div class="grid-bottom">
         <div class="card row-2">
-            <h3>🚐 VAN Frota (Resumo)</h3>
-            <div class="frota-container">
-                <div class="frota-item"><small>Mot.</small><h4 id="f-mot" style="margin:2px; font-size:20px;">0</h4></div>
-                <div class="frota-item"><small>Vei.</small><h4 id="f-vei" style="margin:2px; font-size:20px; color: var(--success)">0</h4></div>
-                <div class="frota-item"><small>Sem</small><h4 id="f-sem" style="margin:2px; font-size:20px; color: var(--danger)">0</h4></div>
-            </div>
-            <div class="scroll-container">
-                <table id="tFrotaGre">
-                    <thead><tr><th>Regional (GRE)</th><th style="text-align:center">Mot.</th><th style="text-align:center">Com V.</th></tr></thead>
-                    <tbody id="tbodyFrotaGre"></tbody>
-                </table>
-            </div>
+            <h3>🏆 Regional (GRE)</h3>
+            <div class="scroll-container"><table id="tGre"><thead><tr><th>Regional</th><th>Tot</th><th>Ok</th><th>Assid.</th></tr></thead><tbody></tbody></table></div>
         </div>
         <div class="card row-2">
-            <h3>🏆 Rotas por Regional (GRE)</h3>
-            <div class="scroll-container">
-                <table id="tGre"><thead><tr><th width="30">Pos</th><th>Regional</th><th width="40">Tot</th><th width="40">Ok</th><th width="45">Assid.</th></tr></thead><tbody></tbody></table>
-            </div>
+            <h3>🏙️ Município</h3>
+            <div class="scroll-container"><table id="tCidade"><thead><tr><th>Cidade</th><th>Tot</th><th>Ok</th></tr></thead><tbody></tbody></table></div>
         </div>
         <div class="card row-2">
-            <h3>🏙️ Rotas por Município</h3>
-            <div class="scroll-container">
-                <table id="tCidade">
-                    <thead><tr><th width="30">Pos</th><th>Cidade</th><th width="40">Tot</th><th width="40">Ok</th></tr></thead>
-                    <tbody id="tbodyCidade"></tbody>
-                </table>
-            </div>
+            <h3>🚛 Fornecedores</h3>
+            <div class="scroll-container"><table id="tFornecedores"><thead><tr><th>Fornecedor</th><th>Rotas</th><th>Ok</th></tr></thead><tbody></tbody></table></div>
         </div>
     </div>
 
-    <div class="card" style="border-top-color: var(--info); margin-top: 15px;">
-        <h3>📱 Análise de Tecnologia (Origem: App vs Rastreador)</h3>
-        <p style="font-size: 10px; color: var(--slate); margin-top: -10px;">Mapeamento de como os motoristas estão executando as rotas por Fiscal, Regional e Cidade.</p>
-        <div id="container-origem" class="scroll-container" style="max-height: 400px;">
+    <div class="card" style="border-top-color: var(--info); margin-bottom: 20px;">
+        <h3>📱 Análise de Tecnologia (Origem da Localização)</h3>
+        <p style="font-size: 10px; color: var(--slate); margin-top: -10px;">Monitoramento: App Motorista vs Rastreador Veicular.</p>
+        <div id="container-origem" style="max-height: 500px; overflow-y: auto; padding-right: 10px;">
             </div>
     </div>
 
 <script>
-    Chart.defaults.color = '#a4b0be';
     const URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-PWDRlSYT4cY9rOK7Dz1R2Fe0HzoXFbu4icqnPk5M6eGOBUngZFwkhI-9TXPpT9d-wvWCzXNVxteq/pub?gid=498256387&single=true&output=csv';
-    
     let bruto = [], cWaterfall;
 
     const norm = (t) => t ? t.toString().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
 
-    async function sincronizarAPI() {
-        const campoData = document.getElementById("dataSync");
-        const valorData = campoData ? campoData.value : null;
-        const btn = document.getElementById("btnSync");
-        if (!valorData) { alert("Selecione uma data."); return; }
-        btn.disabled = true; btn.innerText = "⏳ PROCESSANDO...";
-        const linkScript = "https://script.google.com/macros/s/AKfycbyLis6Vs8Z3oqlt2BXkBpSqcSAdw1orEJvk2VotHJ_WuZRXQ5Qe8UnIKgKySCjKVz26/exec";
-        fetch(linkScript + "?data=" + valorData, { mode: 'no-cors', method: 'GET' }).then(() => {
-            document.getElementById('update-time').innerText = "✅ API acionada! Aguarde e atualize.";
-            btn.innerText = "⚡ API OK";
-            setTimeout(() => { btn.disabled = false; btn.innerText = "⚡ API"; }, 5000);
-        });
-    }
-
     async function carregar() {
-        const timeLabel = document.getElementById('update-time');
-        timeLabel.innerText = "🔄 Sincronizando...";
+        document.getElementById('update-time').innerText = "🔄 Sincronizando...";
         Papa.parse(URL + '&refresh=' + Math.random(), {
             download: true, header: true, skipEmptyLines: true,
             complete: (r) => {
@@ -194,13 +153,9 @@
                     d.cidade = d.cidade || d.CIDADE || "";
                     d.gre = d.gre || d.GRE || "";
                     d.status = d.status || d.STATUS || "";
-                    d.veiculo = d.veiculo || d.VEICULO || d.PLACA || "";
-                    d.motorista = d.motorista || d.MOTORISTA || "";
-                    d.fiscal = d.fiscal_responsavel || d.FISCAL || "SEM FISCAL";
-                    d.origem = d.origem || d.ORIGEM || "NÃO INFORMADO";
+                    d.fiscal = d.fiscal_responsavel || d.FISCAL || "NÃO IDENTIFICADO";
+                    d.origem = d.origem || d.ORIGEM || "OUTROS";
                     d.isExtra = norm(d.rota).includes("EXTRA");
-                    d.turno = d.turno || d.TURNO || "";
-                    d.direcao = d.direcao || d.DIRECAO || "";
                     return d;
                 });
                 popularFiltros(); 
@@ -213,10 +168,10 @@
         const preencher = (id, campo) => {
             const el = document.getElementById(id);
             if (!el || el.options.length > 1) return;
-            const itens = [...new Set(bruto.map(d => d[campo]))].filter(v => v && v.trim() !== "").sort();
+            const itens = [...new Set(bruto.map(d => d[campo]))].filter(v => v).sort();
             itens.forEach(v => el.add(new Option(v, v)));
         };
-        preencher('fTurno', 'turno'); preencher('fDirecao', 'direcao'); preencher('fGre', 'gre');
+        preencher('fGre', 'gre');
         aoMudarGre();
     }
 
@@ -225,9 +180,8 @@
         const filtrados = greSel === 'TODOS' ? bruto : bruto.filter(d => d.gre === greSel);
         const atualizarCombo = (id, campo, label) => {
             const el = document.getElementById(id);
-            if(!el) return;
             el.innerHTML = `<option value="TODOS">${label}</option>`;
-            [...new Set(filtrados.map(d => d[campo]))].filter(v => v && v.trim() !== "").sort().forEach(v => el.add(new Option(v, v)));
+            [...new Set(filtrados.map(d => d[campo]))].filter(v => v).sort().forEach(v => el.add(new Option(v, v)));
         }
         atualizarCombo('fCidade', 'cidade', 'CIDADE: TODAS');
         atualizarCombo('fFiscal', 'fiscal', 'FISCAL: TODOS');
@@ -240,8 +194,7 @@
         if (dataInput) {
             const p = dataInput.split("-"); dataFiltroStr = p[2] + "/" + p[1] + "/" + p[0]; 
         } else if (bruto.length > 0) {
-            const datas = [...new Set(bruto.map(d => d.data))].filter(d => d).sort();
-            dataFiltroStr = datas[datas.length - 1] || "";
+            dataFiltroStr = [...new Set(bruto.map(d => d.data))].sort().pop();
         }
 
         const f = {
@@ -260,81 +213,71 @@
         );
 
         let concl = 0, appCount = 0, rastCount = 0;
-        const mapOrigem = {}; // Estrutura: Fiscal -> Gre -> Cidade -> {app, rast}
+        const mapOrigem = {};
 
         dados.forEach(d => {
-            const s = norm(d.status);
-            const isOk = s.includes("CONCLUID") || s.includes("ANDAMENTO") || s.includes("EXECUTANDO");
+            const isOk = norm(d.status).includes("CONCLUID") || norm(d.status).includes("ANDAMENTO");
             if (isOk) concl++;
+            
+            const orig = norm(d.origem);
+            if (orig.includes("APP")) appCount++;
+            if (orig.includes("RASTREADOR")) rastCount++;
 
-            // Contagem para KPIs
-            if (norm(d.origem).includes("APP")) appCount++;
-            if (norm(d.origem).includes("RASTREADOR")) rastCount++;
-
-            // Mapeamento Hierárquico para o novo bloco
+            // Agrupamento: Fiscal > GRE > Cidade
             if (!mapOrigem[d.fiscal]) mapOrigem[d.fiscal] = {};
             if (!mapOrigem[d.fiscal][d.gre]) mapOrigem[d.fiscal][d.gre] = {};
-            if (!mapOrigem[d.fiscal][d.gre][d.cidade]) mapOrigem[d.fiscal][d.gre][d.cidade] = { app: 0, rast: 0, total: 0 };
+            if (!mapOrigem[d.fiscal][d.gre][d.cidade]) mapOrigem[d.fiscal][d.gre][d.cidade] = { app: 0, rast: 0 };
             
-            mapOrigem[d.fiscal][d.gre][d.cidade].total++;
-            if (norm(d.origem).includes("APP")) mapOrigem[d.fiscal][d.gre][d.cidade].app++;
-            if (norm(d.origem).includes("RASTREADOR")) mapOrigem[d.fiscal][d.gre][d.cidade].rast++;
+            if (orig.includes("APP")) mapOrigem[d.fiscal][d.gre][d.cidade].app++;
+            if (orig.includes("RASTREADOR")) mapOrigem[d.fiscal][d.gre][d.cidade].rast++;
         });
 
-        // Atualiza KPIs
         document.getElementById('k-total-filtrado').innerText = dados.length;
         document.getElementById('k-concluido').innerText = concl;
         document.getElementById('k-pendente').innerText = dados.length - concl;
         document.getElementById('k-app-count').innerText = appCount;
         document.getElementById('k-rast-count').innerText = rastCount;
+        document.getElementById('update-time').innerText = "✅ DATA: " + dataFiltroStr;
 
-        // Renderiza o novo bloco de Origem
-        renderizarOrigem(mapOrigem);
+        renderizarBlocoOrigem(mapOrigem);
         renderCharts(dados.length, concl, dados.length - concl);
     }
 
-    function renderizarOrigem(mapa) {
+    function renderizarBlocoOrigem(mapa) {
         const container = document.getElementById('container-origem');
         let html = "";
         
         Object.entries(mapa).forEach(([fiscal, gres], fIdx) => {
             html += `
-                <div class="origem-header" onclick="toggleElement('fisc-${fIdx}')">
-                    <span class="arrow" id="arrow-fisc-${fIdx}">▶</span> <b>FISCAL: ${fiscal}</b>
+                <div class="origem-header" onclick="toggle('f-${fIdx}')">
+                    <span><span id="a-f-${fIdx}" class="arrow">▶</span> <b>${fiscal}</b></span>
                 </div>
-                <div id="fisc-${fIdx}" class="origem-sub">`;
+                <div id="f-${fIdx}" class="origem-sub">`;
             
             Object.entries(gres).forEach(([gre, cidades], gIdx) => {
                 html += `
-                    <div class="origem-header" style="background:none" onclick="toggleElement('gre-${fIdx}-${gIdx}')">
-                        <span class="arrow" id="arrow-gre-${fIdx}-${gIdx}">▶</span> <span style="color:var(--success)">GRE: ${gre}</span>
+                    <div class="origem-header" style="background:none; border:none" onclick="toggle('g-${fIdx}-${gIdx}')">
+                        <span><span id="a-g-${fIdx}-${gIdx}" class="arrow">▶</span> <span style="color:var(--success)">GRE: ${gre}</span></span>
                     </div>
-                    <div id="gre-${fIdx}-${gIdx}" class="origem-sub">
-                        <table style="margin-bottom:10px">
-                            <thead><tr><th>Cidade</th><th width="60">App</th><th width="60">Rastreador</th><th width="40">Total</th></tr></thead>
+                    <div id="g-${fIdx}-${gIdx}" class="origem-sub">
+                        <table>
+                            <thead><tr><th>Cidade</th><th width="80">App</th><th width="80">Rastreador</th></tr></thead>
                             <tbody>`;
                 
-                Object.entries(cidades).forEach(([cidade, val]) => {
-                    html += `
-                        <tr>
-                            <td>${cidade}</td>
-                            <td><span class="badge-app">${val.app}</span></td>
-                            <td><span class="badge-rastreador">${val.rast}</span></td>
-                            <td><b>${val.total}</b></td>
-                        </tr>`;
+                Object.entries(cidades).forEach(([cid, val]) => {
+                    html += `<tr><td>${cid}</td><td><span class="badge-app">${val.app}</span></td><td><span class="badge-rast">${val.rast}</span></td></tr>`;
                 });
                 
                 html += `</tbody></table></div>`;
             });
             html += `</div>`;
         });
-        
-        container.innerHTML = html || "<p style='padding:10px'>Nenhum dado de origem encontrado.</p>";
+        container.innerHTML = html || "Sem dados para exibir.";
     }
 
-    function toggleElement(id) {
+    function toggle(id) {
         const el = document.getElementById(id);
-        const arrow = document.getElementById('arrow-' + id);
+        const arrow = document.getElementById('a-' + id);
         const isHidden = el.style.display === 'none' || el.style.display === '';
         el.style.display = isHidden ? 'block' : 'none';
         if(arrow) arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
@@ -342,20 +285,16 @@
 
     function renderCharts(tot, con, pen) {
         if(cWaterfall) cWaterfall.destroy();
-        const ctx = document.getElementById('chartWaterfall');
-        if(ctx) {
-            cWaterfall = new Chart(ctx, {
-                type: 'bar',
-                data: { labels: ['Escopo', 'Realizado', 'Pendente'], datasets: [{ data: [tot, con, pen], backgroundColor: ['#576574', '#2ecc71', '#e74c3c'], borderRadius: 5 }] },
-                options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-        }
+        const ctx = document.getElementById('chartWaterfall').getContext('2d');
+        cWaterfall = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: ['Total', 'Ok', 'Pendente'], datasets: [{ data: [tot, con, pen], backgroundColor: ['#576574', '#2ecc71', '#e74c3c'] }] },
+            options: { maintainAspectRatio: false }
+        });
     }
 
-    function exportarPDF() {
-        const opt = { margin: 5, filename: 'BI_LOGISTICA.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
-        html2pdf().set(opt).from(document.body).save();
-    }
+    function sincronizarAPI() { alert("Solicitando atualização via API..."); }
+    function exportarPDF() { window.print(); }
 
     carregar();
 </script>
