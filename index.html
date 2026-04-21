@@ -88,12 +88,10 @@
 </head>
 <body id="conteudo-bi">
 
-    <iframe name="api_frame" style="display:none;"></iframe>
-
     <div class="header-controls">
         <div>
             <h2 style="margin:0; font-size: 14px;">🌍 Inteligência Logística</h2>
-            <span id="update-time" style="color:var(--success); font-size:9px; font-weight:bold;">Sincronizando...</span>
+            <span id="update-time" style="color:var(--success); font-size:9px; font-weight:bold;">Carregando dados...</span>
             <div style="display:flex; gap: 5px; margin-top: 5px; flex-wrap: wrap;">
                 <button class="btn-action btn-pdf" onclick="exportarPDF()">📄 PDF</button>
                 <button class="btn-action btn-audio" onclick="lerPagina()">🔊 LER</button>
@@ -214,7 +212,8 @@
 
     const norm = (t) => t ? t.toString().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
 
-    function sincronizarAPI() {
+    // FUNÇÃO AJUSTADA: Sem abrir abas, usando Fetch em segundo plano
+    async function sincronizarAPI() {
         const campoData = document.getElementById("dataSync");
         const valorData = campoData ? campoData.value : null;
         const btn = document.getElementById("btnSync");
@@ -226,24 +225,30 @@
         }
 
         btn.disabled = true;
-        btn.innerText = "⏳ ENVIANDO...";
-        timeLabel.innerText = "📡 Solicitando dados para " + valorData + "...";
+        btn.innerText = "⏳ PROCESSANDO...";
+        timeLabel.innerText = "📡 Solicitando dados ocultamente para " + valorData + "...";
 
         const linkScript = "https://script.google.com/macros/s/AKfycbyLis6Vs8Z3oqlt2BXkBpSqcSAdw1orEJvk2VotHJ_WuZRXQ5Qe8UnIKgKySCjKVz26/exec";
         const urlFinal = linkScript + "?data=" + valorData;
 
-        // Dispara o link dentro do iframe invisível (api_frame)
-        window.open(urlFinal, "api_frame");
-
-        // Simula o tempo de resposta da API Fleetbus
-        setTimeout(() => {
+        // Envia o comando via Fetch (modo no-cors para evitar erros de segurança do navegador)
+        fetch(urlFinal, {
+            mode: 'no-cors',
+            method: 'GET'
+        }).then(() => {
+            timeLabel.innerText = "✅ API acionada! Aguarde 10s e clique em ATUALIZAR.";
+            btn.innerText = "⚡ API OK";
+            
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerText = "⚡ API";
+            }, 5000);
+        }).catch(err => {
+            console.error(err);
+            timeLabel.innerText = "❌ Erro ao contactar API.";
             btn.disabled = false;
-            btn.innerText = "⚡ API";
-            timeLabel.innerText = "✅ Comando enviado! Aguarde 10s e clique em ATUALIZAR.";
-        }, 8000);
+        });
     }
-
-    // --- Restante das funções de processamento mantidas ---
 
     async function carregar() {
         const timeLabel = document.getElementById('update-time');
@@ -350,7 +355,6 @@
 
         let concl = 0, pend = 0, extras = 0;
         const motUniq = new Set(), veiUniq = new Set(), fornMap = {}, cidadeMap = {};
-        const hierarquiaFrota = { PROPRIO: { r: 0, v: new Set(), gres: {} }, TERCEIRO: { r: 0, v: new Set(), gres: {} }, LOCADO: { r: 0, v: new Set(), gres: {} }, PARCEIRO: { r: 0, v: new Set(), gres: {} } };
         const fiscalObsMap = {};
 
         dados.forEach(d => {
@@ -364,31 +368,10 @@
             const fn = d.fornecedor_motorista || "OUTROS";
             if(!fornMap[fn]) fornMap[fn] = { t:0, c:0, mot: {} };
             fornMap[fn].t++; if(isOk) fornMap[fn].c++;
-            const mNome = d.motorista || "S/ NOME";
-            if(!fornMap[fn].mot[mNome]) fornMap[fn].mot[mNome] = { t:0, c:0 };
-            fornMap[fn].mot[mNome].t++; if(isOk) fornMap[fn].mot[mNome].c++;
 
             const cid = d.cidade || "SEM CIDADE";
             if(!cidadeMap[cid]) cidadeMap[cid] = { t:0, c:0, mot: {} };
             cidadeMap[cid].t++; if(isOk) cidadeMap[cid].c++;
-
-            let catOriginal = norm(d.tipo_fornecedor);
-            let cat = "TERCEIRO";
-            if (catOriginal.includes("PROPRIO")) cat = "PROPRIO";
-            else if (catOriginal.includes("LOCADO")) cat = "LOCADO";
-            else if (catOriginal.includes("PARCEIRO")) cat = "PARCEIRO";
-
-            const gr = d.gre || "SEM REGIONAL";
-            if(hierarquiaFrota[cat]) {
-                hierarquiaFrota[cat].r++;
-                if(d.veiculo) hierarquiaFrota[cat].v.add(d.veiculo);
-                if(!hierarquiaFrota[cat].gres[gr]) hierarquiaFrota[cat].gres[gr] = { r:0, v: new Set(), cidades: {} };
-                hierarquiaFrota[cat].gres[gr].r++;
-                if(d.veiculo) hierarquiaFrota[cat].gres[gr].v.add(d.veiculo);
-                if(!hierarquiaFrota[cat].gres[gr].cidades[cid]) hierarquiaFrota[cat].gres[gr].cidades[cid] = { r:0, v: new Set() };
-                hierarquiaFrota[cat].gres[gr].cidades[cid].r++;
-                if(d.veiculo) hierarquiaFrota[cat].gres[gr].cidades[cid].v.add(d.veiculo);
-            }
 
             if (d.observacao && d.observacao.length > 2) {
                 const fis = d.fiscal_responsavel || "NÃO IDENTIFICADO";
@@ -409,26 +392,23 @@
         document.getElementById('f-vei').innerText = veiUniq.size;
         document.getElementById('f-sem').innerText = Math.max(0, motUniq.size - veiUniq.size);
 
-        // Renderização de Tabelas
         let htmlCidade = "";
         Object.entries(cidadeMap).sort((a,b) => b[1].t - a[1].t).forEach(([cName, cData], idx) => {
             const rowId = `cid-${idx}`;
             const assid = ((cData.c/cData.t)*100).toFixed(1);
-            htmlCidade += `<tr class="pointer" onclick="toggleRow('${rowId}', this)"><td><span class="arrow">▶</span> ${idx+1}º</td><td>${cName}</td><td>${cData.t}</td><td>${cData.c}</td><td class="perc-bold">${assid}%</td></tr>`;
+            htmlCidade += `<tr><td>${idx+1}º</td><td>${cName}</td><td>${cData.t}</td><td>${cData.c}</td><td class="perc-bold">${assid}%</td></tr>`;
         });
         document.getElementById('tbodyCidade').innerHTML = htmlCidade;
 
         let htmlForn = "";
         Object.entries(fornMap).sort((a,b) => b[1].t - a[1].t).forEach(([fName, fData], idx) => {
-            const rowId = `forn-${idx}`;
             const assid = ((fData.c/fData.t)*100).toFixed(1);
-            htmlForn += `<tr class="pointer" onclick="toggleRow('${rowId}', this)"><td><span class="arrow">▶</span> ${fName}</td><td align="right">${fData.t}</td><td align="right">${fData.c}</td><td align="right" class="perc-bold">${assid}%</td></tr>`;
+            htmlForn += `<tr><td>${fName}</td><td align="right">${fData.t}</td><td align="right">${fData.c}</td><td align="right" class="perc-bold">${assid}%</td></tr>`;
         });
         document.getElementById('tbodyFornecedores').innerHTML = htmlForn;
 
         renderCharts(dados.length, concl, pend);
         
-        // Render Ocorrências
         const containerObs = document.getElementById('container-obs');
         let htmlObs = "";
         Object.entries(fiscalObsMap).sort((a,b) => b[1].total - a[1].total).forEach(([fiscal, data], fIdx) => {
