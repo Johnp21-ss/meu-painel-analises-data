@@ -7,6 +7,17 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root { 
@@ -16,19 +27,33 @@
             --border: #485460; --slate: #95a5a6;
         }
 
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 15px; color: var(--text); overflow-x: hidden; }
-        
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: var(--text); overflow-x: hidden; }
+
+        /* ── Nav ── */
+        .nav-tabs { display: flex; background: var(--card-bg); padding: 10px 20px; gap: 10px; border-bottom: 3px solid var(--info); position: sticky; top: 0; z-index: 1000; align-items: center; flex-wrap: wrap; }
+        .logo-box  { font-weight: bold; color: var(--success); margin-right: 20px; font-size: 14px; letter-spacing: 1px; }
+        .tab-btn   { padding: 10px 16px; border: none; background: transparent; color: var(--slate); cursor: pointer; font-weight: bold; border-radius: 6px; transition: 0.3s; font-size: 12px; text-transform: uppercase; }
+        .tab-btn.active { background: var(--info); color: white; box-shadow: 0 4px 15px rgba(52,152,219,.3); }
+
+        /* ── Sections ── */
+        .content-section { display: none; padding: 15px; animation: slideUp .35s ease-out; }
+        .content-section.active { display: block; }
+        @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+        /* ── Layout original HTML2 ── */
         .header-controls { 
             display: grid; grid-template-columns: 1.8fr repeat(6, 1fr); gap: 10px; 
             background: var(--card-bg); padding: 12px; border-radius: 12px; margin-bottom: 15px; align-items: center; 
         }
-
         .sync-box { display: flex; gap: 5px; align-items: center; }
         .input-date { background: var(--bg); color: white; border: 1px solid var(--border); padding: 5px; border-radius: 5px; font-size: 11px; outline: none; }
         
         .grid-top    { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         .grid-bottom { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        .grid-new    { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; } 
+        .grid-new    { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .grid-2col   { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .grid-3col   { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
         
         .card { 
             background: var(--card-bg); padding: 18px; border-radius: 12px; border-top: 4px solid var(--primary); 
@@ -38,21 +63,45 @@
         .row-2   { height: 320px; }
         .row-new { min-height: 280px; height: auto; }
 
-        .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 10px; }
-        .kpi-card { background: var(--card-bg); padding: 10px; border-radius: 12px; text-align: center; border-bottom: 4px solid var(--border); }
+        /* ── KPIs ── */
+        .kpi-grid   { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 10px; }
+        .kpi-card   { background: var(--card-bg); padding: 10px; border-radius: 12px; text-align: center; border-bottom: 4px solid var(--border); }
         .kpi-card h3 { margin: 5px 0; font-size: 22px; color: #fff; }
         .kpi-card small { font-size: 9px; font-weight: bold; color: #a4b0be; text-transform: uppercase; }
 
+        /* KPIs fraude */
+        .kpi-grid-fraude { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .kpi-card-fraude { background: var(--card-bg); padding: 15px; border-radius: 16px; text-align: center; border-bottom: 4px solid var(--primary); }
+        .kpi-card-fraude h3 { margin: 8px 0; font-size: 32px; font-weight: bold; }
+        .kpi-card-fraude small { font-size: 11px; color: var(--slate); text-transform: uppercase; }
+        .kpi-card-fraude .kpi-detail { font-size: 10px; color: var(--info); margin-top: 5px; }
+
+        /* KPIs extras */
+        .kpi-grid-extras { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-bottom: 20px; }
+        .kpi-card-extra { background: linear-gradient(135deg, var(--card-bg) 0%, #2c3e4e 100%); padding: 12px; border-radius: 16px; text-align: center; border-bottom: 4px solid var(--extra); }
+        .kpi-card-extra h3 { margin: 6px 0; font-size: 24px; font-weight: bold; color: #fff; }
+        .kpi-card-extra small { font-size: 9px; color: var(--slate); text-transform: uppercase; }
+        .kpi-card-extra .kpi-icon { font-size: 20px; color: var(--extra); margin-bottom: 6px; }
+        .kpi-card-extra .kpi-detail { font-size: 8px; color: var(--info); margin-top: 3px; }
+
+        /* ── Frota ── */
         .frota-container { display: flex; justify-content: space-around; padding: 10px 0; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
         
+        /* ── Tables ── */
         table { width: 100%; border-collapse: collapse; font-size: 10px; color: var(--text); table-layout: fixed; }
-        th { text-align: left; padding: 8px; border-bottom: 2px solid var(--border); color: #a4b0be; font-size: 9px; }
+        th { text-align: left; padding: 8px; border-bottom: 2px solid var(--border); color: #a4b0be; font-size: 9px; background: rgba(0,0,0,.1); }
         td { padding: 7px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        #tIrregularidadesFraude td { white-space: normal; word-break: break-word; }
+        #tIrregularidadesFraude th { white-space: normal; }
         
         .scroll-area { max-height: 200px; overflow-y: auto; padding-right: 5px; }
+        .scroll-area-sm { max-height: 280px; overflow-y: auto; }
         .scroll-area::-webkit-scrollbar { width: 6px; }
         .scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        .sticky-table { max-height: 300px; overflow-y: auto; }
 
+        /* ── Misc ── */
         .perc-bold { font-weight: bold; color: var(--success); }
         select { background: var(--bg); color: white; width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); font-size: 11px; }
         h3 { margin: 0 0 12px 0; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
@@ -81,144 +130,430 @@
         .col-mots         { color: #f1c40f; font-weight: bold; }
         .col-total-mots   { color: #e67e22; font-weight: bold; }
         .col-abertura     { color: #1abc9c; font-weight: bold; }
+
+        /* ── Badges ── */
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 9px; font-weight: bold; }
+        .badge-danger  { background: var(--danger);  color: white; }
+        .badge-warning { background: var(--warning); color: #1e272e; }
+        .badge-success { background: var(--success); color: #1e272e; }
+        .badge-info    { background: var(--info);    color: white; }
+
+        /* ── Filter bar ── */
+        .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; background: var(--card-bg); padding: 10px 15px; border-radius: 12px; }
+        .filter-bar select { width: auto; min-width: 150px; }
+
+        /* ── Charts ── */
+        .chart-container    { height: 500px; width: 100%; position: relative; }
+        .chart-container-sm { height: 250px; width: 100%; position: relative; }
+
+        /* ── Valores coloridos ── */
+        .val-fraude { color: var(--danger);  font-weight: bold; }
+        .val-alerta { color: var(--warning); font-weight: bold; }
+
+        /* ── Fix colunas Ação ── */
+        #tMotoristasFraude, #tGREsFraude, #tFiscaisFraude { table-layout: auto; }
+        #tMotoristasFraude td, #tGREsFraude td, #tFiscaisFraude td { white-space: normal; overflow: visible; text-overflow: unset; }
+        #tMotoristasFraude td:last-child, #tGREsFraude td:last-child, #tFiscaisFraude td:last-child { min-width: 130px; white-space: nowrap; }
+
+        /* ── Extras tabelas ── */
+        #tExtrasFiscais, #tExtrasHorariosPadrao, #tAlertaCurta, #tAlertaAbandono { table-layout: auto; }
+        #tExtrasFiscais td, #tExtrasHorariosPadrao td, #tAlertaCurta td, #tAlertaAbandono td { white-space: normal; overflow: visible; text-overflow: unset; }
+
+        /* DataTables dark theme */
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter,
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_paginate { color: var(--text) !important; }
+        .dataTables_wrapper .dataTables_filter input { background: var(--bg); border: 1px solid var(--border); color: white; border-radius: 6px; padding: 4px 8px; }
+        .dataTables_wrapper .dataTables_length select { background: var(--bg); border: 1px solid var(--border); color: white; border-radius: 6px; padding: 4px; }
+        .paginate_button { background: var(--card-bg) !important; border-color: var(--border) !important; color: var(--text) !important; }
+        .paginate_button.current { background: var(--info) !important; border-color: var(--info) !important; color: white !important; }
+        .dt-buttons .btn { font-size: 10px; padding: 4px 10px; margin-right: 4px; }
+        .alert-row-danger  { background: rgba(231,76,60,.12) !important; }
+        .alert-row-warning { background: rgba(241,196,15,.10) !important; }
+
+        .nested-div-row { display: none; background: rgba(0,0,0,.18); }
+        .nested-div-row.show-row { display: table-row !important; }
     </style>
 </head>
-<body id="conteudo-bi">
+<body>
 
-    <div class="header-controls">
-        <div>
-            <h2 style="margin:0; font-size: 14px;">🌍 Inteligência Logística</h2>
-            <span id="update-time" style="color:var(--success); font-size:9px; font-weight:bold;">Carregando dados...</span>
-            <div style="display:flex; gap: 5px; margin-top: 5px; flex-wrap: wrap;">
-                <button class="btn-action btn-pdf"     onclick="exportarPDF()">📄 PDF</button>
-                <button class="btn-action btn-audio"   onclick="lerPagina()">🔊 LER</button>
-                <button class="btn-action btn-refresh" onclick="carregar()">🔄 ATUALIZAR</button>
-                <div class="sync-box">
-                    <input type="date" id="dataSync" class="input-date" onchange="processarDados()">
-                    <button id="btnSync" class="btn-action btn-sync" onclick="sincronizarAPI()">⚡ API</button>
+    <!-- ── Navegação ── -->
+    <nav class="nav-tabs">
+        <div class="logo-box">🛰️ LOG-PI CENTER</div>
+        <button class="tab-btn active" onclick="switchTab(event,'aba-escala')">📡 Dados Escala</button>
+        <button class="tab-btn"        onclick="switchTab(event,'aba-assiduidade')">⏱️ Assiduidade Temporal</button>
+        <button class="tab-btn"        onclick="switchTab(event,'aba-extras')">🚀 Rotas Extras</button>
+    </nav>
+
+    <!-- ══════════════════════════════════════════════════════════
+         ABA DADOS ESCALA  ← HTML2 original, 100% intacto
+    ══════════════════════════════════════════════════════════ -->
+    <section id="aba-escala" class="content-section active">
+
+        <div class="header-controls">
+            <div>
+                <h2 style="margin:0; font-size: 14px;">🌍 Inteligência Logística</h2>
+                <span id="update-time" style="color:var(--success); font-size:9px; font-weight:bold;">Carregando dados...</span>
+                <div style="display:flex; gap: 5px; margin-top: 5px; flex-wrap: wrap;">
+                    <button class="btn-action btn-pdf"     onclick="exportarPDF()">📄 PDF</button>
+                    <button class="btn-action btn-audio"   onclick="lerPagina()">🔊 LER</button>
+                    <button class="btn-action btn-refresh" onclick="carregar()">🔄 ATUALIZAR</button>
+                    <div class="sync-box">
+                        <input type="date" id="dataSync" class="input-date" onchange="processarDados()">
+                        <button id="btnSync" class="btn-action btn-sync" onclick="sincronizarAPI()">⚡ API</button>
+                    </div>
+                </div>
+            </div>
+            <select id="fTipo"    onchange="processarDados()"><option value="TODOS">TIPO: TODOS</option><option value="REGULAR">REGULARES</option><option value="EXTRA">EXTRAS</option></select>
+            <select id="fTurno"   onchange="processarDados()"><option value="TODOS">TURNO: TODOS</option></select>
+            <select id="fDirecao" onchange="processarDados()"><option value="TODOS">DIREÇÃO: TODAS</option></select>
+            <select id="fGre"     onchange="aoMudarGre()">   <option value="TODOS">GRE: TODAS</option></select>
+            <select id="fCidade"  onchange="processarDados()"><option value="TODOS">CIDADE: TODAS</option></select>
+            <select id="fFiscal"  onchange="processarDados()"><option value="TODOS">FISCAL: TODOS</option></select>
+        </div>
+
+        <div class="kpi-grid">
+            <div class="kpi-card" style="border-color: var(--info)">   <h3><span id="k-total-filtrado">0</span></h3><small>Total Analisado</small></div>
+            <div class="kpi-card" style="border-color: var(--success)"><h3><span id="k-concluido">0</span></h3>    <small>Concluído</small></div>
+            <div class="kpi-card" style="border-color: var(--danger)"> <h3><span id="k-pendente">0</span></h3>     <small>Não Executado</small></div>
+            <div class="kpi-card" style="border-color: var(--warning)"><h3><span id="k-ass-perc">0%</span></h3>    <small>Assiduidade</small></div>
+            <div class="kpi-card" style="border-color: var(--extra)">  <h3><span id="k-mix-extra">0</span></h3>    <small>Volume Extras</small></div>
+        </div>
+
+        <div class="grid-top">
+            <div class="card row-1">
+                <h3>👤 Performance Campo <small style="color:var(--info)">Top 7</small></h3>
+                <table id="tFiscal"><thead><tr><th width="30">Pos</th><th>Responsável</th><th width="45">Total</th><th width="45">Concl</th><th width="50">Assid.</th></tr></thead><tbody></tbody></table>
+            </div>
+            <div class="card row-1">
+                <h3>📊 Funil de Execução</h3>
+                <div style="flex:1; position: relative;"><canvas id="chartWaterfall"></canvas></div>
+            </div>
+        </div>
+
+        <div class="grid-bottom">
+            <div class="card row-2" style="border-top-color: var(--info)">
+                <h3>🚐 VAN Frota (Resumo)</h3>
+                <div class="frota-container">
+                    <div class="frota-item"><small>Mot.</small><h4 id="f-mot" style="margin:2px; font-size:20px;">0</h4></div>
+                    <div class="frota-item"><small>Vei.</small><h4 id="f-vei" style="margin:2px; font-size:20px; color: var(--success)">0</h4></div>
+                    <div class="frota-item"><small>Sem</small><h4 id="f-sem" style="margin:2px; font-size:20px; color: var(--danger)">0</h4></div>
+                </div>
+                <div class="scroll-area">
+                    <table id="tFrotaGre">
+                        <thead><tr><th>Regional (GRE)</th><th style="text-align:center">Mot.</th><th style="text-align:center">Com V.</th><th style="text-align:center">Sem V.</th></tr></thead>
+                        <tbody id="tbodyFrotaGre"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card row-2">
+                <h3>🏆 Rotas por Regional (GRE)</h3>
+                <div class="scroll-area">
+                    <table id="tGre"><thead><tr><th width="30">Pos</th><th>Regional</th><th width="40">Tot</th><th width="40">Ok</th><th width="45">Assid.</th></tr></thead><tbody></tbody></table>
+                </div>
+            </div>
+
+            <div class="card row-2" style="border-top-color: var(--warning)">
+                <h3>🏙️ Rotas por Município</h3>
+                <div class="scroll-area">
+                    <table id="tCidade">
+                        <thead><tr><th width="30">Pos</th><th>Cidade</th><th width="40">Tot</th><th width="40">Ok</th><th width="45">Assid.</th></tr></thead>
+                        <tbody id="tbodyCidade"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
-        <select id="fTipo"    onchange="processarDados()"><option value="TODOS">TIPO: TODOS</option><option value="REGULAR">REGULARES</option><option value="EXTRA">EXTRAS</option></select>
-        <select id="fTurno"   onchange="processarDados()"><option value="TODOS">TURNO: TODOS</option></select>
-        <select id="fDirecao" onchange="processarDados()"><option value="TODOS">DIREÇÃO: TODAS</option></select>
-        <select id="fGre"     onchange="aoMudarGre()">   <option value="TODOS">GRE: TODAS</option></select>
-        <select id="fCidade"  onchange="processarDados()"><option value="TODOS">CIDADE: TODAS</option></select>
-        <select id="fFiscal"  onchange="processarDados()"><option value="TODOS">FISCAL: TODOS</option></select>
-    </div>
 
-    <div class="kpi-grid">
-        <div class="kpi-card" style="border-color: var(--info)">   <h3><span id="k-total-filtrado">0</span></h3><small>Total Analisado</small></div>
-        <div class="kpi-card" style="border-color: var(--success)"><h3><span id="k-concluido">0</span></h3>    <small>Concluído</small></div>
-        <div class="kpi-card" style="border-color: var(--danger)"> <h3><span id="k-pendente">0</span></h3>     <small>Não Executado</small></div>
-        <div class="kpi-card" style="border-color: var(--warning)"><h3><span id="k-ass-perc">0%</span></h3>    <small>Assiduidade</small></div>
-        <div class="kpi-card" style="border-color: var(--extra)">  <h3><span id="k-mix-extra">0</span></h3>    <small>Volume Extras</small></div>
-    </div>
-
-    <div class="grid-top">
-        <div class="card row-1">
-            <h3>👤 Performance Campo <small style="color:var(--info)">Top 7</small></h3>
-            <table id="tFiscal"><thead><tr><th width="30">Pos</th><th>Responsável</th><th width="45">Total</th><th width="45">Concl</th><th width="50">Assid.</th></tr></thead><tbody></tbody></table>
-        </div>
-        <div class="card row-1">
-            <h3>📊 Funil de Execução</h3>
-            <div style="flex:1; position: relative;"><canvas id="chartWaterfall"></canvas></div>
-        </div>
-    </div>
-
-    <div class="grid-bottom">
-        <div class="card row-2" style="border-top-color: var(--info)">
-            <h3>🚐 VAN Frota (Resumo)</h3>
-            <div class="frota-container">
-                <div class="frota-item"><small>Mot.</small><h4 id="f-mot" style="margin:2px; font-size:20px;">0</h4></div>
-                <div class="frota-item"><small>Vei.</small><h4 id="f-vei" style="margin:2px; font-size:20px; color: var(--success)">0</h4></div>
-                <div class="frota-item"><small>Sem</small><h4 id="f-sem" style="margin:2px; font-size:20px; color: var(--danger)">0</h4></div>
+        <div class="grid-new">
+            <div class="card row-new" style="border-top-color: var(--extra)">
+                <h3>🚛 Tipologia de Frota</h3>
+                <div class="scroll-area">
+                    <table id="tComposicaoFrota">
+                        <thead><tr><th>Categoria / Regional</th><th style="text-align:center" width="50">Rotas</th><th style="text-align:center" width="50">Vei.</th></tr></thead>
+                        <tbody id="tbodyFrota"></tbody>
+                    </table>
+                </div>
             </div>
-            <div class="scroll-area">
-                <table id="tFrotaGre">
-                    <thead><tr><th>Regional (GRE)</th><th style="text-align:center">Mot.</th><th style="text-align:center">Com V.</th><th style="text-align:center">Sem V.</th></tr></thead>
-                    <tbody id="tbodyFrotaGre"></tbody>
+            
+            <div class="card row-new" style="border-top-color: #f39c12">
+                <h3>🤝 Fornecedores</h3>
+                <div class="scroll-area">
+                    <table id="tFornecedores">
+                        <thead><tr><th>Fornecedor</th><th width="40" style="text-align:right">Rotas</th><th width="40" style="text-align:right">Ok</th><th width="50" style="text-align:right">Assid.</th></tr></thead>
+                        <tbody id="tbodyFornecedores"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card row-new" style="border-top-color: var(--info)">
+                <h3>📝 Ocorrências por Fiscal</h3>
+                <div id="container-obs" class="scroll-area"></div>
+            </div>
+        </div>
+
+        <div class="card" style="border-top-color: var(--success); margin-bottom: 20px;">
+            <h3>📱 Análise de Tecnologia (Origem Localização)</h3>
+            <p style="font-size: 10px; color: var(--slate); margin-top: -10px;">Quantidade de motoristas únicos que concluíram rotas.</p>
+            <div class="scroll-area" style="max-height: 400px;">
+                <table class="tech-table">
+                    <thead>
+                        <tr>
+                            <th>Fiscal &gt; GRE &gt; Cidade &gt; Motorista</th>
+                            <th width="75">Total Mots.</th>
+                            <th width="75">Mots. OK</th>
+                            <th width="65">Via App</th>
+                            <th width="65">Via Link</th>
+                            <th width="55">% App</th>
+                            <th width="70">% Abertura</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyTecnologia"></tbody>
                 </table>
             </div>
         </div>
 
-        <div class="card row-2">
-            <h3>🏆 Rotas por Regional (GRE)</h3>
-            <div class="scroll-area">
-                <table id="tGre"><thead><tr><th width="30">Pos</th><th>Regional</th><th width="40">Tot</th><th width="40">Ok</th><th width="45">Assid.</th></tr></thead><tbody></tbody></table>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════
+         ABA ASSIDUIDADE TEMPORAL  ← do HTML1
+    ══════════════════════════════════════════════════════════ -->
+    <section id="aba-assiduidade" class="content-section">
+        <div class="filter-bar">
+            <select id="fGreFraude"    onchange="processarAssiduidadeTemporal()"><option value="TODOS">TODAS GREs</option></select>
+            <select id="fCidadeFraude" onchange="processarAssiduidadeTemporal()"><option value="TODOS">TODAS CIDADES</option></select>
+            <select id="fTurnoFraude"  onchange="processarAssiduidadeTemporal()"><option value="TODOS">TODOS TURNOS</option></select>
+            <select id="fRotaFraude"   onchange="processarAssiduidadeTemporal()"><option value="TODOS">TODAS ROTAS</option></select>
+            <label style="display:flex; align-items:center; gap:5px; font-size:11px;">
+                <input type="checkbox" id="chkApenasFraudes" onchange="processarAssiduidadeTemporal()"> ⚠️ Apenas rotas com fraude
+            </label>
+        </div>
+
+        <div class="kpi-grid-fraude">
+            <div class="kpi-card-fraude" style="border-color:var(--danger);">
+                <small>⏱️ FRAUDE TEMPORAL</small>
+                <h3 id="kpi-temporal">0</h3>
+                <div class="kpi-detail">Duração &lt; 10 minutos</div>
+            </div>
+            <div class="kpi-card-fraude" style="border-color:var(--warning);">
+                <small>📍 FRAUDE LOCAL</small>
+                <h3 id="kpi-local">0</h3>
+                <div class="kpi-detail">Início = Fim (dist &lt; 500m)</div>
+            </div>
+            <div class="kpi-card-fraude" style="border-color:var(--success);">
+                <small>📊 TAXA DE FRAUDE</small>
+                <h3 id="kpi-taxa">0%</h3>
+                <div class="kpi-detail">Total de fraudes / Total de rotas</div>
             </div>
         </div>
 
-        <div class="card row-2" style="border-top-color: var(--warning)">
-            <h3>🏙️ Rotas por Município</h3>
-            <div class="scroll-area">
-                <table id="tCidade">
-                    <thead><tr><th width="30">Pos</th><th>Cidade</th><th width="40">Tot</th><th width="40">Ok</th><th width="45">Assid.</th></tr></thead>
-                    <tbody id="tbodyCidade"></tbody>
+        <div class="grid-2col">
+            <div class="card row-new">
+                <h3>⏰ Fraude por Horário Específico</h3>
+                <div class="scroll-area-sm">
+                    <table id="tFraudeHorario">
+                        <thead><tr><th>Horário (Início)</th><th>Qtd Fraudes</th><th>Tipo Principal</th><th>Status</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div style="font-size:9px; color:var(--slate); margin-top:8px;">👆 Clique no horário para ver os motoristas</div>
+            </div>
+            <div class="card row-new">
+                <h3>🗺️ Fraude por Rota</h3>
+                <div class="scroll-area-sm">
+                    <table id="tFraudeRota">
+                        <thead><tr><th>Rota</th><th>Fraudes</th><th>Tipo</th><th>GRE</th><th>Ação</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-3col">
+            <div class="card row-new">
+                <h3>🚨 Top Motoristas Fraudulentos</h3>
+                <div class="scroll-area-sm">
+                    <table id="tMotoristasFraude">
+                        <thead><tr><th>Motorista</th><th>GRE</th><th>Rotas</th><th>Fraudes</th><th>Tipo</th><th>Ação</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div style="font-size:9px; color:var(--slate); margin-top:8px;">👆 Clique no motorista para ver as rotas fraudulentas</div>
+            </div>
+            <div class="card row-new">
+                <h3>🏢 GREs com Mais Fraudes</h3>
+                <div class="scroll-area-sm">
+                    <table id="tGREsFraude">
+                        <thead><tr><th>GRE</th><th>Total</th><th>Temporal</th><th>Local</th><th>% Fraude</th><th>Ação</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card row-new">
+                <h3>👔 Fiscais (Responsáveis)</h3>
+                <div class="scroll-area-sm">
+                    <table id="tFiscaisFraude">
+                        <thead><tr><th>Fiscal</th><th>Total Rotas</th><th>Fraudes</th><th>% Fraude</th><th>Providência</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card row-new" style="margin-bottom:15px;">
+            <h3>📋 Rotas com Irregularidades (Horário + Pontos)</h3>
+            <div class="scroll-area" style="max-height:350px; overflow-x:auto;">
+                <table id="tIrregularidadesFraude" style="min-width:1200px;">
+                    <thead>
+                        <tr>
+                            <th style="width:8%">Data</th>
+                            <th style="width:20%">Rota</th>
+                            <th style="width:12%">Motorista</th>
+                            <th style="width:8%">GRE</th>
+                            <th style="width:12%">Fiscal</th>
+                            <th style="width:6%">Início</th>
+                            <th style="width:6%">Fim</th>
+                            <th style="width:8%">Duração</th>
+                            <th style="width:10%">Distância Pontos</th>
+                            <th style="width:10%">Irregularidade</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
                 </table>
             </div>
         </div>
-    </div>
 
-    <div class="grid-new">
-        <div class="card row-new" style="border-top-color: var(--extra)">
-            <h3>🚛 Tipologia de Frota</h3>
-            <div class="scroll-area">
-                <table id="tComposicaoFrota">
-                    <thead><tr><th>Categoria / Regional</th><th style="text-align:center" width="50">Rotas</th><th style="text-align:center" width="50">Vei.</th></tr></thead>
-                    <tbody id="tbodyFrota"></tbody>
+        <div class="grid-2col">
+            <div class="card row-new">
+                <h3>📊 Distribuição dos Tipos de Fraude</h3>
+                <div class="chart-container-sm">
+                    <canvas id="chartTiposFraude"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════
+         ABA ROTAS EXTRAS  ← do HTML1
+    ══════════════════════════════════════════════════════════ -->
+    <section id="aba-extras" class="content-section">
+        <div class="filter-bar">
+            <select id="fExtraGre"    onchange="processarExtras()"><option value="TODOS">TODAS GREs</option></select>
+            <select id="fExtraFiscal" onchange="processarExtras()"><option value="TODOS">TODOS FISCAIS</option></select>
+            <select id="fExtraCidade" onchange="processarExtras()"><option value="TODOS">TODAS CIDADES</option></select>
+            <select id="fExtraStatus" onchange="processarExtras()"><option value="TODOS">TODOS STATUS</option></select>
+            <label style="display:flex; align-items:center; gap:5px; font-size:11px;">
+                <input type="checkbox" id="chkApenasAlertas" onchange="processarExtras()"> ⚠️ Apenas alertas (curta/abandono)
+            </label>
+        </div>
+
+        <div class="kpi-grid-extras">
+            <div class="kpi-card-extra"><div class="kpi-icon"><i class="fas fa-road"></i></div><h3 id="ex-total">0</h3><small>Total Extras</small></div>
+            <div class="kpi-card-extra"><div class="kpi-icon"><i class="fas fa-check-circle"></i></div><h3 id="ex-concluidas">0</h3><small>Concluídas</small></div>
+            <div class="kpi-card-extra"><div class="kpi-icon"><i class="fas fa-chart-line"></i></div><h3 id="ex-perc-concl">0%</h3><small>% Conclusão</small></div>
+            <div class="kpi-card-extra"><div class="kpi-icon"><i class="fas fa-hourglass-half"></i></div><h3 id="ex-tempo-medio">--</h3><small>Tempo Médio</small></div>
+            <div class="kpi-card-extra"><div class="kpi-icon"><i class="fas fa-clock"></i></div><h3 id="ex-curta">0</h3><small>Curta Duração</small><div class="kpi-detail">&lt;15min</div></div>
+            <div class="kpi-card-extra"><div class="kpi-icon"><i class="fas fa-hourglass-start"></i></div><h3 id="ex-abandono">0</h3><small>Abandonadas</small><div class="kpi-detail">&gt;6h</div></div>
+            <div class="kpi-card-extra"><div class="kpi-icon"><i class="fas fa-spinner"></i></div><h3 id="ex-andamento">0</h3><small>Em Andamento</small></div>
+        </div>
+
+        <div class="grid-2col">
+            <div class="card row-new">
+                <h3>🏆 Top 5 GREs com Mais Rotas Extras</h3>
+                <div class="chart-container-sm"><canvas id="chartExtrasGre"></canvas></div>
+                <div style="font-size:10px; margin-top:6px; text-align:center; color:var(--slate);">Ranking por volume de rotas extras</div>
+            </div>
+            <div class="card row-new">
+                <h3>⏰ Padrão de Horários (Aberturas)</h3>
+                <div class="chart-container-sm"><canvas id="chartExtrasHorario"></canvas></div>
+            </div>
+        </div>
+
+        <div class="card row-new" style="margin-bottom:15px;">
+            <h3>👔 Ranking de Fiscais (Top 10)</h3>
+            <div class="scroll-area-sm" style="max-height:300px;">
+                <table id="tExtrasFiscais">
+                    <thead><tr><th width="40">Pos</th><th>Fiscal</th><th>GRE</th><th>Total Rotas</th><th>Concluídas</th><th>% Concl</th><th>Alertas</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div style="font-size:9px; color:var(--slate); margin-top:8px;">👆 Clique no fiscal para ver os motoristas com rotas extras</div>
+        </div>
+
+        <div class="card row-new" style="margin-bottom:15px;">
+            <h3>📊 Padrão de Horários por Faixa</h3>
+            <div class="scroll-area-sm">
+                <table id="tExtrasHorariosPadrao">
+                    <thead><tr><th>Faixa Horária</th><th>Qtd Aberturas</th><th>Fiscais Envolvidos</th><th>GREs Envolvidas</th><th>Risco</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div style="font-size:9px; color:var(--slate); margin-top:8px;">👆 Clique na faixa horária para ver os motoristas que abriram rotas nesse período</div>
+        </div>
+
+        <div class="grid-2col">
+            <div class="card row-new" style="border-top-color:var(--danger);">
+                <h3>🚨 Alertas de Curta Duração (&lt; 15min)</h3>
+                <div class="scroll-area-sm" style="max-height:250px;">
+                    <table id="tAlertaCurta">
+                        <thead><tr><th>Rota</th><th>Motorista</th><th>GRE</th><th>Fiscal</th><th>Início</th><th>Fim</th><th>Duração</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card row-new" style="border-top-color:var(--warning);">
+                <h3>⏳ Alertas de Abandono (&gt; 6h)</h3>
+                <div class="scroll-area-sm" style="max-height:250px;">
+                    <table id="tAlertaAbandono">
+                        <thead><tr><th>Rota</th><th>Motorista</th><th>GRE</th><th>Fiscal</th><th>Início</th><th>Tempo Aberto</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card row-new">
+            <h3>📋 Auditoria de Rotas Extras <small style="font-size:10px; color:var(--slate);">Exportável em Excel/CSV</small></h3>
+            <div style="overflow-x:auto;">
+                <table id="tAuditoriaExtras" class="display" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Data</th><th>Rota</th><th>Motorista</th><th>GRE</th><th>Cidade</th>
+                            <th>Fiscal</th><th>Status</th><th>Início</th><th>Fim</th>
+                            <th>Duração(min)</th><th>% Concl</th><th>Alerta</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyAuditoriaExtras"></tbody>
                 </table>
             </div>
         </div>
-        
-        <div class="card row-new" style="border-top-color: #f39c12">
-            <h3>🤝 Fornecedores</h3>
-            <div class="scroll-area">
-                <table id="tFornecedores">
-                    <thead><tr><th>Fornecedor</th><th width="40" style="text-align:right">Rotas</th><th width="40" style="text-align:right">Ok</th><th width="50" style="text-align:right">Assid.</th></tr></thead>
-                    <tbody id="tbodyFornecedores"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="card row-new" style="border-top-color: var(--info)">
-            <h3>📝 Ocorrências por Fiscal</h3>
-            <div id="container-obs" class="scroll-area"></div>
-        </div>
-    </div>
-
-    <!-- BLOCO TECNOLOGIA: cabeçalho com Total Mots. e % Abertura -->
-    <div class="card" style="border-top-color: var(--success); margin-bottom: 20px;">
-        <h3>📱 Análise de Tecnologia (Origem Localização)</h3>
-        <p style="font-size: 10px; color: var(--slate); margin-top: -10px;">Quantidade de motoristas únicos que concluíram rotas.</p>
-        <div class="scroll-area" style="max-height: 400px;">
-            <table class="tech-table">
-                <thead>
-                    <tr>
-                        <th>Fiscal &gt; GRE &gt; Cidade &gt; Motorista</th>
-                        <th width="75">Total Mots.</th>
-                        <th width="75">Mots. OK</th>
-                        <th width="65">Via App</th>
-                        <th width="65">Via Link</th>
-                        <th width="55">% App</th>
-                        <th width="70">% Abertura</th>
-                    </tr>
-                </thead>
-                <tbody id="tbodyTecnologia"></tbody>
-            </table>
-        </div>
-    </div>
+    </section>
 
 <script>
     Chart.defaults.color = '#a4b0be';
 
-    const URL_PLANILHA = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-PWDRlSYT4cY9rOK7Dz1R2Fe0HzoXFbu4icqnPk5M6eGOBUngZFwkhI-9TXPpT9d-wvWCzXNVxteq/pub?gid=498256387&single=true&output=csv';
+    // ── URLs (do HTML2 original) ───────────────────────────────────────────────
+    const URL_PLANILHA   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-PWDRlSYT4cY9rOK7Dz1R2Fe0HzoXFbu4icqnPk5M6eGOBUngZFwkhI-9TXPpT9d-wvWCzXNVxteq/pub?gid=498256387&single=true&output=csv';
     const URL_API_SCRIPT = 'https://script.google.com/macros/s/AKfycbyLis6Vs8Z3oqlt2BXkBpSqcSAdw1orEJvk2VotHJ_WuZRXQ5Qe8UnIKgKySCjKVz26/exec';
 
-    let bruto = [], cWaterfall;
+    let bruto = [];
+    let cWaterfall, charts = {};
+    let dtExtras = null;
 
     const norm = (t) => t ? t.toString().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
 
+    // ── Tabs ─────────────────────────────────────────────────────────────────
+    function switchTab(e, tabId) {
+        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        e.currentTarget.classList.add('active');
+        if (tabId === 'aba-assiduidade') processarAssiduidadeTemporal();
+        if (tabId === 'aba-extras')      processarExtras();
+    }
+
+    // ── Carregar dados (HTML2 original) ──────────────────────────────────────
     async function sincronizarAPI() {
         const campoData = document.getElementById("dataSync");
         const btn       = document.getElementById("btnSync");
@@ -229,8 +564,8 @@
             return;
         }
 
-        btn.disabled   = true;
-        btn.innerText  = "⏳ PROCESSANDO...";
+        btn.disabled  = true;
+        btn.innerText = "⏳ PROCESSANDO...";
         timeLabel.innerText = "📡 Solicitando dados para " + campoData.value.split("-").reverse().join("/") + "...";
 
         const urlFinal = URL_API_SCRIPT + "?data=" + campoData.value;
@@ -239,10 +574,7 @@
             .then(() => {
                 timeLabel.innerText = "✅ API acionada! Aguarde ~10s e clique em ATUALIZAR.";
                 btn.innerText = "⚡ API OK";
-                setTimeout(() => {
-                    btn.disabled  = false;
-                    btn.innerText = "⚡ API";
-                }, 5000);
+                setTimeout(() => { btn.disabled = false; btn.innerText = "⚡ API"; }, 5000);
             })
             .catch(err => {
                 console.error(err);
@@ -263,29 +595,38 @@
             complete: (r) => {
                 if (btnRefresh) btnRefresh.disabled = false;
                 bruto = r.data.filter(d => (d.rota || d.ROTA || "").trim() !== "").map(d => {
-                    d.rota                = d.rota                || d.ROTA             || "";
-                    d.data                = (d.data               || d.DATA             || "").trim();
-                    d.cidade              = d.cidade              || d.CIDADE           || "";
-                    d.gre                 = d.gre                 || d.GRE              || "";
-                    d.status              = d.status              || d.STATUS           || "";
-                    d.veiculo             = d.veiculo             || d.VEICULO          || d.PLACA || "";
-                    d.motorista           = d.motorista           || d.MOTORISTA        || "S/ NOME";
-                    d.fiscal_responsavel  = d.fiscal_responsavel  || d.FISCAL           || "NÃO IDENTIFICADO";
-                    d.observacao          = d.observacao          || d.OBS              || "";
-                    d.turno               = d.turno               || d.TURNO            || "";
-                    d.direcao             = d.direcao             || d.DIRECAO          || "";
-                    d.tipo_fornecedor     = d.tipo_fornecedor     || d.TIPO_FORNECEDOR  || "";
-                    d.fornecedor_motorista= d.fornecedor_motorista|| d.FORNECEDOR       || "";
-                    d.origem              = d.origem              || d.ORIGEM           || "OUTROS";
-                    d.isExtra             = norm(d.rota).includes("EXTRA");
+                    d.rota                 = (d.rota                 || d.ROTA              || "").trim();
+                    d.data                 = (d.data                 || d.DATA              || "").trim();
+                    d.cidade               = d.cidade                || d.CIDADE            || "";
+                    d.gre                  = d.gre                   || d.GRE               || "";
+                    d.status               = d.status                || d.STATUS            || "";
+                    d.veiculo              = d.veiculo               || d.VEICULO           || d.PLACA || "";
+                    d.motorista            = d.motorista             || d.MOTORISTA         || "S/ NOME";
+                    d.fiscal_responsavel   = d.fiscal_responsavel    || d.FISCAL            || "NÃO IDENTIFICADO";
+                    d.observacao           = d.observacao            || d.OBS               || "";
+                    d.turno                = d.turno                 || d.TURNO             || "";
+                    d.direcao              = d.direcao               || d.DIRECAO           || "";
+                    d.tipo_fornecedor      = d.tipo_fornecedor       || d.TIPO_FORNECEDOR   || "";
+                    d.fornecedor_motorista = d.fornecedor_motorista  || d.FORNECEDOR        || "";
+                    d.origem               = d.origem                || d.ORIGEM            || "OUTROS";
+                    d.km_planejado         = d.km_planejado          || d.KM_PLANEJADO      || "0";
+                    d.coordenadas_inicio   = d.coordenadas_inicio    || d.COORDENADAS_INICIO|| "---";
+                    d.coordenadas_fim      = d.coordenadas_fim       || d.COORDENADAS_FIM   || "---";
+                    d.inicio_execucao      = d.inicio_execucao       || d.INICIO_EXECUCAO   || "--:--";
+                    d.fim_execucao         = d.fim_execucao          || d.FIM_EXECUCAO      || "--:--";
+                    d.percentual_conclusao = d.percentual_conclusao  || d.PERCENTUAL_CONCLUSAO || "0%";
+                    d.isExtra              = norm(d.rota).includes("EXTRA");
                     return d;
                 });
                 popularFiltros();
+                popularFiltrosFraude();
+                popularFiltrosExtras();
                 processarDados();
             }
         });
     }
 
+    // ── Filtros ───────────────────────────────────────────────────────────────
     function popularFiltros() {
         const preencher = (id, campo) => {
             const el = document.getElementById(id);
@@ -313,13 +654,89 @@
         processarDados();
     }
 
-    function toggleRow(id, el) {
-        const rows        = document.querySelectorAll('.' + id);
-        const isExpanding = !el.classList.contains('expanded');
-        el.classList.toggle('expanded');
-        rows.forEach(row => row.classList.toggle('show-row', isExpanding));
+    function popularFiltrosFraude() {
+        if (!bruto.length) return;
+        const preencher = (id, campo, label) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.innerHTML = `<option value="TODOS">${label}</option>`;
+            [...new Set(bruto.map(d => d[campo]))].filter(v => v && v.trim()).sort().forEach(v => el.add(new Option(v, v)));
+        };
+        preencher('fGreFraude',    'gre',    'TODAS GREs');
+        preencher('fCidadeFraude', 'cidade', 'TODAS CIDADES');
+        preencher('fTurnoFraude',  'turno',  'TODOS TURNOS');
+        const el = document.getElementById('fRotaFraude');
+        if (el) {
+            el.innerHTML = '<option value="TODOS">TODAS ROTAS</option>';
+            [...new Set(bruto.map(d => d.rota))].filter(r => r && r.trim()).sort().slice(0, 50)
+                .forEach(v => el.add(new Option(v.substring(0, 50), v)));
+        }
     }
 
+    function popularFiltrosExtras() {
+        const extras = bruto.filter(d => d.isExtra);
+        const preencher = (id, campo, label) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.innerHTML = `<option value="TODOS">${label}</option>`;
+            [...new Set(extras.map(d => d[campo]))].filter(v => v && v.trim()).sort().forEach(v => el.add(new Option(v, v)));
+        };
+        preencher('fExtraGre',    'gre',               'TODAS GREs');
+        preencher('fExtraFiscal', 'fiscal_responsavel', 'TODOS FISCAIS');
+        preencher('fExtraCidade', 'cidade',             'TODAS CIDADES');
+        const elStatus = document.getElementById('fExtraStatus');
+        if (elStatus) {
+            elStatus.innerHTML = '<option value="TODOS">TODOS STATUS</option>';
+            [...new Set(extras.map(d => d.status))].filter(v => v && v.trim()).sort().forEach(v => elStatus.add(new Option(v, v)));
+        }
+    }
+
+    // ── Toggle rows ───────────────────────────────────────────────────────────
+    function toggleRow(id, el) {
+        const isExpanding = !el.classList.contains('expanded');
+        el.classList.toggle('expanded');
+        document.querySelectorAll('.' + id).forEach(row => row.classList.toggle('show-row', isExpanding));
+    }
+
+    // ── Auxiliares tempo / distância ──────────────────────────────────────────
+    function horaParaMinutos(horaStr) {
+        if (!horaStr || horaStr === '--:--' || horaStr === '') return null;
+        const base = horaStr.includes('-') ? horaStr.split('-')[0].trim() : horaStr;
+        const [hh, mm] = base.split(':').map(Number);
+        if (isNaN(hh) || isNaN(mm)) return null;
+        return hh * 60 + mm;
+    }
+
+    function calcDuracaoMinutos(inicioStr, fimStr) {
+        if (!inicioStr || !fimStr || inicioStr === '--:--' || fimStr === '--:--') return null;
+        const inicio = horaParaMinutos(inicioStr);
+        const fim    = horaParaMinutos(fimStr);
+        if (inicio === null || fim === null) return null;
+        let dur = fim - inicio;
+        if (dur < 0) dur += 24 * 60;
+        return dur;
+    }
+
+    function calcularDistanciaKm(coord1, coord2) {
+        if (!coord1 || !coord2 || coord1 === '---' || coord2 === '---') return null;
+        const parseCoord = c => {
+            const p = c.split(',');
+            if (p.length !== 2) return null;
+            const lat = parseFloat(p[0]), lng = parseFloat(p[1]);
+            return (isNaN(lat) || isNaN(lng)) ? null : { lat, lng };
+        };
+        const p1 = parseCoord(coord1), p2 = parseCoord(coord2);
+        if (!p1 || !p2) return null;
+        const R    = 6371;
+        const dLat = (p2.lat - p1.lat) * Math.PI / 180;
+        const dLon = (p2.lng - p1.lng) * Math.PI / 180;
+        const a    = Math.sin(dLat/2)**2 + Math.cos(p1.lat*Math.PI/180)*Math.cos(p2.lat*Math.PI/180)*Math.sin(dLon/2)**2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  PROCESSAR DADOS  ← lógica do HTML2 original, 100% intacta
+    // ═════════════════════════════════════════════════════════════════════════
     function processarDados() {
         const dataInput = document.getElementById("dataSync").value;
         const timeLabel = document.getElementById('update-time');
@@ -335,17 +752,17 @@
         timeLabel.innerText = dataFiltroStr ? "✅ VISUALIZANDO: " + dataFiltroStr : "✅ DADOS CARREGADOS";
 
         const f = {
-            tipo:   document.getElementById('fTipo').value,
-            turno:  document.getElementById('fTurno').value,
-            direcao:document.getElementById('fDirecao').value,
-            gre:    document.getElementById('fGre').value,
-            cidade: document.getElementById('fCidade').value,
-            fiscal: document.getElementById('fFiscal').value
+            tipo:    document.getElementById('fTipo').value,
+            turno:   document.getElementById('fTurno').value,
+            direcao: document.getElementById('fDirecao').value,
+            gre:     document.getElementById('fGre').value,
+            cidade:  document.getElementById('fCidade').value,
+            fiscal:  document.getElementById('fFiscal').value
         };
 
         const dados = bruto.filter(d =>
             (dataFiltroStr === "" || d.data === dataFiltroStr) &&
-            (f.tipo    === 'TODOS' || (f.tipo    === 'REGULAR' && !d.isExtra) || (f.tipo === 'EXTRA' && d.isExtra)) &&
+            (f.tipo    === 'TODOS' || (f.tipo === 'REGULAR' && !d.isExtra) || (f.tipo === 'EXTRA' && d.isExtra)) &&
             (f.turno   === 'TODOS' || d.turno   === f.turno)   &&
             (f.direcao === 'TODOS' || d.direcao === f.direcao) &&
             (f.gre     === 'TODOS' || d.gre     === f.gre)     &&
@@ -382,7 +799,9 @@
             if (!fornMap[fn].mot[d.motorista]) fornMap[fn].mot[d.motorista] = { t: 0, c: 0 };
             fornMap[fn].mot[d.motorista].t++; if (isOk) fornMap[fn].mot[d.motorista].c++;
 
-            let cat = norm(d.tipo_fornecedor).includes("PROPRIO") ? "PROPRIO" : norm(d.tipo_fornecedor).includes("PARCEIRO") ? "PARCEIRO" : (norm(d.tipo_fornecedor).includes("LOCADO") ? "LOCADO" : "TERCEIRO");
+            let cat = norm(d.tipo_fornecedor).includes("PROPRIO") ? "PROPRIO" :
+                      norm(d.tipo_fornecedor).includes("PARCEIRO") ? "PARCEIRO" :
+                      (norm(d.tipo_fornecedor).includes("LOCADO") ? "LOCADO" : "TERCEIRO");
             hFrota[cat].r++;
             hFrota[cat].v.add(d.veiculo);
             if (!hFrota[cat].gres[d.gre]) hFrota[cat].gres[d.gre] = { r: 0, v: new Set() };
@@ -495,28 +914,22 @@
         cont.innerHTML = h || "<div style='padding:10px; color:var(--slate)'>Sem ocorrências.</div>";
     }
 
-    // ── Tecnologia: Total Mots. + Mots. OK + Via App + Via Link + % App + % Abertura ──
     function renderTecnologiaUnificada(dados) {
-        // Árvore de motoristas que concluíram (para Mots. OK / Via App / Via Link)
-        const tree = {};
-        // Árvore de todos os motoristas únicos por nível (para Total Mots.)
-        const treeTotal = {};
+        const tree = {}, treeTotal = {};
 
         dados.forEach(d => {
-            const fis    = d.fiscal_responsavel || "NÃO IDENTIFICADO";
-            const gre    = d.gre    || "S/ GRE";
-            const cid    = d.cidade || "S/ CIDADE";
-            const mot    = d.motorista || "S/ NOME";
-            const isOk   = norm(d.status).includes("CONCLUID") || norm(d.status).includes("ANDAMENTO");
-            const origem  = norm(d.origem).includes("APP") ? "APP" : "LINK";
+            const fis   = d.fiscal_responsavel || "NÃO IDENTIFICADO";
+            const gre   = d.gre    || "S/ GRE";
+            const cid   = d.cidade || "S/ CIDADE";
+            const mot   = d.motorista || "S/ NOME";
+            const isOk  = norm(d.status).includes("CONCLUID") || norm(d.status).includes("ANDAMENTO");
+            const origem = norm(d.origem).includes("APP") ? "APP" : "LINK";
 
-            // Total de motoristas únicos (qualquer status)
             if (!treeTotal[fis])                              treeTotal[fis] = { gres: {} };
             if (!treeTotal[fis].gres[gre])                    treeTotal[fis].gres[gre] = { cidades: {} };
             if (!treeTotal[fis].gres[gre].cidades[cid])       treeTotal[fis].gres[gre].cidades[cid] = new Set();
             treeTotal[fis].gres[gre].cidades[cid].add(mot);
 
-            // Motoristas que concluíram (prioriza APP se ao menos 1 rota for APP)
             if (isOk) {
                 if (!tree[fis])                               tree[fis] = { gres: {} };
                 if (!tree[fis].gres[gre])                     tree[fis].gres[gre] = { cidades: {} };
@@ -526,7 +939,6 @@
             }
         });
 
-        // Calcula Mots. OK / Via App / Via Link a partir da árvore de concluídos
         const calcOk = (node) => {
             let m = 0, a = 0, l = 0;
             if (node.motoristas) {
@@ -537,7 +949,6 @@
             return { m, a, l, p: m ? ((a / m) * 100).toFixed(0) : 0 };
         };
 
-        // Calcula total de motoristas únicos recursivamente
         const calcTotal = (node) => {
             if (node instanceof Set) return node.size;
             let t = 0;
@@ -546,13 +957,12 @@
         };
 
         let html = "", fIdx = 0;
-        // Une fiscais de ambas as árvores para não perder nenhum
         const todosOsFiscais = [...new Set([...Object.keys(tree), ...Object.keys(treeTotal)])].sort();
 
         todosOsFiscais.forEach(fis => {
             const fId    = `tec-f-${fIdx}`;
-            const fRes   = tree[fis]      ? calcOk(tree[fis])           : { m: 0, a: 0, l: 0, p: 0 };
-            const fTot   = treeTotal[fis] ? calcTotal(treeTotal[fis])   : 0;
+            const fRes   = tree[fis]      ? calcOk(tree[fis])         : { m: 0, a: 0, l: 0, p: 0 };
+            const fTot   = treeTotal[fis] ? calcTotal(treeTotal[fis]) : 0;
             const fAbert = fTot ? ((fRes.m / fTot) * 100).toFixed(0) : 0;
 
             html += `<tr class="pointer" onclick="toggleRow('${fId}', this)">
@@ -565,7 +975,6 @@
                         <td class="col-abertura">${fAbert}%</td>
                      </tr>`;
 
-            // GREs
             const gresSet = [...new Set([
                 ...Object.keys((tree[fis]      || {}).gres || {}),
                 ...Object.keys((treeTotal[fis] || {}).gres || {})
@@ -573,21 +982,17 @@
 
             gresSet.forEach((gre, gIdx) => {
                 const gId    = `tec-g-${fIdx}-${gIdx}`;
-                const gRes   = (tree[fis]      && tree[fis].gres[gre])      ? calcOk(tree[fis].gres[gre])            : { m: 0, a: 0, l: 0, p: 0 };
-                const gTot   = (treeTotal[fis] && treeTotal[fis].gres[gre]) ? calcTotal(treeTotal[fis].gres[gre])    : 0;
+                const gRes   = (tree[fis] && tree[fis].gres[gre])           ? calcOk(tree[fis].gres[gre])         : { m: 0, a: 0, l: 0, p: 0 };
+                const gTot   = (treeTotal[fis] && treeTotal[fis].gres[gre]) ? calcTotal(treeTotal[fis].gres[gre]) : 0;
                 const gAbert = gTot ? ((gRes.m / gTot) * 100).toFixed(0) : 0;
 
                 html += `<tr class="nested-row ${fId} pointer" onclick="toggleRow('${gId}', this)">
                             <td><span style="margin-left:15px" class="arrow">▶</span> <span style="color:var(--info)">${gre}</span></td>
                             <td class="col-total-mots">${gTot}</td>
-                            <td>${gRes.m}</td>
-                            <td>${gRes.a}</td>
-                            <td>${gRes.l}</td>
-                            <td>${gRes.p}%</td>
-                            <td class="col-abertura">${gAbert}%</td>
+                            <td>${gRes.m}</td><td>${gRes.a}</td><td>${gRes.l}</td>
+                            <td>${gRes.p}%</td><td class="col-abertura">${gAbert}%</td>
                          </tr>`;
 
-                // Cidades
                 const cidsSet = [...new Set([
                     ...Object.keys(((tree[fis]      || {}).gres[gre] || {}).cidades || {}),
                     ...Object.keys(((treeTotal[fis] || {}).gres[gre] || {}).cidades || {})
@@ -605,14 +1010,10 @@
                     html += `<tr class="nested-row ${gId} pointer" onclick="toggleRow('${cId}', this)">
                                 <td><span style="margin-left:30px" class="arrow">▶</span> ${cid}</td>
                                 <td class="col-total-mots">${cTot}</td>
-                                <td>${cRes.m}</td>
-                                <td>${cRes.a}</td>
-                                <td>${cRes.l}</td>
-                                <td>${cRes.p}%</td>
-                                <td class="col-abertura">${cAbert}%</td>
+                                <td>${cRes.m}</td><td>${cRes.a}</td><td>${cRes.l}</td>
+                                <td>${cRes.p}%</td><td class="col-abertura">${cAbert}%</td>
                              </tr>`;
 
-                    // Motoristas
                     const motsOkMap = (tree[fis] && tree[fis].gres[gre] && tree[fis].gres[gre].cidades[cid])
                                         ? tree[fis].gres[gre].cidades[cid].motoristas : {};
 
@@ -652,9 +1053,486 @@
         }
     }
 
+    // ═════════════════════════════════════════════════════════════════════════
+    //  PROCESSAR ASSIDUIDADE TEMPORAL  ← lógica do HTML1
+    // ═════════════════════════════════════════════════════════════════════════
+    function processarAssiduidadeTemporal() {
+        if (!bruto.length) return;
+
+        const filtroGre    = document.getElementById('fGreFraude')?.value    || 'TODOS';
+        const filtroCidade = document.getElementById('fCidadeFraude')?.value || 'TODOS';
+        const filtroTurno  = document.getElementById('fTurnoFraude')?.value  || 'TODOS';
+        const filtroRota   = document.getElementById('fRotaFraude')?.value   || 'TODOS';
+
+        const dados = bruto.filter(d =>
+            (filtroGre    === 'TODOS' || d.gre    === filtroGre)    &&
+            (filtroCidade === 'TODOS' || d.cidade === filtroCidade) &&
+            (filtroTurno  === 'TODOS' || d.turno  === filtroTurno)  &&
+            (filtroRota   === 'TODOS' || d.rota   === filtroRota)
+        );
+
+        let totalRotas = 0, fraudesTemporal = 0, fraudesMesmoLocal = 0;
+        const motoristasMap = new Map(), greMap = new Map(), fiscalMap = new Map();
+        const rotasMap = new Map(), horariosMap = new Map();
+        const rotasSuspeitas = [];
+
+        dados.forEach(rota => {
+            const duracao      = calcDuracaoMinutos(rota.inicio_execucao, rota.fim_execucao);
+            const distPontosKm = calcularDistanciaKm(rota.coordenadas_inicio, rota.coordenadas_fim);
+            const kmPlanejado  = parseFloat((rota.km_planejado || "0").toString().replace(',', '.')) || 0;
+            const nomeFiscal   = rota.fiscal_responsavel || "NÃO IDENTIFICADO";
+
+            let tipoFraude = null, detalheFraude = '';
+
+            if (duracao !== null && duracao < 10) {
+                tipoFraude    = 'TEMPORAL';
+                detalheFraude = `Duração de ${duracao} min (<10min)`;
+                fraudesTemporal++;
+            } else if (distPontosKm !== null && distPontosKm < 0.5 && kmPlanejado > 5) {
+                tipoFraude    = 'MESMO_LOCAL';
+                detalheFraude = `Início e fim no mesmo local (dist ${distPontosKm.toFixed(2)}km) com KM=${kmPlanejado}km`;
+                fraudesMesmoLocal++;
+            }
+
+            if (tipoFraude) {
+                rotasSuspeitas.push({
+                    data: rota.data, rota: rota.rota, motorista: rota.motorista,
+                    gre: rota.gre, fiscal: nomeFiscal,
+                    inicio: rota.inicio_execucao, fim: rota.fim_execucao,
+                    duracao: duracao || 0, distPontos: distPontosKm,
+                    kmPlanejado, tipo: tipoFraude, detalhe: detalheFraude,
+                    horaInicio: rota.inicio_execucao ? rota.inicio_execucao.split('-')[0].trim().substring(0,5) : ''
+                });
+
+                const hora = rota.inicio_execucao ? rota.inicio_execucao.split('-')[0].trim().substring(0,5) : '';
+                if (hora) {
+                    if (!horariosMap.has(hora)) horariosMap.set(hora, { total:0, temporal:0, local:0, motoristas:[] });
+                    const h = horariosMap.get(hora);
+                    h.total++;
+                    if (tipoFraude === 'TEMPORAL') h.temporal++; else h.local++;
+                    h.motoristas.push({ nome: rota.motorista, tipo: tipoFraude, rota: rota.rota, data: rota.data });
+                }
+
+                if (!rotasMap.has(rota.rota)) rotasMap.set(rota.rota, { total:0, temporal:0, local:0, gre: rota.gre });
+                const rm = rotasMap.get(rota.rota);
+                rm.total++;
+                if (tipoFraude === 'TEMPORAL') rm.temporal++; else rm.local++;
+            }
+
+            if (!motoristasMap.has(rota.motorista))
+                motoristasMap.set(rota.motorista, { total:0, fraudes:0, tipos:[], gre: rota.gre, rotasFraude:[] });
+            const mm = motoristasMap.get(rota.motorista);
+            mm.total++;
+            if (tipoFraude) { mm.fraudes++; mm.tipos.push(tipoFraude); mm.rotasFraude.push({ rota: rota.rota, data: rota.data, tipo: tipoFraude, detalhe: detalheFraude }); }
+
+            if (!greMap.has(rota.gre)) greMap.set(rota.gre, { total:0, temporal:0, mesmoLocal:0 });
+            const gm = greMap.get(rota.gre);
+            gm.total++;
+            if (tipoFraude === 'TEMPORAL') gm.temporal++;
+            else if (tipoFraude === 'MESMO_LOCAL') gm.mesmoLocal++;
+
+            if (!fiscalMap.has(nomeFiscal)) fiscalMap.set(nomeFiscal, { total:0, fraudes:0 });
+            const fm = fiscalMap.get(nomeFiscal);
+            fm.total++;
+            if (tipoFraude) fm.fraudes++;
+
+            totalRotas++;
+        });
+
+        const totalFraudes = fraudesTemporal + fraudesMesmoLocal;
+        const taxaFraude   = totalRotas > 0 ? (totalFraudes / totalRotas * 100).toFixed(1) : 0;
+
+        document.getElementById('kpi-temporal').innerText = fraudesTemporal;
+        document.getElementById('kpi-local').innerText    = fraudesMesmoLocal;
+        document.getElementById('kpi-taxa').innerText     = taxaFraude + '%';
+
+        // Fraude por Horário
+        const horariosOrd = [...horariosMap.entries()].sort((a,b) => b[1].total - a[1].total).slice(0, 10);
+        let horariosHtml  = '';
+        horariosOrd.forEach(([hora, d], idx) => {
+            const id     = `hora-${idx}`;
+            const tipo   = d.temporal >= d.local ? 'Temporal' : 'Mesmo Local';
+            const status = d.total >= 5
+                ? '<span class="badge badge-danger">CRÍTICO</span>'
+                : (d.total >= 2 ? '<span class="badge badge-warning">ATENÇÃO</span>' : '<span class="badge badge-success">OK</span>');
+            horariosHtml += `<tr class="pointer" onclick="toggleRow('${id}',this)">
+                <td><span class="arrow">▶</span> <b>${hora}</b></td>
+                <td class="val-fraude">${d.total}</td>
+                <td>${tipo}</td>
+                <td>${status}</td>
+              </tr>`;
+            [...new Map(d.motoristas.map(m => [m.nome, m])).values()].slice(0, 10).forEach(mot => {
+                horariosHtml += `<tr class="nested-row ${id}">
+                    <td class="indent-detail" colspan="2">🧑 ${mot.nome} (${mot.tipo})</td>
+                    <td class="indent-detail" colspan="2">📍 ${mot.rota.substring(0,40)}</td>
+                  </tr>`;
+            });
+        });
+        document.querySelector('#tFraudeHorario tbody').innerHTML = horariosHtml || '<tr><td colspan="4" style="color:var(--slate)">Sem fraudes detectadas.</td></tr>';
+
+        // Fraude por Rota
+        const rotasOrd = [...rotasMap.entries()].map(([nome, d]) => ({ nome, ...d })).sort((a,b) => b.total - a.total).slice(0, 15);
+        document.querySelector('#tFraudeRota tbody').innerHTML = rotasOrd.map(r =>
+            `<tr>
+                <td>${r.nome.substring(0,35)}</td>
+                <td class="val-fraude">${r.total}</td>
+                <td>${r.temporal>0?'⏱️':''} ${r.local>0?'📍':''}</td>
+                <td>${r.gre}</td>
+                <td>${r.total >= 3 ? '<span class="badge badge-danger">AUDITAR ROTA</span>' : '<span class="badge badge-warning">MONITORAR</span>'}</td>
+             </tr>`
+        ).join('') || '<tr><td colspan="5" style="color:var(--slate)">Sem fraudes detectadas.</td></tr>';
+
+        // Motoristas
+        const rankMotoristas = [...motoristasMap.entries()]
+            .map(([nome, d]) => ({ nome, ...d, percFraude: d.total > 0 ? (d.fraudes/d.total*100) : 0 }))
+            .filter(m => m.fraudes > 0).sort((a,b) => b.fraudes - a.fraudes).slice(0, 20);
+        let motoristasHtml = '';
+        rankMotoristas.forEach((m, idx) => {
+            const id       = `mot-${idx}`;
+            const acao     = m.percFraude > 30 ? 'NOTIFICAR FISCAL' : m.percFraude > 15 ? 'ALERTA MOTORISTA' : 'MONITORAR';
+            const badgeCor = m.percFraude > 30 ? 'badge-danger'     : m.percFraude > 15 ? 'badge-warning'    : 'badge-info';
+            motoristasHtml += `<tr class="pointer" onclick="toggleRow('${id}',this)">
+                <td><span class="arrow">▶</span> ${m.nome.substring(0,25)}</td>
+                <td>${m.gre}</td>
+                <td>${m.total}</td>
+                <td class="val-fraude">${m.fraudes}</td>
+                <td>${m.tipos.includes('TEMPORAL')?'⏱️':''} ${m.tipos.includes('MESMO_LOCAL')?'📍':''}</td>
+                <td><span class="badge ${badgeCor}">${acao}</span></td>
+              </tr>`;
+            m.rotasFraude.slice(0, 10).forEach(rf => {
+                motoristasHtml += `<tr class="nested-row ${id}">
+                    <td class="indent-detail" colspan="2">📅 ${rf.data}</td>
+                    <td class="indent-detail" colspan="2">🗺️ ${rf.rota.substring(0,35)}</td>
+                    <td class="indent-detail" colspan="2">⚠️ ${rf.tipo}: ${rf.detalhe.substring(0,40)}</td>
+                  </tr>`;
+            });
+        });
+        document.querySelector('#tMotoristasFraude tbody').innerHTML = motoristasHtml || '<tr><td colspan="6" style="color:var(--slate)">Sem fraudes detectadas.</td></tr>';
+
+        // GREs
+        const rankGre = [...greMap.entries()]
+            .map(([nome, d]) => ({ nome, ...d, totalFraudes: d.temporal+d.mesmoLocal, percFraude: d.total > 0 ? ((d.temporal+d.mesmoLocal)/d.total*100) : 0 }))
+            .sort((a,b) => b.percFraude - a.percFraude);
+        document.querySelector('#tGREsFraude tbody').innerHTML = rankGre.map(g => {
+            const acao     = g.percFraude > 20 ? 'AUDITAR URGENTE'     : g.percFraude > 10 ? 'REUNIÃO COM GESTOR' : 'OK';
+            const badgeCor = g.percFraude > 20 ? 'badge-danger'        : g.percFraude > 10 ? 'badge-warning'      : 'badge-success';
+            return `<tr>
+                <td><b>${g.nome}</b></td>
+                <td>${g.total}</td>
+                <td class="val-fraude">${g.temporal}</td>
+                <td class="val-alerta">${g.mesmoLocal}</td>
+                <td>${g.percFraude.toFixed(1)}%</td>
+                <td><span class="badge ${badgeCor}">${acao}</span></td>
+              </tr>`;
+        }).join('') || '<tr><td colspan="6" style="color:var(--slate)">Sem dados.</td></tr>';
+
+        // Fiscais
+        const rankFiscais = [...fiscalMap.entries()]
+            .map(([nome, d]) => ({ nome, ...d, percFraude: d.total > 0 ? (d.fraudes/d.total*100) : 0 }))
+            .sort((a,b) => b.percFraude - a.percFraude);
+        document.querySelector('#tFiscaisFraude tbody').innerHTML = rankFiscais.map(f => {
+            const prov     = f.percFraude > 20 ? 'NOTIFICAR IMEDIATO' : f.percFraude > 10 ? 'ALERTA POR E-MAIL' : 'OK';
+            const badgeCor = f.percFraude > 20 ? 'badge-danger'       : f.percFraude > 10 ? 'badge-warning'     : 'badge-success';
+            return `<tr>
+                <td>${f.nome}</td>
+                <td>${f.total}</td>
+                <td class="val-fraude">${f.fraudes}</td>
+                <td>${f.percFraude.toFixed(1)}%</td>
+                <td><span class="badge ${badgeCor}">${prov}</span></td>
+              </tr>`;
+        }).join('') || '<tr><td colspan="5" style="color:var(--slate)">Sem dados.</td></tr>';
+
+        // Tabela Irregularidades
+        document.querySelector('#tIrregularidadesFraude tbody').innerHTML = rotasSuspeitas.slice(0, 100).map(r => {
+            const badgeCor = r.tipo === 'TEMPORAL' ? 'badge-danger' : 'badge-warning';
+            const badgeTxt = r.tipo === 'TEMPORAL' ? '⏱️ Fraude Temporal' : '📍 Mesmo Local';
+            return `<tr>
+                <td>${r.data}</td>
+                <td style="word-break:break-word;">${r.rota.substring(0,50)}</td>
+                <td>${r.motorista}</td>
+                <td>${r.gre}</td>
+                <td>${r.fiscal}</td>
+                <td>${r.inicio}</td>
+                <td>${r.fim}</td>
+                <td>${r.duracao > 0 ? r.duracao + ' min' : 'N/A'}</td>
+                <td>${r.distPontos ? r.distPontos.toFixed(1) + ' km' : 'N/A'}</td>
+                <td><span class="badge ${badgeCor}">${badgeTxt}</span><br><small style="font-size:8px;">${r.detalhe}</small></td>
+              </tr>`;
+        }).join('') || '<tr><td colspan="10" style="color:var(--slate)">Sem irregularidades detectadas.</td></tr>';
+
+        // Gráfico pizza
+        if (charts.tiposFraude) charts.tiposFraude.destroy();
+        const ctxTipos = document.getElementById('chartTiposFraude');
+        if (ctxTipos) {
+            charts.tiposFraude = new Chart(ctxTipos, {
+                type: 'pie',
+                data: {
+                    labels: ['Fraude Temporal (<10min)', 'Mesmo Local (início=fim)'],
+                    datasets: [{ data: [fraudesTemporal, fraudesMesmoLocal], backgroundColor: ['#e74c3c','#f39c12'] }]
+                },
+                options: { responsive:true, maintainAspectRatio:true, plugins:{ legend:{ position:'bottom', labels:{ color:'#fff', font:{size:9} } } } }
+            });
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  PROCESSAR EXTRAS  ← lógica do HTML1
+    // ═════════════════════════════════════════════════════════════════════════
+    function processarExtras() {
+        if (!bruto.length) return;
+
+        const fGre    = document.getElementById('fExtraGre')?.value    || 'TODOS';
+        const fFiscal = document.getElementById('fExtraFiscal')?.value || 'TODOS';
+        const fCidade = document.getElementById('fExtraCidade')?.value || 'TODOS';
+        const fStatus = document.getElementById('fExtraStatus')?.value || 'TODOS';
+        const apenasAlertas = document.getElementById('chkApenasAlertas')?.checked || false;
+
+        let extras = bruto.filter(d => d.isExtra &&
+            (fGre    === 'TODOS' || d.gre                === fGre)    &&
+            (fFiscal === 'TODOS' || d.fiscal_responsavel === fFiscal) &&
+            (fCidade === 'TODOS' || d.cidade             === fCidade)
+        );
+        if (fStatus !== 'TODOS') extras = extras.filter(d => norm(d.status).includes(norm(fStatus)));
+
+        let totalConcl = 0, totalAndam = 0, somaTempos = 0, countTempos = 0;
+        let alertaCurta = [], alertaAbandono = [];
+        const greMap = {}, fiscalMap = {}, horaMap = {};
+        const agora = new Date();
+
+        extras.forEach(d => {
+            const sn      = norm(d.status);
+            const isConcl = sn.includes("CONCLUID");
+            const isAndam = sn.includes("ANDAMENTO") || sn.includes("EXECUTANDO");
+            if (isConcl) totalConcl++;
+            if (isAndam) totalAndam++;
+
+            const dur = calcDuracaoMinutos(d.inicio_execucao, d.fim_execucao);
+            if (dur !== null && dur >= 0) { somaTempos += dur; countTempos++; }
+
+            if (isConcl && dur !== null && dur < 15) alertaCurta.push({...d, dur});
+            if (isAndam) {
+                const inicioMin = horaParaMinutos(d.inicio_execucao);
+                if (inicioMin !== null) {
+                    const agoraMin = agora.getHours() * 60 + agora.getMinutes();
+                    let diff = agoraMin - inicioMin;
+                    if (diff < 0) diff += 1440;
+                    if (diff > 360) alertaAbandono.push({ ...d, tempoAberto: diff });
+                }
+            }
+
+            const gr = d.gre || 'S/ GRE';
+            if (!greMap[gr]) greMap[gr] = 0;
+            greMap[gr]++;
+
+            const fis = d.fiscal_responsavel || 'NÃO IDENTIFICADO';
+            if (!fiscalMap[fis]) fiscalMap[fis] = { total:0, concl:0, alertas:0, gre: d.gre, motoristas:{} };
+            fiscalMap[fis].total++;
+            if (isConcl) fiscalMap[fis].concl++;
+            if ((isConcl && dur !== null && dur < 15) || isAndam) fiscalMap[fis].alertas++;
+            const motKey = d.motorista || 'S/ NOME';
+            if (!fiscalMap[fis].motoristas[motKey]) fiscalMap[fis].motoristas[motKey] = { gre: d.gre, rotas:0, concl:0 };
+            fiscalMap[fis].motoristas[motKey].rotas++;
+            if (isConcl) fiscalMap[fis].motoristas[motKey].concl++;
+
+            const hora = d.inicio_execucao ? d.inicio_execucao.split('-')[0].trim().substring(0,2) : null;
+            if (hora && !isNaN(parseInt(hora))) {
+                const h = parseInt(hora);
+                if (!horaMap[h]) horaMap[h] = { count:0, fiscais: new Set(), gres: new Set(), motoristas:[] };
+                horaMap[h].count++;
+                horaMap[h].fiscais.add(d.fiscal_responsavel || '');
+                horaMap[h].gres.add(d.gre || '');
+                horaMap[h].motoristas.push({ nome: d.motorista||'S/ NOME', gre: d.gre||'', rota: d.rota||'', inicio: d.inicio_execucao||'' });
+            }
+        });
+
+        const tempoMedio    = countTempos > 0 ? Math.round(somaTempos / countTempos) : null;
+        const tempoMedioStr = tempoMedio !== null ? (tempoMedio >= 60 ? `${Math.floor(tempoMedio/60)}h${String(tempoMedio%60).padStart(2,'0')}` : `${tempoMedio}min`) : '--';
+        const taxaConcl     = extras.length > 0 ? ((totalConcl/extras.length)*100).toFixed(1) : 0;
+
+        document.getElementById('ex-total').innerText      = extras.length;
+        document.getElementById('ex-concluidas').innerText = totalConcl;
+        document.getElementById('ex-perc-concl').innerText = extras.length ? `${taxaConcl}%` : '0%';
+        document.getElementById('ex-tempo-medio').innerText= tempoMedioStr;
+        document.getElementById('ex-curta').innerText      = alertaCurta.length;
+        document.getElementById('ex-abandono').innerText   = alertaAbandono.length;
+        document.getElementById('ex-andamento').innerText  = totalAndam;
+
+        // Gráfico GREs
+        if (charts.extrasGre) charts.extrasGre.destroy();
+        const top5Gre = Object.entries(greMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+        const ctxGre  = document.getElementById('chartExtrasGre');
+        if (ctxGre) {
+            charts.extrasGre = new Chart(ctxGre, {
+                type: 'bar',
+                data: { labels: top5Gre.map(([g])=>g), datasets: [{ label:'Rotas Extras', data: top5Gre.map(([,v])=>v), backgroundColor: '#9b59b6', borderRadius: 8 }] },
+                options: { indexAxis:'y', maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:'#95a5a6' } }, y:{ ticks:{ color:'#fff', font:{size:11} } } } }
+            });
+        }
+
+        // Gráfico Horários
+        if (charts.extrasHorario) charts.extrasHorario.destroy();
+        const horasLabels = Array.from({length:24},(_,i)=>String(i).padStart(2,'0')+'h');
+        const horasData   = Array.from({length:24},(_,i)=>(horaMap[i]||{count:0}).count);
+        const ctxHora     = document.getElementById('chartExtrasHorario');
+        if (ctxHora) {
+            charts.extrasHorario = new Chart(ctxHora, {
+                type:'line',
+                data:{ labels:horasLabels, datasets:[{ label:'Aberturas', data:horasData, borderColor:'#9b59b6', backgroundColor:'rgba(155,89,182,.25)', fill:true, tension:0.4, pointRadius:3, borderWidth:2 }] },
+                options:{ maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, ticks:{ color:'#95a5a6' } }, x:{ ticks:{ color:'#fff', font:{size:9} } } } }
+            });
+        }
+
+        // Ranking Fiscais
+        const rankFiscais = Object.entries(fiscalMap).sort((a,b)=>b[1].total-a[1].total).slice(0,10);
+        let fiscaisHtml   = '';
+        rankFiscais.forEach(([nome, d], i) => {
+            const perc      = d.total > 0 ? ((d.concl/d.total)*100).toFixed(1) : 0;
+            const alertBadge= d.alertas > 0 ? `<span class="badge badge-warning">⚠️ ${d.alertas}</span>` : '<span class="badge badge-success">OK</span>';
+            const fId       = `exfis-${i}`;
+            fiscaisHtml += `<tr class="pointer" onclick="toggleRow('${fId}',this)">
+                <td style="text-align:center;">${i+1}º</td>
+                <td><span class="arrow">▶</span> ${nome}</td>
+                <td>${d.gre||''}</td>
+                <td style="font-weight:bold;color:var(--extra)">${d.total}</td>
+                <td style="color:var(--success)">${d.concl}</td>
+                <td class="perc-bold">${perc}%</td>
+                <td>${alertBadge}</td>
+            </tr>`;
+            Object.entries(d.motoristas).sort((a,b)=>b[1].rotas-a[1].rotas).forEach(([mot, md]) => {
+                const mPerc = md.rotas > 0 ? ((md.concl/md.rotas)*100).toFixed(0) : 0;
+                fiscaisHtml += `<tr class="nested-row ${fId}">
+                    <td></td>
+                    <td class="indent-detail">🧑 ${mot}</td>
+                    <td style="color:var(--info);font-size:9px;">${md.gre||''}</td>
+                    <td style="color:var(--extra);font-size:9px;">${md.rotas}</td>
+                    <td style="color:var(--success);font-size:9px;">${md.concl}</td>
+                    <td style="color:var(--slate);font-size:9px;">${mPerc}%</td>
+                    <td></td>
+                </tr>`;
+            });
+        });
+        document.querySelector('#tExtrasFiscais tbody').innerHTML = fiscaisHtml || '<tr><td colspan="7">Sem dados.</td></tr>';
+
+        // Padrão de Horários por Faixa
+        const faixas = [
+            { label:'Madrugada (00-05h)',  min:0,  max:5  },
+            { label:'Manhã Cedo (06-08h)', min:6,  max:8  },
+            { label:'Manhã (09-11h)',       min:9,  max:11 },
+            { label:'Almoço (12-13h)',      min:12, max:13 },
+            { label:'Tarde (14-17h)',       min:14, max:17 },
+            { label:'Noite (18-21h)',       min:18, max:21 },
+            { label:'Noite Tarde (22-23h)', min:22, max:23 }
+        ];
+        let horariosPadraoHtml = '';
+        faixas.forEach((f, fIdx) => {
+            let count=0; const fiscaisSet=new Set(), gresSet=new Set(), motoristasArr=[];
+            for (let h=f.min; h<=f.max; h++) {
+                if (horaMap[h]) {
+                    count+=horaMap[h].count;
+                    horaMap[h].fiscais.forEach(x=>fiscaisSet.add(x));
+                    horaMap[h].gres.forEach(x=>gresSet.add(x));
+                    horaMap[h].motoristas.forEach(m=>motoristasArr.push(m));
+                }
+            }
+            if (count === 0) return;
+            const risco = count >= 10 ? '<span class="badge badge-danger">ALTO</span>' : count >= 5 ? '<span class="badge badge-warning">MÉDIO</span>' : '<span class="badge badge-success">BAIXO</span>';
+            const hId   = `hfaixa-${fIdx}`;
+            horariosPadraoHtml += `<tr class="pointer" onclick="toggleRow('${hId}',this)">
+                <td><span class="arrow">▶</span> ${f.label}</td>
+                <td style="font-weight:bold;color:var(--extra)">${count}</td>
+                <td>${fiscaisSet.size}</td>
+                <td>${gresSet.size}</td>
+                <td>${risco}</td>
+            </tr>`;
+            const motMap = {};
+            motoristasArr.forEach(m => {
+                const k = m.nome + '|' + m.gre;
+                if (!motMap[k]) motMap[k] = { nome:m.nome, gre:m.gre, count:0, rotas:[] };
+                motMap[k].count++;
+                if (!motMap[k].rotas.includes(m.rota)) motMap[k].rotas.push(m.rota);
+            });
+            Object.values(motMap).sort((a,b)=>b.count-a.count).forEach(m => {
+                horariosPadraoHtml += `<tr class="nested-row ${hId}">
+                    <td class="indent-detail">🧑 ${m.nome}</td>
+                    <td style="color:var(--extra);font-size:9px;">${m.count}</td>
+                    <td colspan="2" style="color:var(--info);font-size:9px;">${m.gre}</td>
+                    <td style="color:var(--slate);font-size:9px;">${m.rotas.slice(0,2).map(r=>r.substring(0,25)).join(', ')}${m.rotas.length>2?'...':''}</td>
+                </tr>`;
+            });
+        });
+        document.querySelector('#tExtrasHorariosPadrao tbody').innerHTML = horariosPadraoHtml || '<tr><td colspan="5">Sem dados.</td></tr>';
+
+        // Alertas Curta Duração
+        document.querySelector('#tAlertaCurta tbody').innerHTML = alertaCurta.slice(0,50).map(d =>
+            `<tr class="alert-row-danger"><td style="word-break:break-word;">${d.rota.substring(0,35)}</td><td>${d.motorista}</td><td>${d.gre}</td><td>${d.fiscal_responsavel}</td><td>${d.inicio_execucao}</td><td>${d.fim_execucao}</td><td><span class="badge badge-danger">${d.dur} min</span></td></tr>`
+        ).join('') || '<tr><td colspan="7">Nenhum alerta.</td></tr>';
+
+        // Alertas Abandono
+        document.querySelector('#tAlertaAbandono tbody').innerHTML = alertaAbandono.slice(0,50).map(d => {
+            const h = Math.floor(d.tempoAberto/60), m = d.tempoAberto%60;
+            return `<tr class="alert-row-warning"><td style="word-break:break-word;">${d.rota.substring(0,35)}</td><td>${d.motorista}</td><td>${d.gre}</td><td>${d.fiscal_responsavel}</td><td>${d.inicio_execucao}</td><td><span class="badge badge-warning">${h}h${String(m).padStart(2,'0')}</span></td></tr>`;
+        }).join('') || '<tr><td colspan="6">Nenhum alerta.</td></tr>';
+
+        // DataTable Auditoria
+        const dadosAuditoria = apenasAlertas ? extras.filter(d => {
+            const sn  = norm(d.status);
+            const dur = calcDuracaoMinutos(d.inicio_execucao, d.fim_execucao);
+            return (sn.includes("CONCLUID") && dur !== null && dur < 15) || sn.includes("ANDAMENTO") || sn.includes("EXECUTANDO");
+        }) : extras;
+
+        const tbodyAudit = document.getElementById('tbodyAuditoriaExtras');
+        if (tbodyAudit) {
+            tbodyAudit.innerHTML = dadosAuditoria.map(d => {
+                const sn      = norm(d.status);
+                const dur     = calcDuracaoMinutos(d.inicio_execucao, d.fim_execucao);
+                const isConcl = sn.includes("CONCLUID");
+                const isAndam = sn.includes("ANDAMENTO") || sn.includes("EXECUTANDO");
+                let alerta    = '';
+                if (isConcl && dur !== null && dur < 15) alerta = '<span class="badge badge-danger">Curta</span>';
+                else if (isAndam) alerta = '<span class="badge badge-warning">Andamento</span>';
+                const statusBadge = isConcl ? 'badge-success' : isAndam ? 'badge-warning' : 'badge-info';
+                return `<tr>
+                    <td>${d.data||''}</td>
+                    <td style="word-break:break-word;">${d.rota.substring(0,40)}</td>
+                    <td>${d.motorista}</td><td>${d.gre}</td><td>${d.cidade}</td>
+                    <td>${d.fiscal_responsavel}</td>
+                    <td><span class="badge ${statusBadge}">${d.status}</span></td>
+                    <td>${d.inicio_execucao}</td><td>${d.fim_execucao}</td>
+                    <td style="text-align:center;${dur!==null&&dur<15?'color:var(--danger);font-weight:bold':''}">${dur !== null ? dur : 'N/A'}</td>
+                    <td style="text-align:center">${d.percentual_conclusao || '0%'}</td>
+                    <td>${alerta}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        // Inicializar/reinicializar DataTable
+        if (dtExtras) { try { dtExtras.destroy(); } catch(e){} dtExtras = null; }
+        if (typeof $ !== 'undefined' && $.fn.DataTable) {
+            dtExtras = $('#tAuditoriaExtras').DataTable({
+                dom: "<'row'<'col-sm-6'B><'col-sm-6'f>>" +
+                     "<'row'<'col-sm-12'tr>>" +
+                     "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+                buttons: [
+                    { extend:'excelHtml5', text:'📊 Excel', className:'btn btn-success btn-sm' },
+                    { extend:'csvHtml5',   text:'📄 CSV',   className:'btn btn-info btn-sm' },
+                    { extend:'print',      text:'🖨️ Imprimir', className:'btn btn-secondary btn-sm' }
+                ],
+                order: [[9, 'asc']],
+                pageLength: 15,
+                language: {
+                    search:'Buscar:', lengthMenu:'Mostrar _MENU_ registros',
+                    info:'Mostrando _START_ a _END_ de _TOTAL_ rotas',
+                    paginate:{ previous:'‹', next:'›' },
+                    zeroRecords:'Nenhuma rota encontrada.'
+                }
+            });
+        }
+    }
+
+    // ── Utils ─────────────────────────────────────────────────────────────────
     function exportarPDF() {
-        const opt = { margin: 5, filename: 'BI_LOGISTICA.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
-        html2pdf().set(opt).from(document.body).save();
+        const opt = { margin:5, filename:'BI_LOGISTICA.pdf', html2canvas:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'landscape'} };
+        html2pdf().set(opt).from(document.getElementById('aba-escala')).save();
     }
 
     function lerPagina() {
@@ -664,6 +1542,7 @@
         window.speechSynthesis.speak(u);
     }
 
+    // ── Init ──────────────────────────────────────────────────────────────────
     carregar();
 </script>
 </body>
