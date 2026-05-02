@@ -174,6 +174,19 @@
 
         .nested-div-row { display: none; background: rgba(0,0,0,.18); }
         .nested-div-row.show-row { display: table-row !important; }
+
+        /* ── Compliance ── */
+        .cpl-score-pill { display:inline-block; padding:2px 10px; border-radius:20px; font-size:9px; font-weight:bold; }
+        .cpl-risco-critico  { background:rgba(231,76,60,.2);  color:#e74c3c; border:1px solid #e74c3c; }
+        .cpl-risco-alto     { background:rgba(243,156,18,.2); color:#f39c12; border:1px solid #f39c12; }
+        .cpl-risco-medio    { background:rgba(241,196,15,.2); color:#f1c40f; border:1px solid #f1c40f; }
+        .cpl-risco-baixo    { background:rgba(46,204,113,.2); color:#2ecc71; border:1px solid #2ecc71; }
+        .cpl-alerta-temporal   { background:rgba(231,76,60,.15);  color:#e74c3c; }
+        .cpl-alerta-geografico { background:rgba(243,156,18,.15); color:#f39c12; }
+        .cpl-alerta-gargalo    { background:rgba(155,89,182,.15); color:#9b59b6; }
+        .cpl-tendencia-sobe   { color:#e74c3c; font-size:14px; }
+        .cpl-tendencia-desce  { color:#2ecc71; font-size:14px; }
+        .cpl-tendencia-estavel{ color:#95a5a6; font-size:14px; }
     </style>
 </head>
 <body>
@@ -184,6 +197,7 @@
         <button class="tab-btn active" onclick="switchTab(event,'aba-escala')">📡 Dados Escala</button>
         <button class="tab-btn"        onclick="switchTab(event,'aba-assiduidade')">⏱️ Assiduidade Temporal</button>
         <button class="tab-btn"        onclick="switchTab(event,'aba-extras')">🚀 Rotas Extras</button>
+        <button class="tab-btn"        onclick="switchTab(event,'aba-compliance')">🛡️ Compliance</button>
     </nav>
 
     <!-- ══════════════════════════════════════════════════════════
@@ -551,6 +565,166 @@
         </div>
     </section>
 
+    <!-- ══════════════════════════════════════════════════════════
+         ABA COMPLIANCE
+    ══════════════════════════════════════════════════════════ -->
+    <section id="aba-compliance" class="content-section">
+
+        <!-- Cabeçalho executivo -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+            <div>
+                <div style="font-size:18px; font-weight:bold; color:#fff;">🛡️ Dashboard de Compliance Operacional</div>
+                <div style="font-size:10px; color:var(--slate); margin-top:3px;">Monitoramento de conformidade · Controle de ativos · Rastreabilidade para Diretoria</div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <select id="cpl-filtro-gre"    onchange="processarCompliance()" style="width:auto;min-width:130px;font-size:10px;padding:6px;">
+                    <option value="TODOS">Todas GREs</option>
+                </select>
+                <select id="cpl-filtro-fiscal" onchange="processarCompliance()" style="width:auto;min-width:150px;font-size:10px;padding:6px;">
+                    <option value="TODOS">Todos Fiscais</option>
+                </select>
+                <button onclick="processarCompliance()" style="padding:6px 14px;background:var(--info);color:#fff;border:none;border-radius:6px;font-size:10px;font-weight:bold;cursor:pointer;">🔄 Atualizar</button>
+            </div>
+        </div>
+
+        <!-- ── LINHA 1: Score executivo único ── -->
+        <div style="background:linear-gradient(135deg,#1a2744 0%,#0d1b2a 100%);border-radius:16px;padding:18px 24px;margin-bottom:16px;border:1px solid rgba(52,152,219,.25);display:flex;gap:0;flex-wrap:wrap;">
+            <div style="flex:1;min-width:160px;text-align:center;padding:8px 16px;border-right:1px solid rgba(255,255,255,.07);">
+                <div style="font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🏅 Índice de Confiança Operacional</div>
+                <div id="cpl-ico" style="font-size:42px;font-weight:bold;color:#2ecc71;">—</div>
+                <div style="font-size:9px;color:var(--slate);margin-top:4px;">Rotas sem alerta / Total</div>
+            </div>
+            <div style="flex:1;min-width:140px;text-align:center;padding:8px 16px;border-right:1px solid rgba(255,255,255,.07);">
+                <div style="font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">⚠️ Alertas Críticos</div>
+                <div id="cpl-alertas" style="font-size:42px;font-weight:bold;color:#e74c3c;">—</div>
+                <div style="font-size:9px;color:var(--slate);margin-top:4px;">Fraude temporal + geográfica</div>
+            </div>
+            <div style="flex:1;min-width:140px;text-align:center;padding:8px 16px;border-right:1px solid rgba(255,255,255,.07);">
+                <div style="font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">⏳ Gargalos Ativos</div>
+                <div id="cpl-gargalos" style="font-size:42px;font-weight:bold;color:#f39c12;">—</div>
+                <div style="font-size:9px;color:var(--slate);margin-top:4px;">Rotas abertas &gt; 6h sem conclusão</div>
+            </div>
+            <div style="flex:1;min-width:140px;text-align:center;padding:8px 16px;border-right:1px solid rgba(255,255,255,.07);">
+                <div style="font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📉 Falhas de Compliance</div>
+                <div id="cpl-falhas" style="font-size:42px;font-weight:bold;color:#e67e22;">—</div>
+                <div style="font-size:9px;color:var(--slate);margin-top:4px;">&lt;10min ou distância &lt;500m</div>
+            </div>
+            <div style="flex:1;min-width:140px;text-align:center;padding:8px 16px;">
+                <div style="font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🚗 Veículos em Risco</div>
+                <div id="cpl-veiculos-risco" style="font-size:42px;font-weight:bold;color:#9b59b6;">—</div>
+                <div style="font-size:9px;color:var(--slate);margin-top:4px;">Com ≥2 ocorrências de alerta</div>
+            </div>
+        </div>
+
+        <!-- ── LINHA 2: Pareto + Ciclo temporal ── -->
+        <div class="grid-2col">
+            <div class="card row-new" style="border-top-color:#e74c3c;">
+                <h3 style="font-size:13px;">📊 Pareto de Responsabilização
+                    <span style="display:flex;gap:6px;">
+                        <button id="cpl-pareto-fiscal-btn" onclick="setCplPareto('fiscal')"
+                            style="padding:3px 10px;font-size:9px;font-weight:bold;border:1px solid #e74c3c;background:#e74c3c;color:#fff;border-radius:12px;cursor:pointer;">Fiscal</button>
+                        <button id="cpl-pareto-gre-btn" onclick="setCplPareto('gre')"
+                            style="padding:3px 10px;font-size:9px;font-weight:bold;border:1px solid var(--border);background:transparent;color:var(--slate);border-radius:12px;cursor:pointer;">GRE</button>
+                    </span>
+                </h3>
+                <div style="font-size:9px;color:var(--slate);margin-top:-8px;margin-bottom:8px;">Quem concentra o maior volume de irregularidades auditáveis</div>
+                <div style="position:relative;height:260px;"><canvas id="cpl-chart-pareto"></canvas></div>
+            </div>
+            <div class="card row-new" style="border-top-color:#3498db;">
+                <h3 style="font-size:13px;">🕐 Ciclo de Execução Diário</h3>
+                <div style="font-size:9px;color:var(--slate);margin-top:-8px;margin-bottom:8px;">Volume de rotas concluídas por faixa de 2h — identifica picos e ociosidade</div>
+                <div style="position:relative;height:260px;"><canvas id="cpl-chart-ciclo"></canvas></div>
+            </div>
+        </div>
+
+        <!-- ── LINHA 3: Score de risco por veículo + Mapa de calor GRE ── -->
+        <div class="grid-2col">
+            <div class="card row-new" style="border-top-color:#9b59b6;">
+                <h3 style="font-size:13px;">🚗 Ranking de Risco por Veículo / Motorista</h3>
+                <div style="font-size:9px;color:var(--slate);margin-top:-8px;margin-bottom:8px;">Ativos com maior concentração de alertas — prioritários para auditoria de campo</div>
+                <div class="scroll-area-sm" style="max-height:260px;">
+                    <table id="cpl-tbl-veiculos" style="table-layout:auto;">
+                        <thead>
+                            <tr>
+                                <th width="30">#</th>
+                                <th>Veículo / Motorista</th>
+                                <th>GRE</th>
+                                <th>Fiscal</th>
+                                <th>Rotas</th>
+                                <th>Alertas</th>
+                                <th>Score</th>
+                                <th>Risco</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card row-new" style="border-top-color:#f39c12;">
+                <h3 style="font-size:13px;">📋 Mapa de Compliance por GRE</h3>
+                <div style="font-size:9px;color:var(--slate);margin-top:-8px;margin-bottom:8px;">Visão consolidada de conformidade por regional — subsídio para reunião de gestores</div>
+                <div class="scroll-area-sm" style="max-height:260px;">
+                    <table id="cpl-tbl-gre-mapa" style="table-layout:auto;">
+                        <thead>
+                            <tr>
+                                <th>GRE</th>
+                                <th>Total Rotas</th>
+                                <th>Alertas</th>
+                                <th>Gargalos</th>
+                                <th>ICO</th>
+                                <th>Tendência</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── LINHA 4: Tabela de auditoria prioritária ── -->
+        <div class="card row-new" style="border-top-color:#e74c3c; margin-bottom:20px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+                <div>
+                    <h3 style="margin:0;font-size:13px;">📋 Auditoria Prioritária — Rotas Críticas</h3>
+                    <div style="font-size:9px;color:var(--slate);margin-top:2px;">Somente rotas com comportamento de fraude temporal, geográfica ou gargalo. Ordenadas por gravidade.</div>
+                </div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <select id="cpl-audit-tipo" onchange="renderCplAuditoria()" style="width:auto;min-width:140px;font-size:10px;padding:5px;">
+                        <option value="TODOS">Todos os alertas</option>
+                        <option value="TEMPORAL">Fraude Temporal (&lt;10min)</option>
+                        <option value="GEOGRAFICA">Fraude Geográfica</option>
+                        <option value="GARGALO">Gargalo (&gt;6h)</option>
+                    </select>
+                    <button onclick="exportarCplCSV()" style="padding:5px 12px;background:#27ae60;color:#fff;border:none;border-radius:6px;font-size:10px;font-weight:bold;cursor:pointer;">📥 Exportar CSV</button>
+                </div>
+            </div>
+            <div style="overflow-x:auto;">
+                <table id="cpl-tbl-auditoria" style="table-layout:auto;min-width:900px;">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Fiscal</th>
+                            <th>GRE</th>
+                            <th>Motorista</th>
+                            <th>Veículo</th>
+                            <th>Rota</th>
+                            <th>Início</th>
+                            <th>Fim</th>
+                            <th>Duração</th>
+                            <th>Dist. Pontos</th>
+                            <th>Tipo de Alerta</th>
+                            <th>Gravidade</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cpl-tbody-auditoria"></tbody>
+                </table>
+            </div>
+            <div id="cpl-audit-summary" style="font-size:9px;color:var(--slate);margin-top:8px;text-align:right;"></div>
+        </div>
+
+    </section>
+
 <script>
     Chart.defaults.color = '#a4b0be';
 
@@ -572,6 +746,7 @@
         e.currentTarget.classList.add('active');
         if (tabId === 'aba-assiduidade') processarAssiduidadeTemporal();
         if (tabId === 'aba-extras')      processarExtras();
+        if (tabId === 'aba-compliance')  processarCompliance();
     }
 
     // ── Carregar dados (HTML2 original) ──────────────────────────────────────
@@ -1748,6 +1923,373 @@
         const u   = new SpeechSynthesisUtterance(`Resumo Logístico: Assiduidade atual de ${ass}.`);
         u.lang = 'pt-BR';
         window.speechSynthesis.speak(u);
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  COMPLIANCE — lógica completa
+    // ═════════════════════════════════════════════════════════════════════════
+
+    let cplParetoModo = 'fiscal';
+    let cplDadosCriticos = [];
+
+    function setCplPareto(modo) {
+        cplParetoModo = modo;
+        const fb = document.getElementById('cpl-pareto-fiscal-btn');
+        const gb = document.getElementById('cpl-pareto-gre-btn');
+        if (fb && gb) {
+            fb.style.background = modo === 'fiscal' ? '#e74c3c' : 'transparent';
+            fb.style.color      = modo === 'fiscal' ? '#fff'    : 'var(--slate)';
+            fb.style.border     = modo === 'fiscal' ? '1px solid #e74c3c' : '1px solid var(--border)';
+            gb.style.background = modo === 'gre'    ? '#e74c3c' : 'transparent';
+            gb.style.color      = modo === 'gre'    ? '#fff'    : 'var(--slate)';
+            gb.style.border     = modo === 'gre'    ? '1px solid #e74c3c' : '1px solid var(--border)';
+        }
+        renderCplPareto();
+    }
+
+    function processarCompliance() {
+        if (!bruto.length) return;
+
+        // Popula filtros da aba compliance (primeira vez)
+        const elGre    = document.getElementById('cpl-filtro-gre');
+        const elFiscal = document.getElementById('cpl-filtro-fiscal');
+        if (elGre && elGre.options.length === 1) {
+            [...new Set(bruto.map(d => d.gre))].filter(Boolean).sort().forEach(v => elGre.add(new Option(v, v)));
+        }
+        if (elFiscal && elFiscal.options.length === 1) {
+            [...new Set(bruto.map(d => d.fiscal_responsavel))].filter(Boolean).sort().forEach(v => elFiscal.add(new Option(v, v)));
+        }
+
+        const filtroGre    = elGre?.value    || 'TODOS';
+        const filtroFiscal = elFiscal?.value || 'TODOS';
+
+        const dados = bruto.filter(d =>
+            (filtroGre    === 'TODOS' || d.gre                === filtroGre)    &&
+            (filtroFiscal === 'TODOS' || d.fiscal_responsavel === filtroFiscal)
+        );
+
+        const agora = new Date();
+        cplDadosCriticos = [];
+
+        let semAlerta = 0;
+        const veiculoMap = {}, greMap = {};
+        const cicloMap   = { '06':0,'08':0,'10':0,'12':0,'14':0,'16':0,'18':0,'20':0 };
+
+        dados.forEach(d => {
+            const durMin      = calcDuracaoMinutos(d.inicio_execucao, d.fim_execucao);
+            const distKm      = calcularDistanciaKm(d.coordenadas_inicio, d.coordenadas_fim);
+            const kmPlan      = parseFloat((d.km_planejado || '0').toString().replace(',', '.')) || 0;
+            const sn          = norm(d.status);
+            const isConcl     = sn.includes('CONCLUID');
+            const isAndam     = sn.includes('ANDAMENTO') || sn.includes('EXECUTANDO');
+            const veiculo     = d.veiculo || 'S/ PLACA';
+            const motorista   = d.motorista || 'S/ NOME';
+            const gre         = d.gre || 'S/ GRE';
+
+            // Tipo de alerta
+            let tipoAlerta = null, gravidade = 0;
+
+            if (durMin !== null && durMin < 10 && (isConcl || isAndam)) {
+                tipoAlerta = 'TEMPORAL';
+                gravidade  = durMin < 3 ? 10 : 8;
+            } else if (distKm !== null && distKm < 0.5 && kmPlan > 3 && (isConcl || isAndam)) {
+                tipoAlerta = 'GEOGRAFICA';
+                gravidade  = 9;
+            } else if (isAndam) {
+                const inicioMin = horaParaMinutos(d.inicio_execucao);
+                if (inicioMin !== null) {
+                    const agoraMin = agora.getHours() * 60 + agora.getMinutes();
+                    let diff = agoraMin - inicioMin;
+                    if (diff < 0) diff += 1440;
+                    if (diff > 360) { tipoAlerta = 'GARGALO'; gravidade = 6; }
+                }
+            }
+
+            if (tipoAlerta) {
+                cplDadosCriticos.push({ ...d, tipoAlerta, gravidade, durMin, distKm });
+            } else {
+                semAlerta++;
+            }
+
+            // Veículos
+            const vKey = `${veiculo}||${motorista}`;
+            if (!veiculoMap[vKey]) veiculoMap[vKey] = { veiculo, motorista, gre, fiscal: d.fiscal_responsavel || '', rotas:0, alertas:0, tipos:[] };
+            veiculoMap[vKey].rotas++;
+            if (tipoAlerta) { veiculoMap[vKey].alertas++; veiculoMap[vKey].tipos.push(tipoAlerta); }
+
+            // GRE compliance
+            if (!greMap[gre]) greMap[gre] = { total:0, alertas:0, gargalos:0, concl:0 };
+            greMap[gre].total++;
+            if (tipoAlerta === 'GARGALO') greMap[gre].gargalos++;
+            if (tipoAlerta && tipoAlerta !== 'GARGALO') greMap[gre].alertas++;
+            if (isConcl) greMap[gre].concl++;
+
+            // Ciclo: hora de fim_execucao
+            if (isConcl && d.fim_execucao && d.fim_execucao !== '--:--') {
+                const hFim = parseInt((d.fim_execucao || '').split(':')[0]);
+                if (!isNaN(hFim)) {
+                    const faixa = String(Math.floor(hFim / 2) * 2).padStart(2, '0');
+                    if (cicloMap[faixa] !== undefined) cicloMap[faixa]++;
+                    else {
+                        // encontra a faixa mais próxima disponível
+                        const f2 = String(Math.min(Math.floor(hFim/2)*2, 20)).padStart(2,'0');
+                        if (cicloMap[f2] !== undefined) cicloMap[f2]++;
+                    }
+                }
+            }
+        });
+
+        const total        = dados.length || 1;
+        const totalAlertas = cplDadosCriticos.length;
+        const gargalos     = cplDadosCriticos.filter(d => d.tipoAlerta === 'GARGALO').length;
+        const falhas       = cplDadosCriticos.filter(d => d.tipoAlerta === 'TEMPORAL' || d.tipoAlerta === 'GEOGRAFICA').length;
+        const ico          = ((semAlerta / total) * 100).toFixed(1);
+
+        // Veículos com ≥2 alertas
+        const veiculosRisco = Object.values(veiculoMap).filter(v => v.alertas >= 2).length;
+
+        // KPIs
+        const elIco = document.getElementById('cpl-ico');
+        if (elIco) {
+            elIco.innerText = ico + '%';
+            elIco.style.color = ico >= 80 ? '#2ecc71' : ico >= 60 ? '#f39c12' : '#e74c3c';
+        }
+        setText('cpl-alertas',       totalAlertas);
+        setText('cpl-gargalos',      gargalos);
+        setText('cpl-falhas',        falhas);
+        setText('cpl-veiculos-risco',veiculosRisco);
+
+        // Guarda mapas para renders
+        window._cplVeiculoMap = veiculoMap;
+        window._cplGreMap     = greMap;
+        window._cplCicloMap   = cicloMap;
+        window._cplDados      = dados;
+
+        renderCplPareto();
+        renderCplCiclo();
+        renderCplVeiculos();
+        renderCplGreMapa();
+        renderCplAuditoria();
+    }
+
+    function setText(id, val) {
+        const el = document.getElementById(id);
+        if (el) el.innerText = val;
+    }
+
+    // ── Pareto de irregularidades ─────────────────────────────────────────────
+    function renderCplPareto() {
+        const campo = cplParetoModo === 'fiscal' ? 'fiscal_responsavel' : 'gre';
+        const mapa  = {};
+        cplDadosCriticos.forEach(d => {
+            const k = d[campo] || 'N/A';
+            if (!mapa[k]) mapa[k] = { temporal:0, geografica:0, gargalo:0 };
+            if (d.tipoAlerta === 'TEMPORAL')   mapa[k].temporal++;
+            if (d.tipoAlerta === 'GEOGRAFICA') mapa[k].geografica++;
+            if (d.tipoAlerta === 'GARGALO')    mapa[k].gargalo++;
+        });
+
+        const sorted = Object.entries(mapa)
+            .map(([nm, v]) => ({ nm, total: v.temporal + v.geografica + v.gargalo, ...v }))
+            .sort((a, b) => b.total - a.total).slice(0, 10);
+
+        const labels = sorted.map(r => r.nm.split(' ')[0] + (r.nm.split(' ')[1] ? ' ' + r.nm.split(' ')[1] : ''));
+
+        if (charts.cplPareto) { charts.cplPareto.destroy(); charts.cplPareto = null; }
+        const ctx = document.getElementById('cpl-chart-pareto');
+        if (!ctx) return;
+        charts.cplPareto = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    { label: '⏱ Temporal (<10min)', data: sorted.map(r => r.temporal),   backgroundColor: 'rgba(231,76,60,.75)',  borderRadius: 4 },
+                    { label: '📍 Geográfica',        data: sorted.map(r => r.geografica), backgroundColor: 'rgba(243,156,18,.75)', borderRadius: 4 },
+                    { label: '⏳ Gargalo (>6h)',     data: sorted.map(r => r.gargalo),    backgroundColor: 'rgba(155,89,182,.75)', borderRadius: 4 }
+                ]
+            },
+            options: {
+                maintainAspectRatio: false, responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#a4b0be', font: { size: 9 }, padding: 10 } },
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                    x: { stacked: true, ticks: { color: '#a4b0be', font: { size: 9 }, maxRotation: 30 }, grid: { color: 'rgba(255,255,255,.04)' } },
+                    y: { stacked: true, beginAtZero: true, ticks: { color: '#a4b0be', stepSize: 1 }, grid: { color: 'rgba(255,255,255,.05)' } }
+                }
+            }
+        });
+    }
+
+    // ── Ciclo de execução diário ──────────────────────────────────────────────
+    function renderCplCiclo() {
+        const ciclo = window._cplCicloMap || {};
+        const labels = Object.keys(ciclo).sort().map(h => h + 'h');
+        const vals   = Object.keys(ciclo).sort().map(h => ciclo[h]);
+
+        if (charts.cplCiclo) { charts.cplCiclo.destroy(); charts.cplCiclo = null; }
+        const ctx = document.getElementById('cpl-chart-ciclo');
+        if (!ctx) return;
+        charts.cplCiclo = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Rotas concluídas',
+                    data: vals,
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52,152,219,.12)',
+                    fill: true, tension: 0.4,
+                    pointRadius: 5, pointHoverRadius: 8,
+                    borderWidth: 2.5,
+                    pointBackgroundColor: vals.map(v => {
+                        const max = Math.max(...vals, 1);
+                        return v === max ? '#e74c3c' : v === Math.min(...vals.filter(x=>x>0),max) ? '#f1c40f' : '#3498db';
+                    })
+                }]
+            },
+            options: {
+                maintainAspectRatio: false, responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (item) => ` ${item.raw} rotas concluídas nessa faixa`,
+                            afterLabel: (item) => {
+                                const max = Math.max(...vals, 1);
+                                if (item.raw === max) return ' ← Pico de execução';
+                                if (item.raw === Math.min(...vals.filter(x=>x>0), max)) return ' ← Menor atividade';
+                                return '';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { ticks: { color: '#a4b0be', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,.04)' } },
+                    y: { beginAtZero: true, ticks: { color: '#a4b0be', stepSize: 1 }, grid: { color: 'rgba(255,255,255,.05)' } }
+                }
+            }
+        });
+    }
+
+    // ── Ranking de risco por veículo ──────────────────────────────────────────
+    function renderCplVeiculos() {
+        const lista = Object.values(window._cplVeiculoMap || {})
+            .filter(v => v.alertas > 0)
+            .sort((a, b) => b.alertas - a.alertas)
+            .slice(0, 20);
+
+        const tbody = document.querySelector('#cpl-tbl-veiculos tbody');
+        if (!tbody) return;
+        tbody.innerHTML = lista.map((v, i) => {
+            const score = ((v.alertas / Math.max(v.rotas, 1)) * 100).toFixed(0);
+            const riscoCls = score >= 50 ? 'cpl-risco-critico' : score >= 30 ? 'cpl-risco-alto' : score >= 15 ? 'cpl-risco-medio' : 'cpl-risco-baixo';
+            const riscoTxt = score >= 50 ? 'CRÍTICO' : score >= 30 ? 'ALTO' : score >= 15 ? 'MÉDIO' : 'BAIXO';
+            const tipos    = [...new Set(v.tipos)].map(t => t === 'TEMPORAL' ? '⏱' : t === 'GEOGRAFICA' ? '📍' : '⏳').join(' ');
+            return `<tr>
+                <td style="color:var(--slate);font-size:9px;">${i+1}º</td>
+                <td><b>${v.veiculo}</b><br><span style="font-size:9px;color:var(--slate);">${v.motorista.substring(0,28)}</span></td>
+                <td style="font-size:10px;">${v.gre}</td>
+                <td style="font-size:9px;color:var(--info);">${(v.fiscal||'').split(' ')[0]}</td>
+                <td style="text-align:center;">${v.rotas}</td>
+                <td style="text-align:center;color:#e74c3c;font-weight:bold;">${v.alertas} ${tipos}</td>
+                <td style="text-align:center;font-weight:bold;color:${score>=50?'#e74c3c':score>=30?'#f39c12':'#f1c40f'};">${score}%</td>
+                <td><span class="cpl-score-pill ${riscoCls}">${riscoTxt}</span></td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="8" style="color:var(--slate);text-align:center;padding:20px;">✅ Nenhum veículo com alertas nos dados filtrados.</td></tr>';
+    }
+
+    // ── Mapa compliance por GRE ───────────────────────────────────────────────
+    function renderCplGreMapa() {
+        const greMap = window._cplGreMap || {};
+        const sorted = Object.entries(greMap).sort((a, b) => b[1].alertas - a[1].alertas);
+
+        const tbody = document.querySelector('#cpl-tbl-gre-mapa tbody');
+        if (!tbody) return;
+        tbody.innerHTML = sorted.map(([gre, d]) => {
+            const ico      = d.total ? (((d.total - d.alertas - d.gargalos) / d.total) * 100).toFixed(1) : '0.0';
+            const icoCls   = ico >= 80 ? 'color:#2ecc71' : ico >= 60 ? 'color:#f39c12' : 'color:#e74c3c';
+            const acao     = d.alertas + d.gargalos >= 10 ? '<span class="cpl-score-pill cpl-risco-critico">AUDITAR JÁ</span>'
+                           : d.alertas + d.gargalos >= 5  ? '<span class="cpl-score-pill cpl-risco-alto">MONITORAR</span>'
+                           : '<span class="cpl-score-pill cpl-risco-baixo">OK</span>';
+            const tend     = d.alertas >= 8 ? '<span class="cpl-tendencia-sobe">▲</span>'
+                           : d.alertas <= 2 ? '<span class="cpl-tendencia-desce">▼</span>'
+                           : '<span class="cpl-tendencia-estavel">►</span>';
+            return `<tr>
+                <td><b>${gre}</b></td>
+                <td style="text-align:center;">${d.total}</td>
+                <td style="text-align:center;color:#e74c3c;font-weight:bold;">${d.alertas}</td>
+                <td style="text-align:center;color:#9b59b6;">${d.gargalos}</td>
+                <td style="text-align:center;font-weight:bold;${icoCls}">${ico}%</td>
+                <td style="text-align:center;">${tend}</td>
+                <td>${acao}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="7" style="color:var(--slate);text-align:center;padding:20px;">Sem dados para exibir.</td></tr>';
+    }
+
+    // ── Tabela de auditoria prioritária ──────────────────────────────────────
+    function renderCplAuditoria() {
+        const filtroTipo = document.getElementById('cpl-audit-tipo')?.value || 'TODOS';
+        const lista = cplDadosCriticos
+            .filter(d => filtroTipo === 'TODOS' || d.tipoAlerta === filtroTipo)
+            .sort((a, b) => b.gravidade - a.gravidade);
+
+        const tbody = document.getElementById('cpl-tbody-auditoria');
+        const summary = document.getElementById('cpl-audit-summary');
+        if (!tbody) return;
+
+        tbody.innerHTML = lista.slice(0, 200).map(d => {
+            const durStr  = d.durMin !== null ? d.durMin + ' min' : 'N/A';
+            const distStr = d.distKm !== null ? d.distKm.toFixed(2) + ' km' : 'N/A';
+            const alertaCls = d.tipoAlerta === 'TEMPORAL'   ? 'cpl-alerta-temporal'
+                            : d.tipoAlerta === 'GEOGRAFICA' ? 'cpl-alerta-geografico'
+                            : 'cpl-alerta-gargalo';
+            const alertaTxt = d.tipoAlerta === 'TEMPORAL'   ? '⏱ Fraude Temporal'
+                            : d.tipoAlerta === 'GEOGRAFICA' ? '📍 Fraude Geográfica'
+                            : '⏳ Gargalo +6h';
+            const gravCls  = d.gravidade >= 9 ? 'cpl-risco-critico' : d.gravidade >= 7 ? 'cpl-risco-alto' : d.gravidade >= 5 ? 'cpl-risco-medio' : 'cpl-risco-baixo';
+            const gravTxt  = d.gravidade >= 9 ? 'CRÍTICO'  : d.gravidade >= 7 ? 'ALTO' : d.gravidade >= 5 ? 'MÉDIO' : 'BAIXO';
+            return `<tr class="${d.tipoAlerta === 'TEMPORAL' || d.tipoAlerta === 'GEOGRAFICA' ? 'alert-row-danger' : 'alert-row-warning'}">
+                <td>${d.data||''}</td>
+                <td style="font-size:9px;">${(d.fiscal_responsavel||'').substring(0,22)}</td>
+                <td style="font-size:9px;">${d.gre||''}</td>
+                <td style="font-size:9px;">${(d.motorista||'').substring(0,20)}</td>
+                <td style="font-weight:bold;">${d.veiculo||'S/P'}</td>
+                <td style="font-size:9px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(d.rota||'').substring(0,45)}</td>
+                <td>${d.inicio_execucao||'--'}</td>
+                <td>${d.fim_execucao||'--'}</td>
+                <td style="font-weight:bold;${d.durMin!==null&&d.durMin<10?'color:#e74c3c':''}">${durStr}</td>
+                <td>${distStr}</td>
+                <td><span class="cpl-score-pill ${alertaCls}" style="border:1px solid currentColor;">${alertaTxt}</span></td>
+                <td><span class="cpl-score-pill ${gravCls}">${gravTxt}</span></td>
+            </tr>`;
+        }).join('') || `<tr><td colspan="12" style="color:var(--slate);text-align:center;padding:24px;">✅ Nenhuma rota crítica encontrada com os filtros selecionados.</td></tr>`;
+
+        if (summary) summary.innerText = `Exibindo ${Math.min(lista.length, 200)} de ${lista.length} registros críticos`;
+    }
+
+    // ── Exportar CSV auditoria ────────────────────────────────────────────────
+    function exportarCplCSV() {
+        const filtroTipo = document.getElementById('cpl-audit-tipo')?.value || 'TODOS';
+        const lista = cplDadosCriticos.filter(d => filtroTipo === 'TODOS' || d.tipoAlerta === filtroTipo).sort((a, b) => b.gravidade - a.gravidade);
+        const header = ['Data','Fiscal','GRE','Motorista','Veiculo','Rota','Inicio','Fim','Duracao_min','Dist_km','Tipo_Alerta','Gravidade'];
+        const rows = lista.map(d => [
+            d.data||'', (d.fiscal_responsavel||'').replace(/,/g,' '), d.gre||'',
+            (d.motorista||'').replace(/,/g,' '), d.veiculo||'',
+            (d.rota||'').replace(/,/g,' ').substring(0,80),
+            d.inicio_execucao||'', d.fim_execucao||'',
+            d.durMin !== null ? d.durMin : '',
+            d.distKm !== null ? d.distKm.toFixed(3) : '',
+            d.tipoAlerta||'',
+            d.gravidade >= 9 ? 'CRITICO' : d.gravidade >= 7 ? 'ALTO' : d.gravidade >= 5 ? 'MEDIO' : 'BAIXO'
+        ]);
+        const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href = url; a.download = 'auditoria_compliance_' + new Date().toISOString().slice(0,10) + '.csv';
+        a.click(); URL.revokeObjectURL(url);
     }
 
     // ── Init ──────────────────────────────────────────────────────────────────
