@@ -589,10 +589,13 @@
 
         <!-- ── LINHA 1: Score executivo único ── -->
         <div style="background:linear-gradient(135deg,#1a2744 0%,#0d1b2a 100%);border-radius:16px;padding:18px 24px;margin-bottom:16px;border:1px solid rgba(52,152,219,.25);display:flex;gap:0;flex-wrap:wrap;">
-            <div style="flex:1;min-width:160px;text-align:center;padding:8px 16px;border-right:1px solid rgba(255,255,255,.07);">
-                <div style="font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🏅 Índice de Confiança Operacional</div>
-                <div id="cpl-ico" style="font-size:42px;font-weight:bold;color:#2ecc71;">—</div>
-                <div style="font-size:9px;color:var(--slate);margin-top:4px;">Rotas sem alerta / Total</div>
+            <!-- ICO composto — card maior -->
+            <div style="flex:1.6;min-width:220px;text-align:center;padding:8px 20px;border-right:1px solid rgba(255,255,255,.07);">
+                <div style="font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">🏅 Índice de Confiança Operacional</div>
+                <div id="cpl-ico" style="font-size:48px;font-weight:bold;color:#2ecc71;line-height:1.1;">—</div>
+                <div id="cpl-ico-classif" style="margin:4px 0 6px;"></div>
+                <div id="cpl-ico-pilares"></div>
+                <div style="font-size:8px;color:#555;margin-top:8px;">Assid.×35% + Conform.×25% + Integrid.×25% + Planej.×15%</div>
             </div>
             <div style="flex:1;min-width:140px;text-align:center;padding:8px 16px;border-right:1px solid rgba(255,255,255,.07);">
                 <div style="font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">⚠️ Alertas Críticos</div>
@@ -2043,17 +2046,92 @@
         const totalAlertas = cplDadosCriticos.length;
         const gargalos     = cplDadosCriticos.filter(d => d.tipoAlerta === 'GARGALO').length;
         const falhas       = cplDadosCriticos.filter(d => d.tipoAlerta === 'TEMPORAL' || d.tipoAlerta === 'GEOGRAFICA').length;
-        const ico          = ((semAlerta / total) * 100).toFixed(1);
+
+        // ── ICO COMPOSTO (4 pilares) ─────────────────────────────────────────
+        // Pilar 1 — Assiduidade (35%): rotas concluídas / total planejadas (excluindo extras)
+        const rotasRegulares  = dados.filter(d => !d.isExtra);
+        const totalReg        = rotasRegulares.length || 1;
+        const conclReg        = rotasRegulares.filter(d => norm(d.status).includes('CONCLUID')).length;
+        const p1_assid        = conclReg / totalReg; // 0→1
+
+        // Pilar 2 — Conformidade Temporal (25%): iniciou dentro da janela planejada (até 60min de atraso tolerável)
+        let dentroJanela = 0, comHorario = 0;
+        dados.forEach(d => {
+            const hPlan  = extrairHoraHorario(d.horario);
+            const hExec  = parseInt((d.inicio_execucao || '--').split(':')[0]);
+            if (hPlan === null || isNaN(hExec)) return;
+            comHorario++;
+            const diffMin = (hExec - hPlan) * 60; // simplificado em horas
+            if (diffMin <= 60) dentroJanela++;     // até 1h de atraso = conforme
+        });
+        const p2_conformidade = comHorario > 0 ? dentroJanela / comHorario : 1;
+
+        // Pilar 3 — Integridade (ausência de alertas fraude/geo) (25%): penaliza temporal + geográfica
+        const fraudeCount = cplDadosCriticos.filter(d => d.tipoAlerta === 'TEMPORAL' || d.tipoAlerta === 'GEOGRAFICA').length;
+        const p3_integridade = Math.max(0, 1 - (fraudeCount / total));
+
+        // Pilar 4 — Planejamento (extras sob controle) (15%): extras devem ser < 15% do total
+        const extras      = dados.filter(d => d.isExtra).length;
+        const taxaExtras  = extras / total; // ideal < 0.15
+        const p4_planej   = Math.max(0, 1 - (taxaExtras / 0.15) * 0.5); // penaliza progressivamente
+
+        // Score final ponderado (0→100)
+        const icoRaw = (p1_assid * 0.35 + p2_conformidade * 0.25 + p3_integridade * 0.25 + p4_planej * 0.15) * 100;
+        const ico    = icoRaw.toFixed(1);
+
+        // Detalhes dos pilares para exibição
+        const icoDetalhes = {
+            assid:        (p1_assid        * 100).toFixed(1),
+            conformidade: (p2_conformidade * 100).toFixed(1),
+            integridade:  (p3_integridade  * 100).toFixed(1),
+            planejamento: (p4_planej       * 100).toFixed(1)
+        };
 
         // Veículos com ≥2 alertas
         const veiculosRisco = Object.values(veiculoMap).filter(v => v.alertas >= 2).length;
 
-        // KPIs
+        // ── KPIs ─────────────────────────────────────────────────────────────
         const elIco = document.getElementById('cpl-ico');
         if (elIco) {
             elIco.innerText = ico + '%';
-            elIco.style.color = ico >= 80 ? '#2ecc71' : ico >= 60 ? '#f39c12' : '#e74c3c';
+            elIco.style.color = ico >= 80 ? '#2ecc71' : ico >= 65 ? '#f39c12' : ico >= 50 ? '#e67e22' : '#e74c3c';
         }
+
+        // Barra de pilares do ICO
+        const elPilares = document.getElementById('cpl-ico-pilares');
+        if (elPilares) {
+            const corPilar = v => v >= 80 ? '#2ecc71' : v >= 65 ? '#f39c12' : '#e74c3c';
+            elPilares.innerHTML = `
+                <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px;">
+                    <div style="text-align:center;">
+                        <div style="font-size:15px;font-weight:bold;color:${corPilar(icoDetalhes.assid)}">${icoDetalhes.assid}%</div>
+                        <div style="font-size:8px;color:var(--slate);">Assid.<br><span style="color:#666">peso 35%</span></div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:15px;font-weight:bold;color:${corPilar(icoDetalhes.conformidade)}">${icoDetalhes.conformidade}%</div>
+                        <div style="font-size:8px;color:var(--slate);">Conform.<br><span style="color:#666">peso 25%</span></div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:15px;font-weight:bold;color:${corPilar(icoDetalhes.integridade)}">${icoDetalhes.integridade}%</div>
+                        <div style="font-size:8px;color:var(--slate);">Integrid.<br><span style="color:#666">peso 25%</span></div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:15px;font-weight:bold;color:${corPilar(icoDetalhes.planejamento)}">${icoDetalhes.planejamento}%</div>
+                        <div style="font-size:8px;color:var(--slate);">Planej.<br><span style="color:#666">peso 15%</span></div>
+                    </div>
+                </div>`;
+        }
+
+        // Legenda classificação ICO
+        const elClassif = document.getElementById('cpl-ico-classif');
+        if (elClassif) {
+            const classif = ico >= 80 ? { txt:'CONFIÁVEL', cls:'#2ecc71' }
+                          : ico >= 65 ? { txt:'ATENÇÃO',   cls:'#f39c12' }
+                          : ico >= 50 ? { txt:'CRÍTICO',   cls:'#e67e22' }
+                          :             { txt:'INACEITÁVEL',cls:'#e74c3c' };
+            elClassif.innerHTML = `<span style="font-size:10px;font-weight:bold;color:${classif.cls};border:1px solid ${classif.cls};padding:2px 10px;border-radius:20px;">${classif.txt}</span>`;
+        }
+
         setText('cpl-alertas',       totalAlertas);
         setText('cpl-gargalos',      gargalos);
         setText('cpl-falhas',        falhas);
