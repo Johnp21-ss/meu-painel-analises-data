@@ -41,7 +41,7 @@
         .content-section.active { display: block; }
         @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 
-        /* ── Layout original HTML2 ── */
+        /* ── Layout ── */
         .header-controls { 
             display: grid; grid-template-columns: 1.8fr repeat(6, 1fr); gap: 10px; 
             background: var(--card-bg); padding: 12px; border-radius: 12px; margin-bottom: 15px; align-items: center; 
@@ -122,6 +122,7 @@
         .obs-item { border-bottom: 1px solid var(--border); padding: 6px 0; font-size: 10px; }
         .obs-tag  { font-size: 8px; background: var(--primary); padding: 2px 4px; border-radius: 3px; margin-right: 5px; font-weight: bold; color: #fff; }
 
+        /* ── Tech table (igual ao HTML2) ── */
         .tech-table th { background: rgba(0,0,0,0.2); text-align: center; }
         .tech-table td { text-align: center; }
         .tech-table td:first-child { text-align: left; }
@@ -187,6 +188,23 @@
         .cpl-tendencia-sobe   { color:#e74c3c; font-size:14px; }
         .cpl-tendencia-desce  { color:#2ecc71; font-size:14px; }
         .cpl-tendencia-estavel{ color:#95a5a6; font-size:14px; }
+
+        /* ── ICO pilares grid expandido ── */
+        .ico-pilares-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .ico-pilar-item {
+            text-align: center;
+            padding: 6px 4px;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.2);
+        }
+        .ico-pilar-valor { font-size: 16px; font-weight: bold; }
+        .ico-pilar-label { font-size: 8px; color: var(--slate); margin-top: 2px; }
+        .ico-pilar-peso  { font-size: 7px; color: #555; }
     </style>
 </head>
 <body>
@@ -201,7 +219,7 @@
     </nav>
 
     <!-- ══════════════════════════════════════════════════════════
-         ABA DADOS ESCALA  ← HTML2 original, 100% intacto
+         ABA DADOS ESCALA
     ══════════════════════════════════════════════════════════ -->
     <section id="aba-escala" class="content-section active">
 
@@ -328,10 +346,11 @@
             </div>
         </div>
 
-        <div class="card" style="border-top-color: var(--success); margin-bottom: 20px;">
+        <!-- ── Análise de Tecnologia — CORRIGIDA igual ao HTML2 (árvore Fiscal>GRE>Cidade>Motorista) ── -->
+        <div class="card" style="border-top-color:var(--success); margin-bottom:20px;">
             <h3>📱 Análise de Tecnologia (Origem Localização)</h3>
-            <p style="font-size: 10px; color: var(--slate); margin-top: -10px;">Quantidade de motoristas únicos que concluíram rotas.</p>
-            <div class="scroll-area" style="max-height: 400px;">
+            <p style="font-size:10px; color:var(--slate); margin-top:-10px;">Quantidade de motoristas únicos que concluíram rotas.</p>
+            <div class="scroll-area" style="max-height:400px;">
                 <table class="tech-table">
                     <thead>
                         <tr>
@@ -352,7 +371,7 @@
     </section>
 
     <!-- ══════════════════════════════════════════════════════════
-         ABA ASSIDUIDADE TEMPORAL  ← do HTML1
+         ABA ASSIDUIDADE TEMPORAL
     ══════════════════════════════════════════════════════════ -->
     <section id="aba-assiduidade" class="content-section">
         <div class="filter-bar">
@@ -470,7 +489,7 @@
     </section>
 
     <!-- ══════════════════════════════════════════════════════════
-         ABA ROTAS EXTRAS  ← do HTML1
+         ABA ROTAS EXTRAS
     ══════════════════════════════════════════════════════════ -->
     <section id="aba-extras" class="content-section">
         <div class="filter-bar">
@@ -566,11 +585,10 @@
     </section>
 
     <!-- ══════════════════════════════════════════════════════════
-         ABA COMPLIANCE
+         ABA COMPLIANCE — ICO AMPLIADO (6 pilares)
     ══════════════════════════════════════════════════════════ -->
     <section id="aba-compliance" class="content-section">
 
-        <!-- Cabeçalho executivo -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
             <div>
                 <div style="font-size:18px; font-weight:bold; color:#fff;">🛡️ Dashboard de Compliance Operacional</div>
@@ -587,69 +605,45 @@
             </div>
         </div>
 
-        <!-- ── LINHA 1: Score executivo único ── -->
+        <!-- ── LINHA 1: Score executivo — ICO AMPLIADO ── -->
         <div style="background:linear-gradient(135deg,#1a2744 0%,#0d1b2a 100%);border-radius:16px;padding:18px 24px;margin-bottom:16px;border:1px solid rgba(52,152,219,.25);display:flex;gap:0;flex-wrap:wrap;">
-            <!-- ICO composto — card maior com pilares clicáveis -->
-            <div style="flex:1.6;min-width:220px;text-align:center;padding:8px 20px;border-right:1px solid rgba(255,255,255,.07);">
+            
+            <!-- ICO composto — card maior com 6 pilares -->
+            <div style="flex:1.8;min-width:260px;text-align:center;padding:8px 20px;border-right:1px solid rgba(255,255,255,.07);">
                 <div style="font-size:10px;color:var(--slate);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">🏅 Índice de Confiança Operacional</div>
                 <div id="cpl-ico" style="font-size:48px;font-weight:bold;color:#2ecc71;line-height:1.1;">—</div>
                 <div id="cpl-ico-classif" style="margin:4px 0 6px;"></div>
-                <div id="cpl-ico-pilares"></div>
-                <div style="font-size:8px;color:#444;margin-top:8px;">👆 Clique em cada pilar para entender o cálculo</div>
-            </div>
-
-            <!-- Modal de explicação dos pilares -->
-            <div id="cpl-pilar-modal" onclick="this.style.display='none'" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center;">
-                <div onclick="event.stopPropagation()" style="background:#1e272e;border:1px solid var(--border);border-radius:16px;padding:28px 32px;max-width:440px;width:90%;position:relative;">
-                    <button onclick="document.getElementById('cpl-pilar-modal').style.display='none'"
-                        style="position:absolute;top:12px;right:14px;background:transparent;border:none;color:var(--slate);font-size:16px;cursor:pointer;">✕</button>
-                    <div id="cpl-pilar-modal-icon" style="font-size:28px;margin-bottom:6px;"></div>
-                    <div id="cpl-pilar-modal-titulo" style="font-size:16px;font-weight:bold;color:#fff;margin-bottom:4px;"></div>
-                    <div id="cpl-pilar-modal-peso" style="font-size:10px;color:var(--info);margin-bottom:12px;"></div>
-                    <div id="cpl-pilar-modal-valor" style="font-size:36px;font-weight:bold;margin-bottom:10px;"></div>
-                    <div id="cpl-pilar-modal-formula" style="font-size:10px;color:#a4b0be;background:rgba(255,255,255,.04);border-radius:8px;padding:10px 12px;margin-bottom:10px;line-height:1.6;"></div>
-                    <div id="cpl-pilar-modal-interpretacao" style="font-size:10px;color:var(--slate);line-height:1.6;"></div>
+                <!-- 6 pilares em grid 3x2 -->
+                <div id="cpl-ico-pilares" class="ico-pilares-grid"></div>
+                <div style="font-size:8px;color:#444;margin-top:8px;">
+                    Assid.×25% + Conform.×15% + Integrid.×20% + Planej.×10% + Alertas×15% + Ocorr.×15%
                 </div>
             </div>
-            <!-- ── KPI: Alertas Críticos (expansível) ── -->
-            <div class="cpl-kpi-expand" onclick="toggleCplKpi('kpi-alertas-detail')"
-                 style="flex:1;min-width:140px;text-align:center;padding:8px 16px;border-right:1px solid rgba(255,255,255,.07);cursor:pointer;transition:background .2s;border-radius:0;"
-                 onmouseover="this.style.background='rgba(231,76,60,.07)'" onmouseout="this.style.background=''">
-                <div style="font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">⚠️ Alertas Críticos <span style="font-size:8px;color:#666;">▼</span></div>
+
+            <div style="flex:1;min-width:120px;text-align:center;padding:8px 14px;border-right:1px solid rgba(255,255,255,.07);">
+                <div style="font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">⚠️ Alertas Críticos</div>
                 <div id="cpl-alertas" style="font-size:40px;font-weight:bold;color:#e74c3c;">—</div>
-                <div style="font-size:9px;color:var(--slate);margin-top:3px;">Fraude temporal + geográfica</div>
-                <div id="kpi-alertas-pct" style="font-size:9px;color:#e74c3c;margin-top:2px;font-weight:bold;"></div>
-                <div id="kpi-alertas-detail" style="display:none;margin-top:8px;text-align:left;font-size:9px;border-top:1px solid rgba(255,255,255,.08);padding-top:6px;"></div>
+                <div style="font-size:9px;color:var(--slate);margin-top:4px;">Fraude temporal + geográfica</div>
             </div>
-            <!-- ── KPI: Gargalos (expansível) ── -->
-            <div class="cpl-kpi-expand" onclick="toggleCplKpi('kpi-gargalos-detail')"
-                 style="flex:1;min-width:140px;text-align:center;padding:8px 16px;border-right:1px solid rgba(255,255,255,.07);cursor:pointer;transition:background .2s;"
-                 onmouseover="this.style.background='rgba(243,156,18,.07)'" onmouseout="this.style.background=''">
-                <div style="font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">⏳ Gargalos Ativos <span style="font-size:8px;color:#666;">▼</span></div>
+            <div style="flex:1;min-width:120px;text-align:center;padding:8px 14px;border-right:1px solid rgba(255,255,255,.07);">
+                <div style="font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">⏳ Gargalos Ativos</div>
                 <div id="cpl-gargalos" style="font-size:40px;font-weight:bold;color:#f39c12;">—</div>
-                <div style="font-size:9px;color:var(--slate);margin-top:3px;">Rotas abertas &gt; 6h</div>
-                <div id="kpi-gargalos-pct" style="font-size:9px;color:#f39c12;margin-top:2px;font-weight:bold;"></div>
-                <div id="kpi-gargalos-detail" style="display:none;margin-top:8px;text-align:left;font-size:9px;border-top:1px solid rgba(255,255,255,.08);padding-top:6px;"></div>
+                <div style="font-size:9px;color:var(--slate);margin-top:4px;">Rotas abertas &gt; 6h</div>
             </div>
-            <!-- ── KPI: Falhas (expansível) ── -->
-            <div class="cpl-kpi-expand" onclick="toggleCplKpi('kpi-falhas-detail')"
-                 style="flex:1;min-width:140px;text-align:center;padding:8px 16px;border-right:1px solid rgba(255,255,255,.07);cursor:pointer;transition:background .2s;"
-                 onmouseover="this.style.background='rgba(230,126,34,.07)'" onmouseout="this.style.background=''">
-                <div style="font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">📉 Falhas Compliance <span style="font-size:8px;color:#666;">▼</span></div>
+            <div style="flex:1;min-width:120px;text-align:center;padding:8px 14px;border-right:1px solid rgba(255,255,255,.07);">
+                <div style="font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📉 Falhas Compliance</div>
                 <div id="cpl-falhas" style="font-size:40px;font-weight:bold;color:#e67e22;">—</div>
-                <div style="font-size:9px;color:var(--slate);margin-top:3px;">&lt;10min ou dist &lt;500m</div>
-                <div id="kpi-falhas-pct" style="font-size:9px;color:#e67e22;margin-top:2px;font-weight:bold;"></div>
-                <div id="kpi-falhas-detail" style="display:none;margin-top:8px;text-align:left;font-size:9px;border-top:1px solid rgba(255,255,255,.08);padding-top:6px;"></div>
+                <div style="font-size:9px;color:var(--slate);margin-top:4px;">&lt;10min ou dist &lt;500m</div>
             </div>
-            <!-- ── KPI: Motoristas em Risco (expansível) ── -->
-            <div class="cpl-kpi-expand" onclick="toggleCplKpi('kpi-motoristas-detail')"
-                 style="flex:1;min-width:140px;text-align:center;padding:8px 16px;cursor:pointer;transition:background .2s;"
-                 onmouseover="this.style.background='rgba(155,89,182,.07)'" onmouseout="this.style.background=''">
-                <div style="font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">🧑 Motoristas em Risco <span style="font-size:8px;color:#666;">▼</span></div>
+            <div style="flex:1;min-width:120px;text-align:center;padding:8px 14px;border-right:1px solid rgba(255,255,255,.07);">
+                <div style="font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🚗 Veículos em Risco</div>
                 <div id="cpl-veiculos-risco" style="font-size:40px;font-weight:bold;color:#9b59b6;">—</div>
-                <div style="font-size:9px;color:var(--slate);margin-top:3px;">Com ≥2 alertas registrados</div>
-                <div id="kpi-motoristas-pct" style="font-size:9px;color:#9b59b6;margin-top:2px;font-weight:bold;"></div>
-                <div id="kpi-motoristas-detail" style="display:none;margin-top:8px;text-align:left;font-size:9px;border-top:1px solid rgba(255,255,255,.08);padding-top:6px;"></div>
+                <div style="font-size:9px;color:var(--slate);margin-top:4px;">Com ≥2 ocorrências</div>
+            </div>
+            <div style="flex:1;min-width:120px;text-align:center;padding:8px 14px;">
+                <div style="font-size:9px;color:var(--slate);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📝 Ocorr. s/ Justif.</div>
+                <div id="cpl-ocorr-sem-justif" style="font-size:40px;font-weight:bold;color:#1abc9c;">—</div>
+                <div style="font-size:9px;color:var(--slate);margin-top:4px;">Rotas não abertas / obs</div>
             </div>
         </div>
 
@@ -677,14 +671,14 @@
         <!-- ── LINHA 3: Score de risco por veículo + Mapa de calor GRE ── -->
         <div class="grid-2col">
             <div class="card row-new" style="border-top-color:#9b59b6;">
-                <h3 style="font-size:13px;">🧑 Ranking de Risco por Motorista</h3>
-                <div style="font-size:9px;color:var(--slate);margin-top:-8px;margin-bottom:8px;">Motoristas com maior concentração de alertas — prioritários para auditoria de campo</div>
+                <h3 style="font-size:13px;">🚗 Ranking de Risco por Veículo / Motorista</h3>
+                <div style="font-size:9px;color:var(--slate);margin-top:-8px;margin-bottom:8px;">Ativos com maior concentração de alertas — prioritários para auditoria de campo</div>
                 <div class="scroll-area-sm" style="max-height:260px;">
                     <table id="cpl-tbl-veiculos" style="table-layout:auto;">
                         <thead>
                             <tr>
                                 <th width="30">#</th>
-                                <th>Motorista / Veículo(s)</th>
+                                <th>Veículo / Motorista</th>
                                 <th>GRE</th>
                                 <th>Fiscal</th>
                                 <th>Rotas</th>
@@ -708,6 +702,7 @@
                                 <th>Total Rotas</th>
                                 <th>Alertas</th>
                                 <th>Gargalos</th>
+                                <th>Ocorr.</th>
                                 <th>ICO</th>
                                 <th>Tendência</th>
                                 <th>Ação</th>
@@ -719,7 +714,32 @@
             </div>
         </div>
 
-        <!-- ── LINHA 4: Tabela de auditoria prioritária ── -->
+        <!-- ── LINHA 4: Painel de Ocorrências s/ Justificativa (novo) ── -->
+        <div class="card row-new" style="border-top-color:#1abc9c; margin-bottom:16px;">
+            <h3 style="font-size:13px;">📝 Análise de Ocorrências — Rotas Não Abertas &amp; Justificadas por Fiscal
+                <span style="font-size:9px;color:var(--slate);font-weight:normal;">Cruzamento: rotas pendentes × obs registradas × alertas de fraude</span>
+            </h3>
+            <div class="scroll-area-sm" style="max-height:260px;">
+                <table id="cpl-tbl-ocorrencias" style="table-layout:auto;">
+                    <thead>
+                        <tr>
+                            <th>Fiscal</th>
+                            <th>GRE</th>
+                            <th>Total Rotas</th>
+                            <th>Não Abertas</th>
+                            <th>Com Obs/Just.</th>
+                            <th>Alertas Fraude</th>
+                            <th>% Não Abertas</th>
+                            <th>Score Ocorr.</th>
+                            <th>Situação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cpl-tbody-ocorrencias"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ── LINHA 5: Tabela de auditoria prioritária ── -->
         <div class="card row-new" style="border-top-color:#e74c3c; margin-bottom:20px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
                 <div>
@@ -765,7 +785,6 @@
 <script>
     Chart.defaults.color = '#a4b0be';
 
-    // ── URLs (do HTML2 original) ───────────────────────────────────────────────
     const URL_PLANILHA   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-PWDRlSYT4cY9rOK7Dz1R2Fe0HzoXFbu4icqnPk5M6eGOBUngZFwkhI-9TXPpT9d-wvWCzXNVxteq/pub?gid=498256387&single=true&output=csv';
     const URL_API_SCRIPT = 'https://script.google.com/macros/s/AKfycbyLis6Vs8Z3oqlt2BXkBpSqcSAdw1orEJvk2VotHJ_WuZRXQ5Qe8UnIKgKySCjKVz26/exec';
 
@@ -786,35 +805,18 @@
         if (tabId === 'aba-compliance')  processarCompliance();
     }
 
-    // ── Carregar dados (HTML2 original) ──────────────────────────────────────
+    // ── Carregar dados ────────────────────────────────────────────────────────
     async function sincronizarAPI() {
         const campoData = document.getElementById("dataSync");
         const btn       = document.getElementById("btnSync");
         const timeLabel = document.getElementById('update-time');
-
-        if (!campoData.value) {
-            alert("⚠️ Selecione uma data no calendário antes de clicar em API.");
-            return;
-        }
-
-        btn.disabled  = true;
-        btn.innerText = "⏳ PROCESSANDO...";
+        if (!campoData.value) { alert("⚠️ Selecione uma data no calendário antes de clicar em API."); return; }
+        btn.disabled  = true; btn.innerText = "⏳ PROCESSANDO...";
         timeLabel.innerText = "📡 Solicitando dados para " + campoData.value.split("-").reverse().join("/") + "...";
-
         const urlFinal = URL_API_SCRIPT + "?data=" + campoData.value;
-
         fetch(urlFinal, { mode: 'no-cors', method: 'GET' })
-            .then(() => {
-                timeLabel.innerText = "✅ API acionada! Aguarde ~10s e clique em ATUALIZAR.";
-                btn.innerText = "⚡ API OK";
-                setTimeout(() => { btn.disabled = false; btn.innerText = "⚡ API"; }, 5000);
-            })
-            .catch(err => {
-                console.error(err);
-                timeLabel.innerText = "❌ Erro ao contactar a API.";
-                btn.disabled  = false;
-                btn.innerText = "⚡ API";
-            });
+            .then(() => { timeLabel.innerText = "✅ API acionada! Aguarde ~10s e clique em ATUALIZAR."; btn.innerText = "⚡ API OK"; setTimeout(() => { btn.disabled = false; btn.innerText = "⚡ API"; }, 5000); })
+            .catch(err => { console.error(err); timeLabel.innerText = "❌ Erro ao contactar a API."; btn.disabled = false; btn.innerText = "⚡ API"; });
     }
 
     async function carregar() {
@@ -961,15 +963,15 @@
         };
         const p1 = parseCoord(coord1), p2 = parseCoord(coord2);
         if (!p1 || !p2) return null;
-        const R    = 6371;
+        const R = 6371;
         const dLat = (p2.lat - p1.lat) * Math.PI / 180;
         const dLon = (p2.lng - p1.lng) * Math.PI / 180;
-        const a    = Math.sin(dLat/2)**2 + Math.cos(p1.lat*Math.PI/180)*Math.cos(p2.lat*Math.PI/180)*Math.sin(dLon/2)**2;
+        const a = Math.sin(dLat/2)**2 + Math.cos(p1.lat*Math.PI/180)*Math.cos(p2.lat*Math.PI/180)*Math.sin(dLon/2)**2;
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
     // ═════════════════════════════════════════════════════════════════════════
-    //  PROCESSAR DADOS  ← lógica do HTML2 original, 100% intacta
+    //  PROCESSAR DADOS ESCALA
     // ═════════════════════════════════════════════════════════════════════════
     function processarDados() {
         const dataInput = document.getElementById("dataSync").value;
@@ -982,7 +984,6 @@
             const datas = [...new Set(bruto.map(d => d.data))].filter(d => d).sort();
             dataFiltroStr = datas[datas.length - 1] || "";
         }
-
         timeLabel.innerText = dataFiltroStr ? "✅ VISUALIZANDO: " + dataFiltroStr : "✅ DADOS CARREGADOS";
 
         const f = {
@@ -1067,15 +1068,14 @@
         renderTabelaTipologia(hFrota);
         renderFrotaPorGre(dados);
         renderOcorrencias(fiscalObsMap);
-        renderCharts(dados.length, concl, pend);
-        renderTecnologiaUnificada(dados);
+        renderTecnologiaUnificada(dados);   // ← CORRIGIDA abaixo
     }
 
-    // Paleta vibrante para o gráfico de assiduidade
+    // ── Assiduidade chart ─────────────────────────────────────────────────────
     const ASSID_COLORS = ['#2ecc71','#3498db','#f1c40f','#9b59b6','#e67e22','#e74c3c','#1abc9c'];
-    let visaoAssid = 'fiscal'; // 'fiscal' ou 'gre'
+    let visaoAssid = 'fiscal';
     let dadosAssidGlobal = [];
-    let assidFiscalSelecionado = null; // nome do fiscal/gre selecionado (null = top5)
+    let assidFiscalSelecionado = null;
 
     function toggleVisoesAssid(modo) {
         visaoAssid = modo;
@@ -1089,6 +1089,59 @@
         renderAssiduidadeTemporalChart(dadosAssidGlobal);
     }
 
+    function extrairHoraHorario(horarioStr) {
+        if (!horarioStr || horarioStr.trim() === '') return null;
+        const parte = horarioStr.split('-')[0].trim();
+        const h = parseInt(parte.split(':')[0]);
+        return (isNaN(h) || h < 0 || h > 23) ? null : h;
+    }
+
+    function buildAssidDatasets(dados) {
+        const campo = visaoAssid === 'fiscal' ? 'fiscal_responsavel' : 'gre';
+        const mapa  = {};
+        dados.forEach(d => {
+            const entidade = d[campo] || 'N/A';
+            const h = extrairHoraHorario(d.horario);
+            if (h === null) return;
+            const isOk = norm(d.status).includes("CONCLUID") || norm(d.status).includes("ANDAMENTO") || norm(d.status).includes("EXECUTANDO");
+            if (!mapa[entidade]) mapa[entidade] = { horas: {}, total: 0, concl: 0 };
+            if (!mapa[entidade].horas[h]) mapa[entidade].horas[h] = { plan: 0, concl: 0 };
+            mapa[entidade].horas[h].plan++;
+            mapa[entidade].total++;
+            if (isOk) { mapa[entidade].horas[h].concl++; mapa[entidade].concl++; }
+        });
+
+        const ranking = Object.entries(mapa)
+            .map(([nm, info]) => ({ nm, p: info.total ? info.concl / info.total : 0, total: info.total }))
+            .filter(r => r.total > 0).sort((a, b) => b.p - a.p);
+
+        const top5 = assidFiscalSelecionado ? ranking.filter(r => r.nm === assidFiscalSelecionado) : ranking.slice(0, 5);
+        const labels = Array.from({length: 24}, (_, i) => String(i).padStart(2,'0') + 'h');
+
+        const datasets = top5.map((ent, idx) => {
+            const cor  = ASSID_COLORS[idx % ASSID_COLORS.length];
+            const info = mapa[ent.nm] || { horas: {}, total: 1, concl: 0 };
+            const assidGeral = info.total ? info.concl / info.total : 0;
+            const data = Array.from({length: 24}, (_, h) => {
+                const slot = info.horas[h];
+                if (!slot || slot.plan === 0) return 0;
+                return parseFloat(((slot.concl / slot.plan) * 100).toFixed(1));
+            });
+            const r_ = parseInt(cor.slice(1,3), 16);
+            const g_ = parseInt(cor.slice(3,5), 16);
+            const b_ = parseInt(cor.slice(5,7), 16);
+            return {
+                label: ent.nm.split(' ')[0].toUpperCase(), labelFull: ent.nm,
+                assidGeral: (assidGeral * 100).toFixed(1), data,
+                borderColor: cor, backgroundColor: `rgba(${r_},${g_},${b_},0.10)`,
+                fill: true, tension: 0.45,
+                pointRadius: data.map(v => v > 0 ? 3 : 0), pointHoverRadius: 7,
+                borderWidth: 2.2, order: idx
+            };
+        });
+        return { labels, datasets, top5 };
+    }
+
     function renderRank(id, campo, limit, dados) {
         const m = {};
         dados.forEach(d => {
@@ -1099,7 +1152,6 @@
         });
         const list = Object.entries(m).map(([nm, s]) => ({ nm, t: s.t, c: s.c, p: (s.c / s.t) * 100 })).sort((a, b) => b.p - a.p).slice(0, limit);
 
-        // Se for a tabela de fiscais, guarda dados e chama o gráfico (sem bolinhas)
         if (id === 'tFiscal') {
             dadosAssidGlobal = dados;
             document.getElementById(id).querySelector('tbody').innerHTML = list.map((r, i) =>
@@ -1107,9 +1159,7 @@
                     onmouseover="this.style.background='rgba(255,255,255,.04)'"
                     onmouseout="this.style.background=''"
                     onclick="selecionarFiscalAssid('${r.nm.replace(/'/g,"\\'")}')">
-                    <td>${i + 1}º</td>
-                    <td>${r.nm}</td>
-                    <td>${r.t}</td><td>${r.c}</td>
+                    <td>${i + 1}º</td><td>${r.nm}</td><td>${r.t}</td><td>${r.c}</td>
                     <td class="perc-bold">${r.p.toFixed(1)}%</td>
                 </tr>`
             ).join('');
@@ -1122,94 +1172,53 @@
     }
 
     function selecionarFiscalAssid(nome) {
-        if (assidFiscalSelecionado === nome) {
-            assidFiscalSelecionado = null; // deselect
-        } else {
-            assidFiscalSelecionado = nome;
-        }
+        assidFiscalSelecionado = assidFiscalSelecionado === nome ? null : nome;
         renderAssiduidadeTemporalChart(dadosAssidGlobal);
     }
 
-    // Extrai a hora inicial da faixa planejada ex: "05:00 - 07:00" → 5
-    function extrairHoraHorario(horarioStr) {
-        if (!horarioStr || horarioStr.trim() === '') return null;
-        const parte = horarioStr.split('-')[0].trim();
-        const h = parseInt(parte.split(':')[0]);
-        return (isNaN(h) || h < 0 || h > 23) ? null : h;
-    }
+    let chartAssidTemporal = null;
 
-    // Constrói datasets para o gráfico de ondas de assiduidade
-    // Lógica: por faixa horária planejada (campo horario),
-    //         conta total planejado e concluídas → % assiduidade por hora
-    function buildAssidDatasets(dados) {
-        const campo = visaoAssid === 'fiscal' ? 'fiscal_responsavel' : 'gre';
-
-        // mapa[entidade][hora] = { planejadas, concluidas }
-        const mapa = {};
-        dados.forEach(d => {
-            const entidade = d[campo] || 'N/A';
-            const h = extrairHoraHorario(d.horario);
-            if (h === null) return; // sem horário planejado, ignora
-            const isOk = norm(d.status).includes("CONCLUID") ||
-                         norm(d.status).includes("ANDAMENTO") ||
-                         norm(d.status).includes("EXECUTANDO");
-
-            if (!mapa[entidade]) mapa[entidade] = { horas: {}, total: 0, concl: 0 };
-            if (!mapa[entidade].horas[h]) mapa[entidade].horas[h] = { plan: 0, concl: 0 };
-            mapa[entidade].horas[h].plan++;
-            mapa[entidade].total++;
-            if (isOk) { mapa[entidade].horas[h].concl++; mapa[entidade].concl++; }
+    function renderAssiduidadeTemporalChart(dados) {
+        const { labels, datasets, top5 } = buildAssidDatasets(dados);
+        const ctx = document.getElementById('chartAssiduidadeTemporal');
+        if (!ctx) return;
+        if (chartAssidTemporal) { chartAssidTemporal.destroy(); chartAssidTemporal = null; }
+        chartAssidTemporal = new Chart(ctx, {
+            type: 'line', data: { labels, datasets },
+            options: {
+                maintainAspectRatio: false, responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1a1f2e', borderColor: '#485460', borderWidth: 1,
+                        titleColor: '#a4b0be', bodyColor: '#f5f6fa', padding: 10,
+                        callbacks: {
+                            title: (items) => `⏰ Faixa planejada: ${items[0].label}`,
+                            label: (item) => {
+                                if (item.raw === 0) return null;
+                                return ` ${(item.dataset.labelFull||'').substring(0,28)} | ${item.raw}% nessa faixa | Geral: ${item.dataset.assidGeral}%`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { ticks: { color: '#a4b0be', font: { size: 9 }, maxRotation: 0 }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    y: { beginAtZero: true, max: 100, ticks: { color: '#a4b0be', callback: v => v + '%', font: { size: 9 }, stepSize: 10 }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                }
+            }
         });
-
-        // Ranking top 5 por assiduidade geral
-        const ranking = Object.entries(mapa)
-            .map(([nm, info]) => ({
-                nm,
-                p: info.total ? info.concl / info.total : 0,
-                total: info.total
-            }))
-            .filter(r => r.total > 0)
-            .sort((a, b) => b.p - a.p);
-
-        const top5 = assidFiscalSelecionado
-            ? ranking.filter(r => r.nm === assidFiscalSelecionado)
-            : ranking.slice(0, 5);
-
-        const labels = Array.from({length: 24}, (_, i) => String(i).padStart(2,'0') + 'h');
-
-        const datasets = top5.map((ent, idx) => {
-            const cor  = ASSID_COLORS[idx % ASSID_COLORS.length];
-            const info = mapa[ent.nm] || { horas: {}, total: 1, concl: 0 };
-            const assidGeral = info.total ? (info.concl / info.total) : 0;
-
-            // Para cada hora planejada: concluídas / planejadas nessa faixa = % assiduidade
-            const data = Array.from({length: 24}, (_, h) => {
-                const slot = info.horas[h];
-                if (!slot || slot.plan === 0) return 0;
-                return parseFloat(((slot.concl / slot.plan) * 100).toFixed(1));
-            });
-
-            const r_ = parseInt(cor.slice(1,3), 16);
-            const g_ = parseInt(cor.slice(3,5), 16);
-            const b_ = parseInt(cor.slice(5,7), 16);
-
-            return {
-                label:           ent.nm.split(' ')[0].toUpperCase(),
-                labelFull:       ent.nm,
-                assidGeral:      (assidGeral * 100).toFixed(1),
-                data,
-                borderColor:     cor,
-                backgroundColor: `rgba(${r_},${g_},${b_},0.10)`,
-                fill:            true,
-                tension:         0.45,
-                pointRadius:     data.map(v => v > 0 ? 3 : 0),
-                pointHoverRadius: 7,
-                borderWidth:     2.2,
-                order:           idx
-            };
-        });
-
-        return { labels, datasets, top5 };
+        const leg = document.getElementById('legendaAssid');
+        if (leg) {
+            leg.innerHTML = top5.map((ent, i) => {
+                const cor = ASSID_COLORS[i % ASSID_COLORS.length];
+                return `<div style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:3px 8px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);font-size:9px;font-weight:bold;"
+                             onclick="selecionarFiscalAssid('${ent.nm.replace(/'/g,"\\'")}')">
+                    <span style="width:10px;height:10px;border-radius:50%;background:${cor};flex-shrink:0;"></span>
+                    <span style="color:${cor};">${ent.nm.split(' ')[0].toUpperCase()}</span>
+                </div>`;
+            }).join('');
+        }
     }
 
     function renderTabelaCidades(map) {
@@ -1275,31 +1284,39 @@
         cont.innerHTML = h || "<div style='padding:10px; color:var(--slate)'>Sem ocorrências.</div>";
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    //  ANÁLISE DE TECNOLOGIA — CORRIGIDA (idêntica ao HTML2: árvore expansível)
+    //  Fiscal > GRE > Cidade > Motorista, com toggle de linha
+    // ═══════════════════════════════════════════════════════════════════════════
     function renderTecnologiaUnificada(dados) {
-        const tree = {}, treeTotal = {};
+        const tree      = {};   // motoristas que concluíram → origem APP/LINK
+        const treeTotal = {};   // todos os motoristas por fiscal>gre>cidade
 
         dados.forEach(d => {
-            const fis   = d.fiscal_responsavel || "NÃO IDENTIFICADO";
-            const gre   = d.gre    || "S/ GRE";
-            const cid   = d.cidade || "S/ CIDADE";
-            const mot   = d.motorista || "S/ NOME";
-            const isOk  = norm(d.status).includes("CONCLUID") || norm(d.status).includes("ANDAMENTO");
+            const fis    = d.fiscal_responsavel || "NÃO IDENTIFICADO";
+            const gre    = d.gre    || "S/ GRE";
+            const cid    = d.cidade || "S/ CIDADE";
+            const mot    = d.motorista || "S/ NOME";
+            const isOk   = norm(d.status).includes("CONCLUID") || norm(d.status).includes("ANDAMENTO");
             const origem = norm(d.origem).includes("APP") ? "APP" : "LINK";
 
-            if (!treeTotal[fis])                              treeTotal[fis] = { gres: {} };
-            if (!treeTotal[fis].gres[gre])                    treeTotal[fis].gres[gre] = { cidades: {} };
-            if (!treeTotal[fis].gres[gre].cidades[cid])       treeTotal[fis].gres[gre].cidades[cid] = new Set();
+            // treeTotal: todos (para % abertura)
+            if (!treeTotal[fis])                             treeTotal[fis] = { gres: {} };
+            if (!treeTotal[fis].gres[gre])                   treeTotal[fis].gres[gre] = { cidades: {} };
+            if (!treeTotal[fis].gres[gre].cidades[cid])      treeTotal[fis].gres[gre].cidades[cid] = new Set();
             treeTotal[fis].gres[gre].cidades[cid].add(mot);
 
+            // tree: apenas OK
             if (isOk) {
-                if (!tree[fis])                               tree[fis] = { gres: {} };
-                if (!tree[fis].gres[gre])                     tree[fis].gres[gre] = { cidades: {} };
-                if (!tree[fis].gres[gre].cidades[cid])        tree[fis].gres[gre].cidades[cid] = { motoristas: {} };
+                if (!tree[fis])                              tree[fis] = { gres: {} };
+                if (!tree[fis].gres[gre])                    tree[fis].gres[gre] = { cidades: {} };
+                if (!tree[fis].gres[gre].cidades[cid])       tree[fis].gres[gre].cidades[cid] = { motoristas: {} };
                 const prev = tree[fis].gres[gre].cidades[cid].motoristas[mot];
                 tree[fis].gres[gre].cidades[cid].motoristas[mot] = (prev === "APP" || origem === "APP") ? "APP" : "LINK";
             }
         });
 
+        // Calcular totais recursivos
         const calcOk = (node) => {
             let m = 0, a = 0, l = 0;
             if (node.motoristas) {
@@ -1399,82 +1416,8 @@
         document.getElementById('tbodyTecnologia').innerHTML = html || "<tr><td colspan='7'>Sem dados.</td></tr>";
     }
 
-    let chartAssidTemporal = null;
-
-    function renderAssiduidadeTemporalChart(dados) {
-        const { labels, datasets, top5 } = buildAssidDatasets(dados);
-        const ctx = document.getElementById('chartAssiduidadeTemporal');
-        if (!ctx) return;
-
-        if (chartAssidTemporal) { chartAssidTemporal.destroy(); chartAssidTemporal = null; }
-
-        chartAssidTemporal = new Chart(ctx, {
-            type: 'line',
-            data: { labels, datasets },
-            options: {
-                maintainAspectRatio: false,
-                responsive: true,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: '#1a1f2e',
-                        borderColor: '#485460',
-                        borderWidth: 1,
-                        titleColor: '#a4b0be',
-                        bodyColor: '#f5f6fa',
-                        padding: 10,
-                        callbacks: {
-                            title: (items) => `⏰ Faixa planejada: ${items[0].label}`,
-                            label: (item) => {
-                                const v = item.raw;
-                                if (v === 0) return null;
-                                const full = item.dataset.labelFull || item.dataset.label;
-                                const assid = item.dataset.assidGeral || '?';
-                                return ` ${full.substring(0,28)} | ${v}% nessa faixa | Geral: ${assid}%`;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        ticks: { color: '#a4b0be', font: { size: 9 }, maxRotation: 0 },
-                        grid: { color: 'rgba(255,255,255,0.04)' },
-                        title: { display: true, text: 'Eixo Horário', color: '#95a5a6', font: { size: 9 } }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        ticks: { color: '#a4b0be', callback: v => v + '%', font: { size: 9 }, stepSize: 10 },
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        title: { display: true, text: '% Assiduidade', color: '#95a5a6', font: { size: 9 } }
-                    }
-                }
-            }
-        });
-
-        // Legenda colorida
-        const leg = document.getElementById('legendaAssid');
-        if (leg) {
-            leg.innerHTML = top5.map((ent, i) => {
-                const cor = ASSID_COLORS[i % ASSID_COLORS.length];
-                const primeiro = ent.nm.split(' ')[0].toUpperCase();
-                return `<div style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:3px 8px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);font-size:9px;font-weight:bold;transition:background .2s;"
-                             onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background=''"
-                             onclick="selecionarFiscalAssid('${ent.nm.replace(/'/g,"\\'")}')">
-                    <span style="width:10px;height:10px;border-radius:50%;background:${cor};flex-shrink:0;"></span>
-                    <span style="color:${cor};">${primeiro}</span>
-                </div>`;
-            }).join('');
-        }
-    }
-
-    function renderCharts(tot, con, pen) {
-        // mantido para compatibilidade — não faz mais nada pois substituído pelo gráfico de assiduidade
-    }
-
     // ═════════════════════════════════════════════════════════════════════════
-    //  PROCESSAR ASSIDUIDADE TEMPORAL  ← lógica do HTML1
+    //  PROCESSAR ASSIDUIDADE TEMPORAL
     // ═════════════════════════════════════════════════════════════════════════
     function processarAssiduidadeTemporal() {
         if (!bruto.length) return;
@@ -1570,16 +1513,14 @@
         const horariosOrd = [...horariosMap.entries()].sort((a,b) => b[1].total - a[1].total).slice(0, 10);
         let horariosHtml  = '';
         horariosOrd.forEach(([hora, d], idx) => {
-            const id     = `hora-${idx}`;
-            const tipo   = d.temporal >= d.local ? 'Temporal' : 'Mesmo Local';
-            const status = d.total >= 5
-                ? '<span class="badge badge-danger">CRÍTICO</span>'
+            const id = `hora-${idx}`;
+            const tipo = d.temporal >= d.local ? 'Temporal' : 'Mesmo Local';
+            const status = d.total >= 5 ? '<span class="badge badge-danger">CRÍTICO</span>'
                 : (d.total >= 2 ? '<span class="badge badge-warning">ATENÇÃO</span>' : '<span class="badge badge-success">OK</span>');
             horariosHtml += `<tr class="pointer" onclick="toggleRow('${id}',this)">
                 <td><span class="arrow">▶</span> <b>${hora}</b></td>
                 <td class="val-fraude">${d.total}</td>
-                <td>${tipo}</td>
-                <td>${status}</td>
+                <td>${tipo}</td><td>${status}</td>
               </tr>`;
             [...new Map(d.motoristas.map(m => [m.nome, m])).values()].slice(0, 10).forEach(mot => {
                 horariosHtml += `<tr class="nested-row ${id}">
@@ -1593,13 +1534,9 @@
         // Fraude por Rota
         const rotasOrd = [...rotasMap.entries()].map(([nome, d]) => ({ nome, ...d })).sort((a,b) => b.total - a.total).slice(0, 15);
         document.querySelector('#tFraudeRota tbody').innerHTML = rotasOrd.map(r =>
-            `<tr>
-                <td>${r.nome.substring(0,35)}</td>
-                <td class="val-fraude">${r.total}</td>
-                <td>${r.temporal>0?'⏱️':''} ${r.local>0?'📍':''}</td>
-                <td>${r.gre}</td>
-                <td>${r.total >= 3 ? '<span class="badge badge-danger">AUDITAR ROTA</span>' : '<span class="badge badge-warning">MONITORAR</span>'}</td>
-             </tr>`
+            `<tr><td>${r.nome.substring(0,35)}</td><td class="val-fraude">${r.total}</td>
+             <td>${r.temporal>0?'⏱️':''} ${r.local>0?'📍':''}</td><td>${r.gre}</td>
+             <td>${r.total >= 3 ? '<span class="badge badge-danger">AUDITAR ROTA</span>' : '<span class="badge badge-warning">MONITORAR</span>'}</td></tr>`
         ).join('') || '<tr><td colspan="5" style="color:var(--slate)">Sem fraudes detectadas.</td></tr>';
 
         // Motoristas
@@ -1613,8 +1550,7 @@
             const badgeCor = m.percFraude > 30 ? 'badge-danger'     : m.percFraude > 15 ? 'badge-warning'    : 'badge-info';
             motoristasHtml += `<tr class="pointer" onclick="toggleRow('${id}',this)">
                 <td><span class="arrow">▶</span> ${m.nome.substring(0,25)}</td>
-                <td>${m.gre}</td>
-                <td>${m.total}</td>
+                <td>${m.gre}</td><td>${m.total}</td>
                 <td class="val-fraude">${m.fraudes}</td>
                 <td>${m.tipos.includes('TEMPORAL')?'⏱️':''} ${m.tipos.includes('MESMO_LOCAL')?'📍':''}</td>
                 <td><span class="badge ${badgeCor}">${acao}</span></td>
@@ -1636,14 +1572,10 @@
         document.querySelector('#tGREsFraude tbody').innerHTML = rankGre.map(g => {
             const acao     = g.percFraude > 20 ? 'AUDITAR URGENTE'     : g.percFraude > 10 ? 'REUNIÃO COM GESTOR' : 'OK';
             const badgeCor = g.percFraude > 20 ? 'badge-danger'        : g.percFraude > 10 ? 'badge-warning'      : 'badge-success';
-            return `<tr>
-                <td><b>${g.nome}</b></td>
-                <td>${g.total}</td>
-                <td class="val-fraude">${g.temporal}</td>
-                <td class="val-alerta">${g.mesmoLocal}</td>
+            return `<tr><td><b>${g.nome}</b></td><td>${g.total}</td>
+                <td class="val-fraude">${g.temporal}</td><td class="val-alerta">${g.mesmoLocal}</td>
                 <td>${g.percFraude.toFixed(1)}%</td>
-                <td><span class="badge ${badgeCor}">${acao}</span></td>
-              </tr>`;
+                <td><span class="badge ${badgeCor}">${acao}</span></td></tr>`;
         }).join('') || '<tr><td colspan="6" style="color:var(--slate)">Sem dados.</td></tr>';
 
         // Fiscais
@@ -1653,50 +1585,39 @@
         document.querySelector('#tFiscaisFraude tbody').innerHTML = rankFiscais.map(f => {
             const prov     = f.percFraude > 20 ? 'NOTIFICAR IMEDIATO' : f.percFraude > 10 ? 'ALERTA POR E-MAIL' : 'OK';
             const badgeCor = f.percFraude > 20 ? 'badge-danger'       : f.percFraude > 10 ? 'badge-warning'     : 'badge-success';
-            return `<tr>
-                <td>${f.nome}</td>
-                <td>${f.total}</td>
+            return `<tr><td>${f.nome}</td><td>${f.total}</td>
                 <td class="val-fraude">${f.fraudes}</td>
                 <td>${f.percFraude.toFixed(1)}%</td>
-                <td><span class="badge ${badgeCor}">${prov}</span></td>
-              </tr>`;
+                <td><span class="badge ${badgeCor}">${prov}</span></td></tr>`;
         }).join('') || '<tr><td colspan="5" style="color:var(--slate)">Sem dados.</td></tr>';
 
-        // Tabela Irregularidades
+        // Irregularidades
         document.querySelector('#tIrregularidadesFraude tbody').innerHTML = rotasSuspeitas.slice(0, 100).map(r => {
             const badgeCor = r.tipo === 'TEMPORAL' ? 'badge-danger' : 'badge-warning';
             const badgeTxt = r.tipo === 'TEMPORAL' ? '⏱️ Fraude Temporal' : '📍 Mesmo Local';
-            return `<tr>
-                <td>${r.data}</td>
+            return `<tr><td>${r.data}</td>
                 <td style="word-break:break-word;">${r.rota.substring(0,50)}</td>
-                <td>${r.motorista}</td>
-                <td>${r.gre}</td>
-                <td>${r.fiscal}</td>
-                <td>${r.inicio}</td>
-                <td>${r.fim}</td>
+                <td>${r.motorista}</td><td>${r.gre}</td><td>${r.fiscal}</td>
+                <td>${r.inicio}</td><td>${r.fim}</td>
                 <td>${r.duracao > 0 ? r.duracao + ' min' : 'N/A'}</td>
                 <td>${r.distPontos ? r.distPontos.toFixed(1) + ' km' : 'N/A'}</td>
-                <td><span class="badge ${badgeCor}">${badgeTxt}</span><br><small style="font-size:8px;">${r.detalhe}</small></td>
-              </tr>`;
+                <td><span class="badge ${badgeCor}">${badgeTxt}</span><br><small style="font-size:8px;">${r.detalhe}</small></td></tr>`;
         }).join('') || '<tr><td colspan="10" style="color:var(--slate)">Sem irregularidades detectadas.</td></tr>';
 
-        // Gráfico pizza
+        // Pizza
         if (charts.tiposFraude) charts.tiposFraude.destroy();
         const ctxTipos = document.getElementById('chartTiposFraude');
         if (ctxTipos) {
             charts.tiposFraude = new Chart(ctxTipos, {
                 type: 'pie',
-                data: {
-                    labels: ['Fraude Temporal (<10min)', 'Mesmo Local (início=fim)'],
-                    datasets: [{ data: [fraudesTemporal, fraudesMesmoLocal], backgroundColor: ['#e74c3c','#f39c12'] }]
-                },
+                data: { labels: ['Fraude Temporal (<10min)', 'Mesmo Local (início=fim)'], datasets: [{ data: [fraudesTemporal, fraudesMesmoLocal], backgroundColor: ['#e74c3c','#f39c12'] }] },
                 options: { responsive:true, maintainAspectRatio:true, plugins:{ legend:{ position:'bottom', labels:{ color:'#fff', font:{size:9} } } } }
             });
         }
     }
 
     // ═════════════════════════════════════════════════════════════════════════
-    //  PROCESSAR EXTRAS  ← lógica do HTML1
+    //  PROCESSAR EXTRAS
     // ═════════════════════════════════════════════════════════════════════════
     function processarExtras() {
         if (!bruto.length) return;
@@ -1777,7 +1698,6 @@
         document.getElementById('ex-abandono').innerText   = alertaAbandono.length;
         document.getElementById('ex-andamento').innerText  = totalAndam;
 
-        // Gráfico GREs
         if (charts.extrasGre) charts.extrasGre.destroy();
         const top5Gre = Object.entries(greMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
         const ctxGre  = document.getElementById('chartExtrasGre');
@@ -1789,7 +1709,6 @@
             });
         }
 
-        // Gráfico Horários
         if (charts.extrasHorario) charts.extrasHorario.destroy();
         const horasLabels = Array.from({length:24},(_,i)=>String(i).padStart(2,'0')+'h');
         const horasData   = Array.from({length:24},(_,i)=>(horaMap[i]||{count:0}).count);
@@ -1802,7 +1721,7 @@
             });
         }
 
-        // Ranking Fiscais
+        // Ranking Fiscais com motoristas expandíveis
         const rankFiscais = Object.entries(fiscalMap).sort((a,b)=>b[1].total-a[1].total).slice(0,10);
         let fiscaisHtml   = '';
         rankFiscais.forEach(([nome, d], i) => {
@@ -1833,7 +1752,7 @@
         });
         document.querySelector('#tExtrasFiscais tbody').innerHTML = fiscaisHtml || '<tr><td colspan="7">Sem dados.</td></tr>';
 
-        // Padrão de Horários por Faixa
+        // Horários por Faixa
         const faixas = [
             { label:'Madrugada (00-05h)',  min:0,  max:5  },
             { label:'Manhã Cedo (06-08h)', min:6,  max:8  },
@@ -1860,9 +1779,7 @@
             horariosPadraoHtml += `<tr class="pointer" onclick="toggleRow('${hId}',this)">
                 <td><span class="arrow">▶</span> ${f.label}</td>
                 <td style="font-weight:bold;color:var(--extra)">${count}</td>
-                <td>${fiscaisSet.size}</td>
-                <td>${gresSet.size}</td>
-                <td>${risco}</td>
+                <td>${fiscaisSet.size}</td><td>${gresSet.size}</td><td>${risco}</td>
             </tr>`;
             const motMap = {};
             motoristasArr.forEach(m => {
@@ -1882,12 +1799,11 @@
         });
         document.querySelector('#tExtrasHorariosPadrao tbody').innerHTML = horariosPadraoHtml || '<tr><td colspan="5">Sem dados.</td></tr>';
 
-        // Alertas Curta Duração
+        // Alertas
         document.querySelector('#tAlertaCurta tbody').innerHTML = alertaCurta.slice(0,50).map(d =>
             `<tr class="alert-row-danger"><td style="word-break:break-word;">${d.rota.substring(0,35)}</td><td>${d.motorista}</td><td>${d.gre}</td><td>${d.fiscal_responsavel}</td><td>${d.inicio_execucao}</td><td>${d.fim_execucao}</td><td><span class="badge badge-danger">${d.dur} min</span></td></tr>`
         ).join('') || '<tr><td colspan="7">Nenhum alerta.</td></tr>';
 
-        // Alertas Abandono
         document.querySelector('#tAlertaAbandono tbody').innerHTML = alertaAbandono.slice(0,50).map(d => {
             const h = Math.floor(d.tempoAberto/60), m = d.tempoAberto%60;
             return `<tr class="alert-row-warning"><td style="word-break:break-word;">${d.rota.substring(0,35)}</td><td>${d.motorista}</td><td>${d.gre}</td><td>${d.fiscal_responsavel}</td><td>${d.inicio_execucao}</td><td><span class="badge badge-warning">${h}h${String(m).padStart(2,'0')}</span></td></tr>`;
@@ -1925,45 +1841,29 @@
             }).join('');
         }
 
-        // Inicializar/reinicializar DataTable
         if (dtExtras) { try { dtExtras.destroy(); } catch(e){} dtExtras = null; }
         if (typeof $ !== 'undefined' && $.fn.DataTable) {
             dtExtras = $('#tAuditoriaExtras').DataTable({
-                dom: "<'row'<'col-sm-6'B><'col-sm-6'f>>" +
-                     "<'row'<'col-sm-12'tr>>" +
-                     "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+                dom: "<'row'<'col-sm-6'B><'col-sm-6'f>><'row'<'col-sm-12'tr>><'row'<'col-sm-5'i><'col-sm-7'p>>",
                 buttons: [
                     { extend:'excelHtml5', text:'📊 Excel', className:'btn btn-success btn-sm' },
                     { extend:'csvHtml5',   text:'📄 CSV',   className:'btn btn-info btn-sm' },
                     { extend:'print',      text:'🖨️ Imprimir', className:'btn btn-secondary btn-sm' }
                 ],
-                order: [[9, 'asc']],
-                pageLength: 15,
-                language: {
-                    search:'Buscar:', lengthMenu:'Mostrar _MENU_ registros',
-                    info:'Mostrando _START_ a _END_ de _TOTAL_ rotas',
-                    paginate:{ previous:'‹', next:'›' },
-                    zeroRecords:'Nenhuma rota encontrada.'
-                }
+                order: [[9, 'asc']], pageLength: 15,
+                language: { search:'Buscar:', lengthMenu:'Mostrar _MENU_ registros', info:'Mostrando _START_ a _END_ de _TOTAL_ rotas', paginate:{ previous:'‹', next:'›' }, zeroRecords:'Nenhuma rota encontrada.' }
             });
         }
     }
 
-    // ── Utils ─────────────────────────────────────────────────────────────────
-    function exportarPDF() {
-        const opt = { margin:5, filename:'BI_LOGISTICA.pdf', html2canvas:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'landscape'} };
-        html2pdf().set(opt).from(document.getElementById('aba-escala')).save();
-    }
-
-    function lerPagina() {
-        const ass = document.getElementById('k-ass-perc').innerText;
-        const u   = new SpeechSynthesisUtterance(`Resumo Logístico: Assiduidade atual de ${ass}.`);
-        u.lang = 'pt-BR';
-        window.speechSynthesis.speak(u);
-    }
-
     // ═════════════════════════════════════════════════════════════════════════
-    //  COMPLIANCE — lógica completa
+    //  COMPLIANCE — ICO AMPLIADO COM 6 PILARES
+    //  Pilar 1: Assiduidade        (25%) — rotas regulares concluídas
+    //  Pilar 2: Conformidade       (15%) — dentro da janela planejada
+    //  Pilar 3: Integridade        (20%) — ausência de fraude temporal/geo
+    //  Pilar 4: Planejamento       (10%) — extras sob controle (<15%)
+    //  Pilar 5: Alertas Críticos   (15%) — penaliza alertas (temporal+geo+gargalo)
+    //  Pilar 6: Ocorrências/Justif (15%) — rotas não abertas × obs registradas
     // ═════════════════════════════════════════════════════════════════════════
 
     let cplParetoModo = 'fiscal';
@@ -1987,7 +1887,6 @@
     function processarCompliance() {
         if (!bruto.length) return;
 
-        // Popula filtros da aba compliance (primeira vez)
         const elGre    = document.getElementById('cpl-filtro-gre');
         const elFiscal = document.getElementById('cpl-filtro-fiscal');
         if (elGre && elGre.options.length === 1) {
@@ -2008,30 +1907,41 @@
         const agora = new Date();
         cplDadosCriticos = [];
 
-        let semAlerta = 0;
-        const motoristaMap = {}, greMap = {};
+        const veiculoMap = {}, greMap = {};
         const cicloMap   = { '06':0,'08':0,'10':0,'12':0,'14':0,'16':0,'18':0,'20':0 };
 
+        // ── Estrutura para Pilar 6 — Ocorrências por fiscal ──
+        // Para cada fiscal: total rotas, não abertas (pendentes), com obs, alertas fraude
+        const fiscalOcorrMap = {};
+
         dados.forEach(d => {
-            const durMin      = calcDuracaoMinutos(d.inicio_execucao, d.fim_execucao);
-            const distKm      = calcularDistanciaKm(d.coordenadas_inicio, d.coordenadas_fim);
-            const kmPlan      = parseFloat((d.km_planejado || '0').toString().replace(',', '.')) || 0;
-            const sn          = norm(d.status);
-            const isConcl     = sn.includes('CONCLUID');
-            const isAndam     = sn.includes('ANDAMENTO') || sn.includes('EXECUTANDO');
-            const veiculo     = d.veiculo || 'S/ PLACA';
-            const motorista   = d.motorista || 'S/ NOME';
-            const gre         = d.gre || 'S/ GRE';
+            const durMin    = calcDuracaoMinutos(d.inicio_execucao, d.fim_execucao);
+            const distKm    = calcularDistanciaKm(d.coordenadas_inicio, d.coordenadas_fim);
+            const kmPlan    = parseFloat((d.km_planejado || '0').toString().replace(',', '.')) || 0;
+            const sn        = norm(d.status);
+            const isConcl   = sn.includes('CONCLUID');
+            const isAndam   = sn.includes('ANDAMENTO') || sn.includes('EXECUTANDO');
+            const isNaoAberto = !isConcl && !isAndam; // pendente / não executado
+            const veiculo   = d.veiculo || 'S/ PLACA';
+            const motorista = d.motorista || 'S/ NOME';
+            const gre       = d.gre || 'S/ GRE';
+            const fiscal    = d.fiscal_responsavel || 'NÃO IDENTIFICADO';
+            const temObs    = d.observacao && d.observacao.trim().length > 2;
+
+            // Acumular por fiscal para pilar 6
+            if (!fiscalOcorrMap[fiscal]) fiscalOcorrMap[fiscal] = { gre, total:0, naoAbertas:0, comObs:0, alertasFraude:0 };
+            fiscalOcorrMap[fiscal].total++;
+            if (isNaoAberto) fiscalOcorrMap[fiscal].naoAbertas++;
+            if (temObs) fiscalOcorrMap[fiscal].comObs++;
 
             // Tipo de alerta
             let tipoAlerta = null, gravidade = 0;
-
             if (durMin !== null && durMin < 10 && (isConcl || isAndam)) {
-                tipoAlerta = 'TEMPORAL';
-                gravidade  = durMin < 3 ? 10 : 8;
+                tipoAlerta = 'TEMPORAL'; gravidade = durMin < 3 ? 10 : 8;
+                fiscalOcorrMap[fiscal].alertasFraude++;
             } else if (distKm !== null && distKm < 0.5 && kmPlan > 3 && (isConcl || isAndam)) {
-                tipoAlerta = 'GEOGRAFICA';
-                gravidade  = 9;
+                tipoAlerta = 'GEOGRAFICA'; gravidade = 9;
+                fiscalOcorrMap[fiscal].alertasFraude++;
             } else if (isAndam) {
                 const inicioMin = horaParaMinutos(d.inicio_execucao);
                 if (inicioMin !== null) {
@@ -2042,37 +1952,28 @@
                 }
             }
 
-            if (tipoAlerta) {
-                cplDadosCriticos.push({ ...d, tipoAlerta, gravidade, durMin, distKm });
-            } else {
-                semAlerta++;
-            }
+            if (tipoAlerta) cplDadosCriticos.push({ ...d, tipoAlerta, gravidade, durMin, distKm });
 
-            // Motoristas (agrupado só por motorista, não por veiculo)
-            const mKey = motorista;
-            if (!motoristaMap[mKey]) motoristaMap[mKey] = { motorista, veiculo, gre, fiscal: d.fiscal_responsavel || '', rotas:0, alertas:0, tipos:[], veiculos: new Set() };
-            motoristaMap[mKey].rotas++;
-            motoristaMap[mKey].veiculos.add(veiculo);
-            if (tipoAlerta) { motoristaMap[mKey].alertas++; motoristaMap[mKey].tipos.push(tipoAlerta); }
+            // Veículos
+            const vKey = `${veiculo}||${motorista}`;
+            if (!veiculoMap[vKey]) veiculoMap[vKey] = { veiculo, motorista, gre, fiscal, rotas:0, alertas:0, tipos:[] };
+            veiculoMap[vKey].rotas++;
+            if (tipoAlerta) { veiculoMap[vKey].alertas++; veiculoMap[vKey].tipos.push(tipoAlerta); }
 
-            // GRE compliance
-            if (!greMap[gre]) greMap[gre] = { total:0, alertas:0, gargalos:0, concl:0 };
+            // GRE
+            if (!greMap[gre]) greMap[gre] = { total:0, alertas:0, gargalos:0, concl:0, ocorr:0 };
             greMap[gre].total++;
             if (tipoAlerta === 'GARGALO') greMap[gre].gargalos++;
             if (tipoAlerta && tipoAlerta !== 'GARGALO') greMap[gre].alertas++;
             if (isConcl) greMap[gre].concl++;
+            if (isNaoAberto) greMap[gre].ocorr++;
 
-            // Ciclo: hora de fim_execucao
+            // Ciclo
             if (isConcl && d.fim_execucao && d.fim_execucao !== '--:--') {
                 const hFim = parseInt((d.fim_execucao || '').split(':')[0]);
                 if (!isNaN(hFim)) {
-                    const faixa = String(Math.floor(hFim / 2) * 2).padStart(2, '0');
+                    const faixa = String(Math.min(Math.floor(hFim / 2) * 2, 20)).padStart(2, '0');
                     if (cicloMap[faixa] !== undefined) cicloMap[faixa]++;
-                    else {
-                        // encontra a faixa mais próxima disponível
-                        const f2 = String(Math.min(Math.floor(hFim/2)*2, 20)).padStart(2,'0');
-                        if (cicloMap[f2] !== undefined) cicloMap[f2]++;
-                    }
                 }
             }
         });
@@ -2081,16 +1982,23 @@
         const totalAlertas = cplDadosCriticos.length;
         const gargalos     = cplDadosCriticos.filter(d => d.tipoAlerta === 'GARGALO').length;
         const falhas       = cplDadosCriticos.filter(d => d.tipoAlerta === 'TEMPORAL' || d.tipoAlerta === 'GEOGRAFICA').length;
+        const veiculosRisco= Object.values(veiculoMap).filter(v => v.alertas >= 2).length;
 
-        // ── ICO COMPOSTO — 6 PILARES ─────────────────────────────────────────
+        // Rotas não abertas sem justificativa (obs em branco)
+        const naoAbertasSemJustif = dados.filter(d => {
+            const sn = norm(d.status);
+            const isNaoAberto = !sn.includes('CONCLUID') && !sn.includes('ANDAMENTO') && !sn.includes('EXECUTANDO');
+            const temObs = d.observacao && d.observacao.trim().length > 2;
+            return isNaoAberto && !temObs;
+        }).length;
 
-        // Pilar 1 — Assiduidade (25%)
-        const rotasRegulares  = dados.filter(d => !d.isExtra);
-        const totalReg        = rotasRegulares.length || 1;
-        const conclReg        = rotasRegulares.filter(d => norm(d.status).includes('CONCLUID')).length;
-        const p1_assid        = conclReg / totalReg;
+        // ── PILAR 1: Assiduidade (25%) ────────────────────────────────────────
+        const rotasRegulares = dados.filter(d => !d.isExtra);
+        const totalReg       = rotasRegulares.length || 1;
+        const conclReg       = rotasRegulares.filter(d => norm(d.status).includes('CONCLUID')).length;
+        const p1_assid       = conclReg / totalReg;
 
-        // Pilar 2 — Conformidade Temporal (15%)
+        // ── PILAR 2: Conformidade Temporal (15%) ─────────────────────────────
         let dentroJanela = 0, comHorario = 0;
         dados.forEach(d => {
             const hPlan = extrairHoraHorario(d.horario);
@@ -2101,154 +2009,99 @@
         });
         const p2_conformidade = comHorario > 0 ? dentroJanela / comHorario : 1;
 
-        // Pilar 3 — Integridade (20%): ausência fraude temporal+geo
+        // ── PILAR 3: Integridade — ausência de fraude (20%) ──────────────────
         const fraudeCount    = cplDadosCriticos.filter(d => d.tipoAlerta === 'TEMPORAL' || d.tipoAlerta === 'GEOGRAFICA').length;
         const p3_integridade = Math.max(0, 1 - (fraudeCount / total));
 
-        // Pilar 4 — Planejamento (10%): extras controlados (<15% do total)
+        // ── PILAR 4: Planejamento — extras controlados (10%) ─────────────────
         const extrasCount = dados.filter(d => d.isExtra).length;
         const taxaExtras  = extrasCount / total;
         const p4_planej   = Math.max(0, 1 - (taxaExtras / 0.15) * 0.5);
 
-        // Pilar 5 — Alertas (15%): alertas / rotas EXECUTADAS (base correta)
-        const rotasExecutadas  = dados.filter(d => {
-            const sn = norm(d.status);
-            return sn.includes('CONCLUID') || sn.includes('ANDAMENTO') || sn.includes('EXECUTANDO');
-        }).length || 1;
-        const taxaAlertasExec  = totalAlertas / rotasExecutadas;
-        const p5_alertas       = Math.max(0, 1 - (taxaAlertasExec / 0.30)); // 30% threshold máximo
+        // ── PILAR 5: Alertas Críticos (15%) ──────────────────────────────────
+        // Score de alertas: penaliza gargalos (6) + fraude (8-10) proporcionalmente ao total
+        // Normaliza: 0 alertas = 100%, cresce penalidade até 30% do total de rotas = 0%
+        const taxaAlertas  = totalAlertas / total;
+        const p5_alertas   = Math.max(0, 1 - (taxaAlertas / 0.30));
 
-        // Pilar 6 — Ocorrências/Justificativas (15%)
-        const naoAbertasSemJustif = dados.filter(d => {
-            const sn = norm(d.status);
-            const isNaoAberto = !sn.includes('CONCLUID') && !sn.includes('ANDAMENTO') && !sn.includes('EXECUTANDO');
-            return isNaoAberto && !(d.observacao && d.observacao.trim().length > 2);
-        }).length;
+        // ── PILAR 6: Ocorrências/Justificativas (15%) ─────────────────────────
+        // Penaliza rotas não abertas sem justificativa; bônus por obs registradas em rotas problemáticas
         const totalNaoAbertas = dados.filter(d => {
             const sn = norm(d.status);
             return !sn.includes('CONCLUID') && !sn.includes('ANDAMENTO') && !sn.includes('EXECUTANDO');
         }).length;
         const taxaNaoJustif = totalNaoAbertas > 0 ? naoAbertasSemJustif / totalNaoAbertas : 0;
-        const p6_ocorr      = Math.max(0, 1 - taxaNaoJustif);
+        const p6_ocorr      = Math.max(0, 1 - taxaNaoJustif); // 0 sem justif = 100%; tudo sem justif = 0%
 
-        // Score final ponderado
-        const icoRaw = (p1_assid*0.25 + p2_conformidade*0.15 + p3_integridade*0.20 + p4_planej*0.10 + p5_alertas*0.15 + p6_ocorr*0.15) * 100;
-        const ico    = icoRaw.toFixed(1);
+        // ── ICO COMPOSTO FINAL ────────────────────────────────────────────────
+        const icoRaw = (
+            p1_assid        * 0.25 +
+            p2_conformidade * 0.15 +
+            p3_integridade  * 0.20 +
+            p4_planej       * 0.10 +
+            p5_alertas      * 0.15 +
+            p6_ocorr        * 0.15
+        ) * 100;
+        const ico = icoRaw.toFixed(1);
 
-        // Motoristas com ≥2 alertas
-        const motoristasRisco = Object.values(motoristaMap).filter(m => m.alertas >= 2).length;
-
-        // Detalhes por pilar para modal e mini-cards
         const icoDetalhes = {
-            assid:        { val: (p1_assid*100).toFixed(1),        peso:'25%', raw: p1_assid },
-            conformidade: { val: (p2_conformidade*100).toFixed(1), peso:'15%', raw: p2_conformidade },
-            integridade:  { val: (p3_integridade*100).toFixed(1),  peso:'20%', raw: p3_integridade },
-            planejamento: { val: (p4_planej*100).toFixed(1),        peso:'10%', raw: p4_planej },
-            alertas:      { val: (p5_alertas*100).toFixed(1),       peso:'15%', raw: p5_alertas },
-            ocorrencias:  { val: (p6_ocorr*100).toFixed(1),         peso:'15%', raw: p6_ocorr }
+            assid:        (p1_assid        * 100).toFixed(1),
+            conformidade: (p2_conformidade * 100).toFixed(1),
+            integridade:  (p3_integridade  * 100).toFixed(1),
+            planejamento: (p4_planej       * 100).toFixed(1),
+            alertas:      (p5_alertas      * 100).toFixed(1),
+            ocorrencias:  (p6_ocorr        * 100).toFixed(1)
         };
 
-        // Dados contextuais para os modais
-        window._cplCtx = {
-            total, totalReg, conclReg, p1_assid,
-            comHorario, dentroJanela, p2_conformidade,
-            fraudeCount, p3_integridade,
-            extrasCount, taxaExtras, p4_planej,
-            totalAlertas, rotasExecutadas, taxaAlertasExec, p5_alertas,
-            totalNaoAbertas, naoAbertasSemJustif, taxaNaoJustif, p6_ocorr
-        };
-
-        // ── Atualizar ICO ─────────────────────────────────────────────────────
+        // ── Atualizar KPIs ────────────────────────────────────────────────────
         const elIco = document.getElementById('cpl-ico');
         if (elIco) {
             elIco.innerText   = ico + '%';
             elIco.style.color = ico >= 80 ? '#2ecc71' : ico >= 65 ? '#f39c12' : ico >= 50 ? '#e67e22' : '#e74c3c';
         }
 
+        // Classificação
         const elClassif = document.getElementById('cpl-ico-classif');
         if (elClassif) {
-            const classif = ico >= 80 ? { txt:'CONFIÁVEL',  cls:'#2ecc71' }
-                          : ico >= 65 ? { txt:'ATENÇÃO',    cls:'#f39c12' }
-                          : ico >= 50 ? { txt:'CRÍTICO',    cls:'#e67e22' }
-                          :             { txt:'INACEITÁVEL',cls:'#e74c3c' };
+            const classif = ico >= 80 ? { txt:'CONFIÁVEL',   cls:'#2ecc71' }
+                          : ico >= 65 ? { txt:'ATENÇÃO',      cls:'#f39c12' }
+                          : ico >= 50 ? { txt:'CRÍTICO',      cls:'#e67e22' }
+                          :             { txt:'INACEITÁVEL',  cls:'#e74c3c' };
             elClassif.innerHTML = `<span style="font-size:10px;font-weight:bold;color:${classif.cls};border:1px solid ${classif.cls};padding:2px 10px;border-radius:20px;">${classif.txt}</span>`;
         }
 
-        // Pilares clicáveis (grid 3×2)
+        // Pilares em grid 3×2
         const elPilares = document.getElementById('cpl-ico-pilares');
         if (elPilares) {
             const corP = v => parseFloat(v) >= 80 ? '#2ecc71' : parseFloat(v) >= 65 ? '#f39c12' : '#e74c3c';
-            const pilaresConf = [
-                { key:'assid',        icon:'📊', label:'Assid.',   peso:'25%', val: icoDetalhes.assid.val },
-                { key:'conformidade', icon:'⏰', label:'Conform.', peso:'15%', val: icoDetalhes.conformidade.val },
-                { key:'integridade',  icon:'🔒', label:'Integrid.',peso:'20%', val: icoDetalhes.integridade.val },
-                { key:'planejamento', icon:'📋', label:'Planej.',  peso:'10%', val: icoDetalhes.planejamento.val },
-                { key:'alertas',      icon:'⚠️', label:'Alertas', peso:'15%', val: icoDetalhes.alertas.val },
-                { key:'ocorrencias',  icon:'📝', label:'Ocorr.',  peso:'15%', val: icoDetalhes.ocorrencias.val }
+            const pilares = [
+                { label:'Assid.',     peso:'25%', val: icoDetalhes.assid },
+                { label:'Conform.',   peso:'15%', val: icoDetalhes.conformidade },
+                { label:'Integrid.',  peso:'20%', val: icoDetalhes.integridade },
+                { label:'Planej.',    peso:'10%', val: icoDetalhes.planejamento },
+                { label:'Alertas',    peso:'15%', val: icoDetalhes.alertas },
+                { label:'Ocorr.',     peso:'15%', val: icoDetalhes.ocorrencias }
             ];
-            elPilares.innerHTML = `<div class="ico-pilares-grid">${pilaresConf.map(p =>
-                `<div class="ico-pilar-item" onclick="abrirModalPilar('${p.key}')" title="Clique para entender este pilar"
-                     style="cursor:pointer;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='rgba(0,0,0,.2)'">
+            elPilares.innerHTML = pilares.map(p =>
+                `<div class="ico-pilar-item">
                     <div class="ico-pilar-valor" style="color:${corP(p.val)}">${p.val}%</div>
-                    <div class="ico-pilar-label">${p.icon} ${p.label}</div>
+                    <div class="ico-pilar-label">${p.label}</div>
                     <div class="ico-pilar-peso">peso ${p.peso}</div>
                 </div>`
-            ).join('')}</div>`;
+            ).join('');
         }
 
-        // ── KPIs laterais + detalhe expansível ───────────────────────────────
-        setText('cpl-alertas',        totalAlertas);
-        setText('cpl-gargalos',       gargalos);
-        setText('cpl-falhas',         falhas);
-        setText('cpl-veiculos-risco', motoristasRisco);
+        setText('cpl-alertas',          totalAlertas);
+        setText('cpl-gargalos',         gargalos);
+        setText('cpl-falhas',           falhas);
+        setText('cpl-veiculos-risco',   veiculosRisco);
+        setText('cpl-ocorr-sem-justif', naoAbertasSemJustif);
 
-        // % sobre executadas para Alertas
-        const pctAlertasExec = ((taxaAlertasExec)*100).toFixed(1);
-        setText2('kpi-alertas-pct', `${pctAlertasExec}% das rotas executadas`);
-
-        // % sobre total para Gargalos
-        setText2('kpi-gargalos-pct', `${((gargalos/rotasExecutadas)*100).toFixed(1)}% das executadas`);
-
-        // % para Falhas
-        setText2('kpi-falhas-pct', `${((falhas/total)*100).toFixed(1)}% do total de rotas`);
-
-        // % motoristas em risco
-        const totalMotoristas = Object.keys(motoristaMap).length || 1;
-        setText2('kpi-motoristas-pct', `${((motoristasRisco/totalMotoristas)*100).toFixed(1)}% dos motoristas ativos`);
-
-        // Detalhe expansível — Alertas (top 5 fiscais com mais alertas)
-        const topAlertasFiscal = cplDadosCriticos.reduce((acc, d) => {
-            const f = d.fiscal_responsavel || 'N/A';
-            acc[f] = (acc[f]||0)+1; return acc;
-        }, {});
-        const topAF = Object.entries(topAlertasFiscal).sort((a,b)=>b[1]-a[1]).slice(0,5);
-        const detAlerta = topAF.map(([f,n])=>`<div style="display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04);"><span style="color:#a4b0be;">${f.split(' ')[0]}</span><span style="color:#e74c3c;font-weight:bold;">${n}</span></div>`).join('');
-        setText2('kpi-alertas-detail', `<b style="color:#a4b0be;">Top fiscais com alertas:</b>${detAlerta}`);
-
-        // Detalhe — Gargalos
-        const topGargGre = cplDadosCriticos.filter(d=>d.tipoAlerta==='GARGALO').reduce((acc,d)=>{
-            const g=d.gre||'N/A'; acc[g]=(acc[g]||0)+1; return acc;},{});
-        const topGG = Object.entries(topGargGre).sort((a,b)=>b[1]-a[1]).slice(0,5);
-        const detGarg = topGG.length ? topGG.map(([g,n])=>`<div style="display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04);"><span style="color:#a4b0be;">${g}</span><span style="color:#f39c12;font-weight:bold;">${n}</span></div>`).join('') : '<div style="color:var(--slate)">Nenhum gargalo detectado</div>';
-        setText2('kpi-gargalos-detail', `<b style="color:#a4b0be;">Gargalos por GRE:</b>${detGarg}`);
-
-        // Detalhe — Falhas
-        const topFalhasMot = cplDadosCriticos.filter(d=>d.tipoAlerta!=='GARGALO').reduce((acc,d)=>{
-            const m=d.motorista||'N/A'; acc[m]=(acc[m]||0)+1; return acc;},{});
-        const topFM = Object.entries(topFalhasMot).sort((a,b)=>b[1]-a[1]).slice(0,5);
-        const detFalha = topFM.map(([m,n])=>`<div style="display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04);"><span style="color:#a4b0be;">${m.split(' ')[0]}</span><span style="color:#e67e22;font-weight:bold;">${n}</span></div>`).join('');
-        setText2('kpi-falhas-detail', `<b style="color:#a4b0be;">Motoristas c/ falhas:</b>${detFalha||'<span style="color:var(--slate)">Nenhuma falha</span>'}`);
-
-        // Detalhe — Motoristas em risco
-        const topMotRisco = Object.values(motoristaMap).filter(m=>m.alertas>=2).sort((a,b)=>b.alertas-a.alertas).slice(0,5);
-        const detMot = topMotRisco.map(m=>`<div style="padding:2px 0;border-bottom:1px solid rgba(255,255,255,.04);"><span style="color:#a4b0be;">${m.motorista.substring(0,20)}</span> <span style="color:#9b59b6;font-weight:bold;">${m.alertas} alertas</span> <span style="color:#666;font-size:8px;">${[...new Set(m.tipos)].map(t=>t==='TEMPORAL'?'⏱':t==='GEOGRAFICA'?'📍':'⏳').join('')}</span></div>`).join('');
-        setText2('kpi-motoristas-detail', `<b style="color:#a4b0be;">Motoristas prioritários:</b>${detMot||'<span style="color:var(--slate)">Nenhum em risco</span>'}`);
-
-        // Guarda mapas para renders
-        window._cplMotoristaMap   = motoristaMap;
-        window._cplGreMap         = greMap;
-        window._cplCicloMap       = cicloMap;
-        window._cplFiscalOcorrMap = fiscalOcorrMap;
+        // Salva para renders
+        window._cplVeiculoMap    = veiculoMap;
+        window._cplGreMap        = greMap;
+        window._cplCicloMap      = cicloMap;
+        window._cplFiscalOcorrMap= fiscalOcorrMap;
 
         renderCplPareto();
         renderCplCiclo();
@@ -2258,66 +2111,9 @@
         renderCplAuditoria();
     }
 
-    function setText(id, val) { const el = document.getElementById(id); if (el) el.innerText = val; }
-    function setText2(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
-
-    function toggleCplKpi(id) {
+    function setText(id, val) {
         const el = document.getElementById(id);
-        if (!el) return;
-        el.style.display = el.style.display === 'none' ? 'block' : 'none';
-    }
-
-    // Definições dos pilares para o modal
-    const CPL_PILARES_DEF = {
-        assid: {
-            icon:'📊', titulo:'Assiduidade Operacional', peso:'Peso: 25% do ICO',
-            formula: 'Fórmula: Rotas Regulares Concluídas ÷ Total de Rotas Regulares × 100',
-            interpretacao: 'Mede quantas rotas planejadas (excluindo extras) foram efetivamente concluídas. É o pilar mais básico: se não há execução, nada mais importa. Meta ideal: ≥ 85%.'
-        },
-        conformidade: {
-            icon:'⏰', titulo:'Conformidade Temporal', peso:'Peso: 15% do ICO',
-            formula: 'Fórmula: Rotas iniciadas dentro da janela planejada (tolerância ±60min) ÷ Total com horário definido × 100',
-            interpretacao: 'Avalia se os motoristas abriram as rotas dentro do horário previsto na escala. Saídas com mais de 1h de atraso são consideradas não conformes. Indica disciplina operacional e respeito ao planejamento.'
-        },
-        integridade: {
-            icon:'🔒', titulo:'Integridade das Execuções', peso:'Peso: 20% do ICO',
-            formula: 'Fórmula: (Total - Fraudes Temporais - Fraudes Geográficas) ÷ Total × 100',
-            interpretacao: 'Penaliza rotas com duração < 10 minutos (suspeita de não execução) ou início e fim no mesmo ponto geográfico com KM planejado > 3km. Esses são os principais indicadores de irregularidade passível de auditoria.'
-        },
-        planejamento: {
-            icon:'📋', titulo:'Controle de Planejamento', peso:'Peso: 10% do ICO',
-            formula: 'Fórmula: Penalidade progressiva quando extras > 15% do total. Score = max(0, 1 - (taxa_extras / 0,15) × 0,5)',
-            interpretacao: 'Extras em excesso indicam falha no planejamento original: a operação precisou improvisar. Um volume saudável de extras é < 15% do total. Acima disso, cada ponto percentual reduz o score progressivamente.'
-        },
-        alertas: {
-            icon:'⚠️', titulo:'Taxa de Alertas sobre Executadas', peso:'Peso: 15% do ICO',
-            formula: 'Fórmula: Total de Alertas (temporal + geográfico + gargalo) ÷ Rotas Executadas (OK) × 100',
-            interpretacao: 'LÓGICA CORRIGIDA: o denominador são as rotas que foram EXECUTADAS (concluídas + em andamento), não o total. Isso dá o real percentual de rotas executadas que tiveram alguma irregularidade. Threshold: ≥ 30% das executadas com alerta = score zero.'
-        },
-        ocorrencias: {
-            icon:'📝', titulo:'Justificativas de Ocorrências', peso:'Peso: 15% do ICO',
-            formula: 'Fórmula: (Rotas Não Abertas com Observação ÷ Total Não Abertas) × 100',
-            interpretacao: 'Mede se o fiscal registrou justificativa (campo observação) para as rotas que não foram executadas. Rotas pendentes sem qualquer justificativa indicam falta de acompanhamento e dificultam a auditoria. Meta: 100% das não abertas com obs registrada.'
-        }
-    };
-
-    function abrirModalPilar(key) {
-        const def = CPL_PILARES_DEF[key];
-        const ctx = window._cplCtx || {};
-        if (!def) return;
-        document.getElementById('cpl-pilar-modal-icon').innerText       = def.icon;
-        document.getElementById('cpl-pilar-modal-titulo').innerText     = def.titulo;
-        document.getElementById('cpl-pilar-modal-peso').innerText       = def.peso;
-        document.getElementById('cpl-pilar-modal-formula').innerText    = def.formula;
-        document.getElementById('cpl-pilar-modal-interpretacao').innerText = def.interpretacao;
-
-        // Valor atual
-        const vals = { assid: ctx.p1_assid, conformidade: ctx.p2_conformidade, integridade: ctx.p3_integridade, planejamento: ctx.p4_planej, alertas: ctx.p5_alertas, ocorrencias: ctx.p6_ocorr };
-        const v = vals[key] !== undefined ? (vals[key]*100).toFixed(1) : '—';
-        const cor = parseFloat(v) >= 80 ? '#2ecc71' : parseFloat(v) >= 65 ? '#f39c12' : '#e74c3c';
-        document.getElementById('cpl-pilar-modal-valor').innerHTML = `<span style="color:${cor};">${v}%</span> <span style="font-size:14px;color:var(--slate);">atual</span>`;
-
-        document.getElementById('cpl-pilar-modal').style.display = 'flex';
+        if (el) el.innerText = val;
     }
 
     // ── Pareto de irregularidades ─────────────────────────────────────────────
@@ -2331,13 +2127,10 @@
             if (d.tipoAlerta === 'GEOGRAFICA') mapa[k].geografica++;
             if (d.tipoAlerta === 'GARGALO')    mapa[k].gargalo++;
         });
-
         const sorted = Object.entries(mapa)
             .map(([nm, v]) => ({ nm, total: v.temporal + v.geografica + v.gargalo, ...v }))
             .sort((a, b) => b.total - a.total).slice(0, 10);
-
-        const labels = sorted.map(r => r.nm.split(' ')[0] + (r.nm.split(' ')[1] ? ' ' + r.nm.split(' ')[1] : ''));
-
+        const labels = sorted.map(r => r.nm.split(' ').slice(0,2).join(' '));
         if (charts.cplPareto) { charts.cplPareto.destroy(); charts.cplPareto = null; }
         const ctx = document.getElementById('cpl-chart-pareto');
         if (!ctx) return;
@@ -2353,10 +2146,7 @@
             },
             options: {
                 maintainAspectRatio: false, responsive: true,
-                plugins: {
-                    legend: { position: 'bottom', labels: { color: '#a4b0be', font: { size: 9 }, padding: 10 } },
-                    tooltip: { mode: 'index', intersect: false }
-                },
+                plugins: { legend: { position: 'bottom', labels: { color: '#a4b0be', font: { size: 9 }, padding: 10 } }, tooltip: { mode: 'index', intersect: false } },
                 scales: {
                     x: { stacked: true, ticks: { color: '#a4b0be', font: { size: 9 }, maxRotation: 30 }, grid: { color: 'rgba(255,255,255,.04)' } },
                     y: { stacked: true, beginAtZero: true, ticks: { color: '#a4b0be', stepSize: 1 }, grid: { color: 'rgba(255,255,255,.05)' } }
@@ -2367,10 +2157,9 @@
 
     // ── Ciclo de execução diário ──────────────────────────────────────────────
     function renderCplCiclo() {
-        const ciclo = window._cplCicloMap || {};
+        const ciclo  = window._cplCicloMap || {};
         const labels = Object.keys(ciclo).sort().map(h => h + 'h');
         const vals   = Object.keys(ciclo).sort().map(h => ciclo[h]);
-
         if (charts.cplCiclo) { charts.cplCiclo.destroy(); charts.cplCiclo = null; }
         const ctx = document.getElementById('cpl-chart-ciclo');
         if (!ctx) return;
@@ -2380,34 +2169,17 @@
                 labels,
                 datasets: [{
                     label: 'Rotas concluídas',
-                    data: vals,
-                    borderColor: '#3498db',
-                    backgroundColor: 'rgba(52,152,219,.12)',
-                    fill: true, tension: 0.4,
-                    pointRadius: 5, pointHoverRadius: 8,
-                    borderWidth: 2.5,
+                    data: vals, borderColor: '#3498db', backgroundColor: 'rgba(52,152,219,.12)',
+                    fill: true, tension: 0.4, pointRadius: 5, pointHoverRadius: 8, borderWidth: 2.5,
                     pointBackgroundColor: vals.map(v => {
                         const max = Math.max(...vals, 1);
-                        return v === max ? '#e74c3c' : v === Math.min(...vals.filter(x=>x>0),max) ? '#f1c40f' : '#3498db';
+                        return v === max ? '#e74c3c' : '#3498db';
                     })
                 }]
             },
             options: {
                 maintainAspectRatio: false, responsive: true,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: (item) => ` ${item.raw} rotas concluídas nessa faixa`,
-                            afterLabel: (item) => {
-                                const max = Math.max(...vals, 1);
-                                if (item.raw === max) return ' ← Pico de execução';
-                                if (item.raw === Math.min(...vals.filter(x=>x>0), max)) return ' ← Menor atividade';
-                                return '';
-                            }
-                        }
-                    }
-                },
+                plugins: { legend: { display: false } },
                 scales: {
                     x: { ticks: { color: '#a4b0be', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,.04)' } },
                     y: { beginAtZero: true, ticks: { color: '#a4b0be', stepSize: 1 }, grid: { color: 'rgba(255,255,255,.05)' } }
@@ -2416,40 +2188,35 @@
         });
     }
 
-    // ── Ranking de risco por Motorista (corrigido) ───────────────────────────
+    // ── Ranking de risco por veículo ──────────────────────────────────────────
     function renderCplVeiculos() {
-        const lista = Object.values(window._cplMotoristaMap || {})
-            .filter(m => m.alertas > 0)
-            .sort((a, b) => b.alertas - a.alertas)
-            .slice(0, 20);
-
+        const lista = Object.values(window._cplVeiculoMap || {})
+            .filter(v => v.alertas > 0).sort((a, b) => b.alertas - a.alertas).slice(0, 20);
         const tbody = document.querySelector('#cpl-tbl-veiculos tbody');
         if (!tbody) return;
-        tbody.innerHTML = lista.map((m, i) => {
-            const score    = ((m.alertas / Math.max(m.rotas, 1)) * 100).toFixed(0);
+        tbody.innerHTML = lista.map((v, i) => {
+            const score    = ((v.alertas / Math.max(v.rotas, 1)) * 100).toFixed(0);
             const riscoCls = score >= 50 ? 'cpl-risco-critico' : score >= 30 ? 'cpl-risco-alto' : score >= 15 ? 'cpl-risco-medio' : 'cpl-risco-baixo';
             const riscoTxt = score >= 50 ? 'CRÍTICO' : score >= 30 ? 'ALTO' : score >= 15 ? 'MÉDIO' : 'BAIXO';
-            const tipos    = [...new Set(m.tipos)].map(t => t === 'TEMPORAL' ? '⏱' : t === 'GEOGRAFICA' ? '📍' : '⏳').join(' ');
-            const veics    = m.veiculos ? [...m.veiculos].filter(v => v && v.length > 2).join(', ').substring(0, 25) || 'S/ PLACA' : 'S/ PLACA';
+            const tipos    = [...new Set(v.tipos)].map(t => t === 'TEMPORAL' ? '⏱' : t === 'GEOGRAFICA' ? '📍' : '⏳').join(' ');
             return `<tr>
                 <td style="color:var(--slate);font-size:9px;">${i+1}º</td>
-                <td><b>${m.motorista.substring(0,28)}</b><br><span style="font-size:9px;color:var(--slate);">🚗 ${veics}</span></td>
-                <td style="font-size:10px;">${m.gre}</td>
-                <td style="font-size:9px;color:var(--info);">${(m.fiscal||'').split(' ')[0]}</td>
-                <td style="text-align:center;">${m.rotas}</td>
-                <td style="text-align:center;color:#e74c3c;font-weight:bold;">${m.alertas} ${tipos}</td>
+                <td><b>${v.veiculo}</b><br><span style="font-size:9px;color:var(--slate);">${v.motorista.substring(0,28)}</span></td>
+                <td style="font-size:10px;">${v.gre}</td>
+                <td style="font-size:9px;color:var(--info);">${(v.fiscal||'').split(' ')[0]}</td>
+                <td style="text-align:center;">${v.rotas}</td>
+                <td style="text-align:center;color:#e74c3c;font-weight:bold;">${v.alertas} ${tipos}</td>
                 <td style="text-align:center;font-weight:bold;color:${score>=50?'#e74c3c':score>=30?'#f39c12':'#f1c40f'};">${score}%</td>
                 <td><span class="cpl-score-pill ${riscoCls}">${riscoTxt}</span></td>
             </tr>`;
-        }).join('') || '<tr><td colspan="8" style="color:var(--slate);text-align:center;padding:20px;">✅ Nenhum motorista com alertas nos dados filtrados.</td></tr>';
+        }).join('') || '<tr><td colspan="8" style="color:var(--slate);text-align:center;padding:20px;">✅ Nenhum veículo com alertas.</td></tr>';
     }
 
-    // ── Mapa compliance por GRE ───────────────────────────────────────────────
+    // ── Mapa compliance por GRE — inclui coluna Ocorr. ───────────────────────
     function renderCplGreMapa() {
         const greMap = window._cplGreMap || {};
         const sorted = Object.entries(greMap).sort((a, b) => b[1].alertas - a[1].alertas);
-
-        const tbody = document.querySelector('#cpl-tbl-gre-mapa tbody');
+        const tbody  = document.querySelector('#cpl-tbl-gre-mapa tbody');
         if (!tbody) return;
         tbody.innerHTML = sorted.map(([gre, d]) => {
             const ico      = d.total ? (((d.total - d.alertas - d.gargalos) / d.total) * 100).toFixed(1) : '0.0';
@@ -2465,11 +2232,54 @@
                 <td style="text-align:center;">${d.total}</td>
                 <td style="text-align:center;color:#e74c3c;font-weight:bold;">${d.alertas}</td>
                 <td style="text-align:center;color:#9b59b6;">${d.gargalos}</td>
+                <td style="text-align:center;color:#1abc9c;">${d.ocorr||0}</td>
                 <td style="text-align:center;font-weight:bold;${icoCls}">${ico}%</td>
                 <td style="text-align:center;">${tend}</td>
                 <td>${acao}</td>
             </tr>`;
-        }).join('') || '<tr><td colspan="7" style="color:var(--slate);text-align:center;padding:20px;">Sem dados para exibir.</td></tr>';
+        }).join('') || '<tr><td colspan="8" style="color:var(--slate);text-align:center;padding:20px;">Sem dados.</td></tr>';
+    }
+
+    // ── Painel de Ocorrências por Fiscal (Pilar 6) ────────────────────────────
+    function renderCplOcorrencias() {
+        const map   = window._cplFiscalOcorrMap || {};
+        const tbody = document.getElementById('cpl-tbody-ocorrencias');
+        if (!tbody) return;
+
+        const lista = Object.entries(map)
+            .map(([fiscal, d]) => {
+                const percNaoAberta = d.total > 0 ? ((d.naoAbertas / d.total) * 100).toFixed(1) : '0.0';
+                // Score de ocorrência: menor % não justif = melhor
+                const taxaSemJustif = d.naoAbertas > 0 ? ((d.naoAbertas - d.comObs) / d.naoAbertas) : 0;
+                const scoreOcorr    = Math.max(0, (1 - taxaSemJustif) * 100).toFixed(1);
+                return { fiscal, ...d, percNaoAberta, scoreOcorr: parseFloat(scoreOcorr) };
+            })
+            .sort((a, b) => b.naoAbertas - a.naoAbertas);
+
+        tbody.innerHTML = lista.map(r => {
+            const situCls = r.naoAbertas === 0 ? 'cpl-risco-baixo'
+                          : r.scoreOcorr >= 70 ? 'cpl-risco-medio'
+                          : r.scoreOcorr >= 40 ? 'cpl-risco-alto'
+                          : 'cpl-risco-critico';
+            const situTxt = r.naoAbertas === 0 ? 'REGULAR'
+                          : r.scoreOcorr >= 70 ? 'JUSTIFICADO'
+                          : r.scoreOcorr >= 40 ? 'ATENÇÃO'
+                          : 'SEM JUSTIF.';
+            const percCor = parseFloat(r.percNaoAberta) > 30 ? 'color:#e74c3c;font-weight:bold'
+                          : parseFloat(r.percNaoAberta) > 15 ? 'color:#f39c12;font-weight:bold'
+                          : 'color:var(--success)';
+            return `<tr>
+                <td><b>${r.fiscal}</b></td>
+                <td style="font-size:9px;color:var(--info);">${r.gre}</td>
+                <td style="text-align:center;">${r.total}</td>
+                <td style="text-align:center;${r.naoAbertas>0?'color:#e74c3c;font-weight:bold':''}">${r.naoAbertas}</td>
+                <td style="text-align:center;color:#1abc9c;font-weight:bold;">${r.comObs}</td>
+                <td style="text-align:center;color:#f39c12;font-weight:bold;">${r.alertasFraude}</td>
+                <td style="text-align:center;${percCor}">${r.percNaoAberta}%</td>
+                <td style="text-align:center;font-weight:bold;color:${r.scoreOcorr>=70?'#2ecc71':r.scoreOcorr>=40?'#f39c12':'#e74c3c'};">${r.scoreOcorr}%</td>
+                <td><span class="cpl-score-pill ${situCls}">${situTxt}</span></td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="9" style="color:var(--slate);text-align:center;padding:20px;">Sem dados de ocorrências.</td></tr>';
     }
 
     // ── Tabela de auditoria prioritária ──────────────────────────────────────
@@ -2479,13 +2289,13 @@
             .filter(d => filtroTipo === 'TODOS' || d.tipoAlerta === filtroTipo)
             .sort((a, b) => b.gravidade - a.gravidade);
 
-        const tbody = document.getElementById('cpl-tbody-auditoria');
+        const tbody   = document.getElementById('cpl-tbody-auditoria');
         const summary = document.getElementById('cpl-audit-summary');
         if (!tbody) return;
 
         tbody.innerHTML = lista.slice(0, 200).map(d => {
-            const durStr  = d.durMin !== null ? d.durMin + ' min' : 'N/A';
-            const distStr = d.distKm !== null ? d.distKm.toFixed(2) + ' km' : 'N/A';
+            const durStr   = d.durMin !== null ? d.durMin + ' min' : 'N/A';
+            const distStr  = d.distKm !== null ? d.distKm.toFixed(2) + ' km' : 'N/A';
             const alertaCls = d.tipoAlerta === 'TEMPORAL'   ? 'cpl-alerta-temporal'
                             : d.tipoAlerta === 'GEOGRAFICA' ? 'cpl-alerta-geografico'
                             : 'cpl-alerta-gargalo';
@@ -2493,7 +2303,7 @@
                             : d.tipoAlerta === 'GEOGRAFICA' ? '📍 Fraude Geográfica'
                             : '⏳ Gargalo +6h';
             const gravCls  = d.gravidade >= 9 ? 'cpl-risco-critico' : d.gravidade >= 7 ? 'cpl-risco-alto' : d.gravidade >= 5 ? 'cpl-risco-medio' : 'cpl-risco-baixo';
-            const gravTxt  = d.gravidade >= 9 ? 'CRÍTICO'  : d.gravidade >= 7 ? 'ALTO' : d.gravidade >= 5 ? 'MÉDIO' : 'BAIXO';
+            const gravTxt  = d.gravidade >= 9 ? 'CRÍTICO' : d.gravidade >= 7 ? 'ALTO' : d.gravidade >= 5 ? 'MÉDIO' : 'BAIXO';
             return `<tr class="${d.tipoAlerta === 'TEMPORAL' || d.tipoAlerta === 'GEOGRAFICA' ? 'alert-row-danger' : 'alert-row-warning'}">
                 <td>${d.data||''}</td>
                 <td style="font-size:9px;">${(d.fiscal_responsavel||'').substring(0,22)}</td>
@@ -2508,12 +2318,12 @@
                 <td><span class="cpl-score-pill ${alertaCls}" style="border:1px solid currentColor;">${alertaTxt}</span></td>
                 <td><span class="cpl-score-pill ${gravCls}">${gravTxt}</span></td>
             </tr>`;
-        }).join('') || `<tr><td colspan="12" style="color:var(--slate);text-align:center;padding:24px;">✅ Nenhuma rota crítica encontrada com os filtros selecionados.</td></tr>`;
+        }).join('') || `<tr><td colspan="12" style="color:var(--slate);text-align:center;padding:24px;">✅ Nenhuma rota crítica encontrada.</td></tr>`;
 
         if (summary) summary.innerText = `Exibindo ${Math.min(lista.length, 200)} de ${lista.length} registros críticos`;
     }
 
-    // ── Exportar CSV auditoria ────────────────────────────────────────────────
+    // ── Exportar CSV ──────────────────────────────────────────────────────────
     function exportarCplCSV() {
         const filtroTipo = document.getElementById('cpl-audit-tipo')?.value || 'TODOS';
         const lista = cplDadosCriticos.filter(d => filtroTipo === 'TODOS' || d.tipoAlerta === filtroTipo).sort((a, b) => b.gravidade - a.gravidade);
@@ -2528,12 +2338,25 @@
             d.tipoAlerta||'',
             d.gravidade >= 9 ? 'CRITICO' : d.gravidade >= 7 ? 'ALTO' : d.gravidade >= 5 ? 'MEDIO' : 'BAIXO'
         ]);
-        const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+        const csv  = [header, ...rows].map(r => r.join(',')).join('\n');
         const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
         const url  = URL.createObjectURL(blob);
         const a    = document.createElement('a');
         a.href = url; a.download = 'auditoria_compliance_' + new Date().toISOString().slice(0,10) + '.csv';
         a.click(); URL.revokeObjectURL(url);
+    }
+
+    // ── Utils ─────────────────────────────────────────────────────────────────
+    function exportarPDF() {
+        const opt = { margin:5, filename:'BI_LOGISTICA.pdf', html2canvas:{scale:2}, jsPDF:{unit:'mm',format:'a4',orientation:'landscape'} };
+        html2pdf().set(opt).from(document.getElementById('aba-escala')).save();
+    }
+
+    function lerPagina() {
+        const ass = document.getElementById('k-ass-perc').innerText;
+        const u   = new SpeechSynthesisUtterance(`Resumo Logístico: Assiduidade atual de ${ass}.`);
+        u.lang = 'pt-BR';
+        window.speechSynthesis.speak(u);
     }
 
     // ── Init ──────────────────────────────────────────────────────────────────
