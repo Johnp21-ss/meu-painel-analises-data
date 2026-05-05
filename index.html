@@ -1069,7 +1069,7 @@
                     onmouseover="this.style.color='#5dade2'"
                     onmouseout="this.style.color='var(--info)'"
                     title="Clique para ver o significado de cada pilar">
-                    ⚙️ Assid.×25% + Conform.×15% + Integrid.×20% + Planej.×10% + Alertas×15% + Ocorr.×15%
+                    ⚙️ Assid.×30% + Conform.×15% + Integrid.×25% + Planej.×10% + Ocorr.×20%
                 </div>
             </div>
 
@@ -1323,18 +1323,6 @@
             formula: 'MAX(0, 1 − (Taxa Extras ÷ 0,15) × 0,5) × 100',
             desc: 'Controle do volume de rotas extras em relação ao total. Penaliza quando as rotas extras excedem 15% do total, sinalizando desplanejamento ou demanda não prevista.',
             meta: 'Extras < 15% do total'
-        },
-        {
-            key: 'alertas',
-            label: 'Alertas',
-            titulo: 'Alertas Críticos',
-            peso: '15%',
-            icone: '⚠️',
-            cor: '#e74c3c',
-            bg: 'rgba(231,76,60,0.15)',
-            formula: 'MAX(0, 1 − (Rotas OK com Alerta ÷ Total Rotas OK ÷ 0,30)) × 100',
-            desc: 'Proporção de rotas concluídas/em andamento que geraram alertas (temporal, geográfico ou gargalo). Penaliza quando mais de 30% das rotas OK apresentam irregularidades.',
-            meta: '< 30% das rotas OK com alertas'
         },
         {
             key: 'ocorrencias',
@@ -2640,21 +2628,7 @@
         const taxaExtras = extrasCount / total;
         const p4_planej = Math.max(0, 1 - (taxaExtras / 0.15) * 0.5);
 
-        // ── PILAR 5: Alertas Críticos (15%) ──
-        const rotasOk = dados.filter(d => {
-            const sn = norm(d.status);
-            return sn.includes('CONCLUID') || sn.includes('ANDAMENTO') || sn.includes('EXECUTANDO');
-        });
-        const totalRotasOk = rotasOk.length || 1;
-        const totalFraudes = cplDadosDetalheAlertas.temporais.length + cplDadosDetalheAlertas.geograficas.length;
-        const taxaFraudeConcluidass = totalFraudes / totalRotasOk;
-        const p5_alertas = taxaFraudeConcluidass >= 0.30
-        ? Math.max(0, 1 - ((taxaFraudeConcluidass - 0.30) / 0.70))
-        : Math.max(0, 1 - (taxaFraudeConcluidass / 0.30) * 0.3);
-
-        cplDadosDetalheAlertas.proporcaoAlertasOk = taxaFraudeConcluidass;
-        cplDadosDetalheAlertas.totalRotasOk = totalRotasOk;
-        cplDadosDetalheAlertas.rotasOkComAlerta = totalFraudes;
+       // Pilar Alertas removido — fraudes já contabilizadas na Integridade
 
         // ── PILAR 6: Ocorrências (15%) ──
         const totalNaoAbertas = dados.filter(d => {
@@ -2669,8 +2643,8 @@
 
         // ── ICO COMPOSTO ──
         const icoRaw = (
-            p1_assid * 0.25 + p2_conformidade * 0.15 + p3_integridade * 0.20 +
-            p4_planej * 0.10 + p5_alertas * 0.15 + p6_ocorr * 0.15
+        p1_assid * 0.30 + p2_conformidade * 0.15 + p3_integridade * 0.25 +
+        p4_planej * 0.10 + p6_ocorr * 0.20
         ) * 100;
         const ico = icoRaw.toFixed(1);
 
@@ -2680,7 +2654,6 @@
             conformidade: p2_conformidade * 100,
             integridade: p3_integridade * 100,
             planejamento: p4_planej * 100,
-            alertas: p5_alertas * 100,
             ocorrencias: p6_ocorr * 100
         };
 
