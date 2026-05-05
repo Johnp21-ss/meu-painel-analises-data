@@ -789,11 +789,9 @@
             text-align: center;
             border-right: 1px solid rgba(255, 255, 255, .07);
         }
-
         .cpl-card-expansivel:hover {
             background: rgba(255, 255, 255, 0.03);
         }
-
         .cpl-detalhe-expansivel {
             display: none;
             background: rgba(0, 0, 0, 0.3);
@@ -806,7 +804,6 @@
             max-height: 200px;
             overflow-y: auto;
         }
-
         .cpl-detalhe-expansivel.show-row {
             display: block !important;
         }
@@ -817,12 +814,10 @@
             transition: all 0.2s;
             position: relative;
         }
-
         .pilar-clickable:hover {
             background: rgba(255, 255, 255, 0.08) !important;
             transform: translateY(-1px);
         }
-
         .pilar-info-popup {
             display: none;
             position: absolute;
@@ -839,13 +834,191 @@
             transform: translateX(-50%);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
         }
-
         .pilar-info-popup.show-row {
             display: block !important;
+        }
+
+        /* ── Modal Overlay (NOVO) ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-dialog {
+            background: linear-gradient(135deg, #1a2744 0%, #0d1b2a 100%);
+            border: 1px solid rgba(52, 152, 219, 0.4);
+            border-radius: 16px;
+            padding: 0;
+            width: 90%;
+            max-width: 600px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-close-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: var(--slate);
+            font-size: 20px;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .modal-close-btn:hover {
+            background: rgba(231, 76, 60, 0.3);
+            color: #e74c3c;
+        }
+        .modal-body {
+            padding: 20px 24px 24px;
+        }
+        .modal-footer {
+            padding: 12px 24px 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            text-align: right;
+        }
+        .modal-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .modal-btn-primary {
+            background: var(--info);
+            color: #fff;
+        }
+        .modal-btn-primary:hover {
+            background: #2980b9;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+        }
+        .pilar-modal-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 3px solid transparent;
+            transition: background 0.2s;
+        }
+        .pilar-modal-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .pilar-modal-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .pilar-modal-content {
+            flex: 1;
+        }
+        .pilar-modal-name {
+            font-weight: bold;
+            font-size: 12px;
+            color: #fff;
+            margin-bottom: 3px;
+        }
+        .pilar-modal-desc {
+            font-size: 9px;
+            color: var(--slate);
+            line-height: 1.4;
+        }
+        .pilar-modal-peso {
+            font-size: 9px;
+            color: #555;
+            margin-top: 2px;
+        }
+        .pilar-modal-valor {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: right;
+            min-width: 50px;
+        }
+        .cpl-formula-link {
+            font-size: 9px;
+            color: var(--info);
+            margin-top: 8px;
+            cursor: pointer;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-underline-offset: 3px;
+            transition: color 0.2s;
+        }
+        .cpl-formula-link:hover {
+            color: #5dade2;
         }
     </style>
 </head>
 <body>
+
+    <!-- ══════════════════════════════════════════════════════════
+         MODAL DOS PILARES DO ICO (NOVO)
+    ══════════════════════════════════════════════════════════ -->
+    <div id="cpl-pilar-modal" class="modal-overlay">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3><span style="font-size:20px;">⚙️</span> Fórmula do ICO — Índice de Confiança Operacional</h3>
+                <button class="modal-close-btn" onclick="fecharModalPilares()" title="Fechar">✕</button>
+            </div>
+            <div class="modal-body" id="cpl-modal-body"></div>
+            <div class="modal-footer">
+                <div style="font-size:8px;color:#555;text-align:left;margin-bottom:6px;">O ICO é calculado como média ponderada dos 6 pilares acima.</div>
+                <button class="modal-btn modal-btn-primary" onclick="fecharModalPilares()">✅ Entendi — Fechar</button>
+            </div>
+        </div>
+    </div>
 
     <!-- ── Navegação ── -->
     <nav class="nav-tabs">
