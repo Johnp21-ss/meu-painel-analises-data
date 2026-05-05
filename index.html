@@ -2142,7 +2142,7 @@
                 tipoFraude = 'TEMPORAL';
                 detalheFraude = `Duração de ${duracao} min (<10min)`;
                 fraudesTemporal++;
-            } else if (distPontosKm !== null && distPontosKm < 0.5 && kmPlanejado > 5) {
+            } else if (distPontosKm !== null && distPontosKm < 0.5 && kmPlanejado > 5 && norm(rota.origem) === 'RASTREADOR VEICULAR') {
                 tipoFraude = 'MESMO_LOCAL';
                 detalheFraude = `Início e fim no mesmo local (dist ${distPontosKm.toFixed(2)}km) com KM=${kmPlanejado}km`;
                 fraudesMesmoLocal++;
@@ -2548,7 +2548,7 @@
                 tipoAlerta = 'TEMPORAL'; gravidade = durMin < 3 ? 10 : 8;
                 fiscalOcorrMap[fiscal].alertasFraude++;
                 cplDadosDetalheAlertas.temporais.push({ ...d, durMin, distKm, tipoAlerta, gravidade });
-            } else if (distKm !== null && distKm < 0.5 && kmPlan > 3 && (isConcl || isAndam)) {
+            } else if (distKm !== null && distKm < 0.5 && kmPlan > 3 && (isConcl || isAndam) && norm(d.origem) === 'RASTREADOR VEICULAR') {
                 tipoAlerta = 'GEOGRAFICA'; gravidade = 9;
                 fiscalOcorrMap[fiscal].alertasFraude++;
                 cplDadosDetalheAlertas.geograficas.push({ ...d, durMin, distKm, tipoAlerta, gravidade });
