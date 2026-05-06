@@ -2781,13 +2781,31 @@
         renderCplAuditoria();
 
          // ── Ofensores ──
-        window._cplOfensores = dados.filter(d => {
-            const sn = norm(d.status);
-            return !sn.includes('CONCLUID') && 
-                   !sn.includes('ANDAMENTO') && 
-                   !sn.includes('EXECUTANDO') &&
-                   !d.isExtra;
-        });
+const ofensoresBrutos = dados.filter(d => {
+    const sn = norm(d.status);
+    return !sn.includes('CONCLUID') && 
+           !sn.includes('ANDAMENTO') && 
+           !sn.includes('EXECUTANDO') &&
+           !d.isExtra;
+});
+
+// Agrupa por motorista (chave: motorista|gre)
+const ofensoresMap = {};
+ofensoresBrutos.forEach(d => {
+    const chave = `${d.motorista}|${d.gre}`;
+    if (!ofensoresMap[chave]) {
+        ofensoresMap[chave] = {
+            ...d,
+            rotasNaoAbertas: [],
+            totalNaoAbertas: 0
+        };
+    }
+    ofensoresMap[chave].rotasNaoAbertas.push(d.rota || 'S/ ROTA');
+    ofensoresMap[chave].totalNaoAbertas++;
+});
+
+// Converte para array (um por motorista)
+window._cplOfensores = Object.values(ofensoresMap);
         renderCplOfensores();
     }
 
