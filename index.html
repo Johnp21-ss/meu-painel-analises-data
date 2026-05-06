@@ -3169,9 +3169,9 @@
     }
 
     function gerarChaveUnica(dados) {
-        return `${dados.motorista||''}|${dados.rota||''}|${dados.tipo||''}|${dados.data||''}`
-            .replace(/\s+/g,'_').substring(0,80);
-    }
+    return `${dados.gre||''}|${dados.motorista||''}|${dados.rota||''}|${dados.tipo||''}|${dados.data||''}`
+        .replace(/\s+/g,'_').substring(0,80);
+}
 
     function foiRegistrado(dados) {
         const chave = gerarChaveUnica(dados);
