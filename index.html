@@ -1259,8 +1259,46 @@
         </div>
 
     </section>
-
-<script>
+<!-- ── CARD OFENSORES ── -->
+        <div class="card row-new" style="border-top-color:#1abc9c; margin-bottom:20px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+                <div>
+                    <h3 style="margin:0;font-size:13px;">🚫 Ofensores — Motoristas Sem Abertura de Rota</h3>
+                    <div style="font-size:9px;color:var(--slate);margin-top:2px;">Motoristas com rotas regulares não iniciadas — acione o fiscal responsável.</div>
+                </div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                    <select id="cpl-ofens-gre" onchange="renderCplOfensores()" style="width:auto;min-width:120px;font-size:10px;padding:5px;">
+                        <option value="TODOS">Todas GREs</option>
+                    </select>
+                    <select id="cpl-ofens-fiscal" onchange="renderCplOfensores()" style="width:auto;min-width:150px;font-size:10px;padding:5px;">
+                        <option value="TODOS">Todos Fiscais</option>
+                    </select>
+                    <select id="cpl-ofens-cidade" onchange="renderCplOfensores()" style="width:auto;min-width:130px;font-size:10px;padding:5px;">
+                        <option value="TODOS">Todos Municípios</option>
+                    </select>
+                </div>
+            </div>
+            <div style="overflow-x:auto;">
+                <table id="cpl-tbl-ofensores" style="table-layout:auto;min-width:800px;">
+                    <thead>
+                        <tr>
+                            <th>Fiscal</th>
+                            <th>GRE</th>
+                            <th>Município</th>
+                            <th>Motorista</th>
+                            <th>Veículo</th>
+                            <th>Rota</th>
+                            <th>Turno</th>
+                            <th>Obs</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cpl-tbody-ofensores"></tbody>
+                </table>
+            </div>
+            <div id="cpl-ofens-summary" style="font-size:9px;color:var(--slate);margin-top:8px;text-align:right;"></div>
+        </div>
+    <script>
     Chart.defaults.color = '#a4b0be';
 
     const URL_PLANILHA = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-PWDRlSYT4cY9rOK7Dz1R2Fe0HzoXFbu4icqnPk5M6eGOBUngZFwkhI-9TXPpT9d-wvWCzXNVxteq/pub?gid=498256387&single=true&output=csv';
@@ -2735,6 +2773,16 @@
         renderCplGreMapa();
         renderCplOcorrencias();
         renderCplAuditoria();
+
+         // ── Ofensores ──
+        window._cplOfensores = dados.filter(d => {
+            const sn = norm(d.status);
+            return !sn.includes('CONCLUID') && 
+                   !sn.includes('ANDAMENTO') && 
+                   !sn.includes('EXECUTANDO') &&
+                   !d.isExtra;
+        });
+        renderCplOfensores();
     }
 
     // ── Preencher detalhes dos cards expansíveis ──────────────────────────────
@@ -3010,6 +3058,69 @@
         if (summary) summary.innerText = `Exibindo ${Math.min(lista.length, 200)} de ${lista.length} registros críticos`;
     }
 
+    function renderCplOfensores() {
+    const gre  = document.getElementById('cpl-ofens-gre')?.value  || 'TODOS';
+    const fisc = document.getElementById('cpl-ofens-fiscal')?.value || 'TODOS';
+    const cid  = document.getElementById('cpl-ofens-cidade')?.value || 'TODOS';
+
+    const lista = (window._cplOfensores || []).filter(d =>
+        (gre  === 'TODOS' || d.gre               === gre)  &&
+        (fisc === 'TODOS' || d.fiscal_responsavel === fisc) &&
+        (cid  === 'TODOS' || d.cidade             === cid)
+    );
+
+    // popula filtros na primeira vez
+    const selGre  = document.getElementById('cpl-ofens-gre');
+    const selFisc = document.getElementById('cpl-ofens-fiscal');
+    const selCid  = document.getElementById('cpl-ofens-cidade');
+
+    if (selGre && selGre.options.length <= 1) {
+        [...new Set((window._cplOfensores||[]).map(d => d.gre))].filter(Boolean).sort()
+            .forEach(v => selGre.add(new Option(v, v)));
+    }
+    if (selFisc && selFisc.options.length <= 1) {
+        [...new Set((window._cplOfensores||[]).map(d => d.fiscal_responsavel))].filter(Boolean).sort()
+            .forEach(v => selFisc.add(new Option(v, v)));
+    }
+    if (selCid && selCid.options.length <= 1) {
+        [...new Set((window._cplOfensores||[]).map(d => d.cidade))].filter(Boolean).sort()
+            .forEach(v => selCid.add(new Option(v, v)));
+    }
+
+    const tbody = document.getElementById('cpl-tbody-ofensores');
+    if (!tbody) return;
+
+    tbody.innerHTML = lista.map(d => `
+        <tr>
+            <td style="font-size:9px;">${(d.fiscal_responsavel||'').substring(0,22)}</td>
+            <td style="font-size:9px;">${d.gre||''}</td>
+            <td style="font-size:9px;">${d.cidade||''}</td>
+            <td style="font-size:9px;">${d.motorista||''}</td>
+            <td style="font-weight:bold;">${d.veiculo||'S/P'}</td>
+            <td style="font-size:9px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(d.rota||'').substring(0,45)}</td>
+            <td style="font-size:9px;">${d.turno||''}</td>
+            <td style="font-size:9px;color:var(--slate);">${d.observacao||'—'}</td>
+            <td>
+                <button onclick="abrirAlertaForms({
+                    data:'${d.data||''}',
+                    tipo:'BAIXA_ASSID',
+                    gre:'${(d.gre||'').replace(/'/g,'')}',
+                    fiscal:'${(d.fiscal_responsavel||'').replace(/'/g,'')}',
+                    motorista:'${(d.motorista||'').replace(/'/g,'')}',
+                    veiculo:'${(d.veiculo||'').replace(/'/g,'')}',
+                    rota:'${(d.rota||'').replace(/'/g,'').substring(0,80)}',
+                    descricao:'Motorista sem abertura de rota',
+                    gravidade:'MEDIO'
+                })" style="padding:2px 8px;font-size:9px;background:#2980b9;color:#fff;border:none;border-radius:4px;cursor:pointer;">
+                    📋 Registrar
+                </button>
+            </td>
+        </tr>
+    `).join('') || '<tr><td colspan="9" style="color:var(--slate);text-align:center;padding:20px;">✅ Nenhum ofensor encontrado.</td></tr>';
+
+    const summary = document.getElementById('cpl-ofens-summary');
+    if (summary) summary.innerText = `${lista.length} motorista(s) sem abertura encontrado(s)`;
+}
     // ── Exportar CSV ──────────────────────────────────────────────────────────
     function exportarCplCSV() {
         const filtroTipo = document.getElementById('cpl-audit-tipo')?.value || 'TODOS';
