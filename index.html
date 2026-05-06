@@ -3159,29 +3159,44 @@
         window.speechSynthesis.speak(u);
     }
     function abrirAlertaForms(dados) {
-    const base = 'https://docs.google.com/forms/d/e/1FAIpQLSe6Y3vVxDB7BNzo8KS1ifYopXyfNLBzvY-00mPYxslV4jD_pA/viewform?usp=pp_url';
-    const hoje = new Date().toISOString().split('T')[0];
-    const tipoMap = {
-        'TEMPORAL':   '⏱️ Fraude Temporal',
-        'GEOGRAFICA': '📍 Fraude Geográfica',
-        'GARGALO':    '⏳ Gargalo +6h',
-        'BAIXA_ASSID':'📉 Baixa Assiduidade',
-        'REINCIDENCIA':'🚨 Reincidência'
-    };
-    const gravidadeMap = { 'CRITICO': '5', 'ALTO': '4', 'MEDIO': '3', 'BAIXO': '2' };
-    const params = new URLSearchParams({
-        'entry.942991257':  dados.data || hoje,
-        'entry.1185396970': tipoMap[dados.tipo] || dados.tipo || '',
-        'entry.1228264780': dados.gre || '',
-        'entry.2092856260': dados.fiscal || '',
-        'entry.1984123717': dados.motorista || '',
-        'entry.1233483448': dados.veiculo || '',
-        'entry.513025446':  dados.rota || '',
-        'entry.1548924285': dados.descricao || '',
-        'entry.1635658445': gravidadeMap[dados.gravidade] || '3',
-        'entry.39680261':   '🔴 Aberto'
-    });
-    window.open(base + '&' + params.toString(), '_blank');
+  const btn = event?.target;
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = "⏳ Salvando...";
+  }
+
+  const params = new URLSearchParams({
+    acao:       "registrar",
+    data:       dados.data       || "",
+    tipo:       dados.tipo       || "",
+    gre:        dados.gre        || "",
+    fiscal:     dados.fiscal     || "",
+    motorista:  dados.motorista  || "",
+    veiculo:    dados.veiculo    || "",
+    rota:       dados.rota       || "",
+    descricao:  dados.descricao  || "",
+    gravidade:  dados.gravidade  || ""
+  });
+
+  fetch(URL_API_SCRIPT + "?" + params.toString(), { 
+    method: "GET",
+    mode: "no-cors"  // igual ao botão ⚡ API que já funciona
+  })
+  .then(() => {
+    if (btn) {
+      btn.innerText = "✅ Salvo";
+      btn.style.background = "#27ae60";
+      btn.disabled = false;
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    if (btn) {
+      btn.innerText = "❌ Erro";
+      btn.style.background = "#e74c3c";
+      btn.disabled = false;
+    }
+  });
 }
 
     // ── Init ──────────────────────────────────────────────────────────────────
