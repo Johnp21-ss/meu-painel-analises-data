@@ -2226,7 +2226,22 @@
             const id = `mot-${idx}`;
             const acao = m.percFraude > 30 ? 'NOTIFICAR FISCAL' : m.percFraude > 15 ? 'ALERTA MOTORISTA' : 'MONITORAR';
             const badgeCor = m.percFraude > 30 ? 'badge-danger' : m.percFraude > 15 ? 'badge-warning' : 'badge-info';
-            motoristasHtml += `<tr class="pointer" onclick="toggleRow('${id}',this)"><td><span class="arrow">▶</span> ${m.nome.substring(0,25)}</td><td>${m.gre}</td><td>${m.total}</td><td class="val-fraude">${m.fraudes}</td><td>${m.tipos.includes('TEMPORAL')?'⏱️':''} ${m.tipos.includes('MESMO_LOCAL')?'📍':''}</td><td><span class="badge ${badgeCor}">${acao}</span></td></tr>`;
+            motoristasHtml += `<tr class="pointer" onclick="toggleRow('${id}',this)"><td><span class="arrow">▶</span> ${m.nome.substring(0,25)}</td><td>${m.gre}</td><td>${m.total}</td><td class="val-fraude">${m.fraudes}</td><td>${m.tipos.includes('TEMPORAL')?'⏱️':''} ${m.tipos.includes('MESMO_LOCAL')?'📍':''}</td><td>
+    <span class="badge ${badgeCor}">${acao}</span>
+    <button onclick="abrirAlertaForms({
+        data:new Date().toISOString().split('T')[0],
+        tipo:${m.tipos.includes('TEMPORAL')?"'TEMPORAL'":"'GEOGRAFICA'"},
+        gre:'${m.gre.replace(/'/g,'')}',
+        fiscal:'',
+        motorista:'${m.nome.replace(/'/g,'').substring(0,40)}',
+        veiculo:'',
+        rota:'Múltiplas rotas',
+        descricao:'Motorista com ${m.fraudes} fraudes em ${m.total} rotas (${m.percFraude.toFixed(1)}%)',
+        gravidade:'${m.percFraude>30?'CRITICO':m.percFraude>15?'ALTO':'MEDIO'}'
+    })" style="margin-left:6px;padding:2px 8px;font-size:9px;background:#2980b9;color:#fff;border:none;border-radius:4px;cursor:pointer;">
+        📋 Registrar
+    </button>
+</td></tr>`;
             m.rotasFraude.slice(0, 10).forEach(rf => {
                 motoristasHtml += `<tr class="nested-row ${id}"><td class="indent-detail" colspan="2">📅 ${rf.data}</td><td class="indent-detail" colspan="2">🗺️ ${rf.rota.substring(0,35)}</td><td class="indent-detail" colspan="2">⚠️ ${rf.tipo}: ${rf.detalhe.substring(0,40)}</td></tr>`;
             });
@@ -2239,7 +2254,20 @@
         document.querySelector('#tGREsFraude tbody').innerHTML = rankGre.map(g => {
             const acao = g.percFraude > 20 ? 'AUDITAR URGENTE' : g.percFraude > 10 ? 'REUNIÃO COM GESTOR' : 'OK';
             const badgeCor = g.percFraude > 20 ? 'badge-danger' : g.percFraude > 10 ? 'badge-warning' : 'badge-success';
-            return `<tr><td><b>${g.nome}</b></td><td>${g.total}</td><td class="val-fraude">${g.temporal}</td><td class="val-alerta">${g.mesmoLocal}</td><td>${g.percFraude.toFixed(1)}%</td><td><span class="badge ${badgeCor}">${acao}</span></td></tr>`;
+            return `<tr><td><b>${g.nome}</b></td><td>${g.total}</td><td class="val-fraude">${g.temporal}</td><td class="val-alerta">${g.mesmoLocal}</td><td>${g.percFraude.toFixed(1)}%</td><td>
+    <span class="badge ${badgeCor}">${acao}</span>
+    <button onclick="abrirAlertaForms({
+        data:new Date().toISOString().split('T')[0],
+        tipo:${g.temporal>0?"'TEMPORAL'":"'GEOGRAFICA'"},
+        gre:'${g.nome.replace(/'/g,'')}',
+        fiscal:'',motorista:'',veiculo:'',
+        rota:'Múltiplas rotas na GRE',
+        descricao:'GRE com ${g.percFraude.toFixed(1)}% de fraude — ${g.totalFraudes} ocorrências',
+        gravidade:'${g.percFraude>20?'CRITICO':g.percFraude>10?'ALTO':'MEDIO'}'
+    })" style="margin-left:6px;padding:2px 8px;font-size:9px;background:#2980b9;color:#fff;border:none;border-radius:4px;cursor:pointer;">
+        📋 Registrar
+    </button>
+</td></tr>`;
         }).join('') || '<tr><td colspan="6" style="color:var(--slate)">Sem dados.</td></tr>';
 
         const rankFiscais = [...fiscalMap.entries()]
@@ -2960,8 +2988,23 @@
                 <td style="font-weight:bold;${d.durMin!==null&&d.durMin<10?'color:#e74c3c':''}">${durStr}</td>
                 <td>${distStr}</td>
                 <td><span class="cpl-score-pill ${alertaCls}" style="border:1px solid currentColor;">${alertaTxt}</span></td>
-                <td><span class="cpl-score-pill ${gravCls}">${gravTxt}</span></td>
-            </tr>`;
+                <td>
+                    <span class="cpl-score-pill ${gravCls}">${gravTxt}</span>
+                     <button onclick="abrirAlertaForms({
+                     data:'${d.data||''}',
+                     tipo:'${d.tipoAlerta||''}',
+                gre:'${(d.gre||'').replace(/'/g,'')}',
+                fiscal:'${(d.fiscal_responsavel||'').replace(/'/g,'')}',
+                motorista:'${(d.motorista||'').replace(/'/g,'')}',
+                veiculo:'${(d.veiculo||'').replace(/'/g,'')}',
+                rota:'${(d.rota||'').replace(/'/g,'').substring(0,80)}',
+                descricao:'${d.tipoAlerta==='TEMPORAL'?'Duração de '+(d.durMin||0)+'min':d.tipoAlerta==='GEOGRAFICA'?'Distância '+(d.distKm||0).toFixed(2)+'km':'Rota aberta há mais de 6h'}',
+                gravidade:'${gravTxt}'
+            })" style="margin-left:6px;padding:2px 8px;font-size:9px;background:#2980b9;color:#fff;border:none;border-radius:4px;cursor:pointer;">
+        📋 Registrar
+    </button>
+</td>
+</tr>`;
         }).join('') || `<tr><td colspan="12" style="color:var(--slate);text-align:center;padding:24px;">✅ Nenhuma rota crítica encontrada.</td></tr>`;
 
         if (summary) summary.innerText = `Exibindo ${Math.min(lista.length, 200)} de ${lista.length} registros críticos`;
@@ -3003,6 +3046,31 @@
         u.lang = 'pt-BR';
         window.speechSynthesis.speak(u);
     }
+    function abrirAlertaForms(dados) {
+    const base = 'https://docs.google.com/forms/d/e/1FAIpQLSe6Y3vVxDB7BNzo8KS1ifYopXyfNLBzvY-00mPYxslV4jD_pA/viewform?usp=pp_url';
+    const hoje = new Date().toISOString().split('T')[0];
+    const tipoMap = {
+        'TEMPORAL':   '⏱️ Fraude Temporal',
+        'GEOGRAFICA': '📍 Fraude Geográfica',
+        'GARGALO':    '⏳ Gargalo +6h',
+        'BAIXA_ASSID':'📉 Baixa Assiduidade',
+        'REINCIDENCIA':'🚨 Reincidência'
+    };
+    const gravidadeMap = { 'CRITICO': '5', 'ALTO': '4', 'MEDIO': '3', 'BAIXO': '2' };
+    const params = new URLSearchParams({
+        'entry.942991257':  dados.data || hoje,
+        'entry.1185396970': tipoMap[dados.tipo] || dados.tipo || '',
+        'entry.1228264780': dados.gre || '',
+        'entry.2092856260': dados.fiscal || '',
+        'entry.1984123717': dados.motorista || '',
+        'entry.1233483448': dados.veiculo || '',
+        'entry.513025446':  dados.rota || '',
+        'entry.1548924285': dados.descricao || '',
+        'entry.1635658445': gravidadeMap[dados.gravidade] || '3',
+        'entry.39680261':   '🔴 Aberto'
+    });
+    window.open(base + '&' + params.toString(), '_blank');
+}
 
     // ── Init ──────────────────────────────────────────────────────────────────
     carregar();
