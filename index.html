@@ -2265,21 +2265,19 @@
             const id = `mot-${idx}`;
             const acao = m.percFraude > 30 ? 'NOTIFICAR FISCAL' : m.percFraude > 15 ? 'ALERTA MOTORISTA' : 'MONITORAR';
             const badgeCor = m.percFraude > 30 ? 'badge-danger' : m.percFraude > 15 ? 'badge-warning' : 'badge-info';
-            motoristasHtml += `<tr class="pointer" onclick="toggleRow('${id}',this)"><td><span class="arrow">▶</span> ${m.nome.substring(0,25)}</td><td>${m.gre}</td><td>${m.total}</td><td class="val-fraude">${m.fraudes}</td><td>${m.tipos.includes('TEMPORAL')?'⏱️':''} ${m.tipos.includes('MESMO_LOCAL')?'📍':''}</td><td>
+            motoristasHtml += `<tr class="pointer" onclick="toggleRow('${id}',this)">...<td>
     <span class="badge ${badgeCor}">${acao}</span>
-    <button onclick="abrirAlertaForms({
-        data:new Date().toISOString().split('T')[0],
-        tipo:${m.tipos.includes('TEMPORAL')?"'TEMPORAL'":"'GEOGRAFICA'"},
-        gre:'${m.gre.replace(/'/g,'')}',
-        fiscal:'',
-        motorista:'${m.nome.replace(/'/g,'').substring(0,40)}',
-        veiculo:'',
-        rota:'Múltiplas rotas',
-        descricao:'Motorista com ${m.fraudes} fraudes em ${m.total} rotas (${m.percFraude.toFixed(1)}%)',
-        gravidade:'${m.percFraude>30?'CRITICO':m.percFraude>15?'ALTO':'MEDIO'}'
-    })" style="margin-left:6px;padding:2px 8px;font-size:9px;background:#2980b9;color:#fff;border:none;border-radius:4px;cursor:pointer;">
-        📋 Registrar
-    </button>
+    ${gerarBotaoRegistro({
+        data: new Date().toISOString().split('T')[0],
+        tipo: m.tipos.includes('TEMPORAL') ? 'TEMPORAL' : 'GEOGRAFICA',
+        gre: m.gre,
+        fiscal: '',
+        motorista: m.nome.substring(0, 40),
+        veiculo: '',
+        rota: 'Múltiplas rotas',
+        descricao: `Motorista com ${m.fraudes} fraudes em ${m.total} rotas (${m.percFraude.toFixed(1)}%)`,
+        gravidade: m.percFraude > 30 ? 'CRITICO' : m.percFraude > 15 ? 'ALTO' : 'MEDIO'
+    })}
 </td></tr>`;
             m.rotasFraude.slice(0, 10).forEach(rf => {
                 motoristasHtml += `<tr class="nested-row ${id}"><td class="indent-detail" colspan="2">📅 ${rf.data}</td><td class="indent-detail" colspan="2">🗺️ ${rf.rota.substring(0,35)}</td><td class="indent-detail" colspan="2">⚠️ ${rf.tipo}: ${rf.detalhe.substring(0,40)}</td></tr>`;
@@ -2295,17 +2293,17 @@
             const badgeCor = g.percFraude > 20 ? 'badge-danger' : g.percFraude > 10 ? 'badge-warning' : 'badge-success';
             return `<tr><td><b>${g.nome}</b></td><td>${g.total}</td><td class="val-fraude">${g.temporal}</td><td class="val-alerta">${g.mesmoLocal}</td><td>${g.percFraude.toFixed(1)}%</td><td>
     <span class="badge ${badgeCor}">${acao}</span>
-    <button onclick="abrirAlertaForms({
-        data:new Date().toISOString().split('T')[0],
-        tipo:${g.temporal>0?"'TEMPORAL'":"'GEOGRAFICA'"},
-        gre:'${g.nome.replace(/'/g,'')}',
-        fiscal:'',motorista:'',veiculo:'',
-        rota:'Múltiplas rotas na GRE',
-        descricao:'GRE com ${g.percFraude.toFixed(1)}% de fraude — ${g.totalFraudes} ocorrências',
-        gravidade:'${g.percFraude>20?'CRITICO':g.percFraude>10?'ALTO':'MEDIO'}'
-    })" style="margin-left:6px;padding:2px 8px;font-size:9px;background:#2980b9;color:#fff;border:none;border-radius:4px;cursor:pointer;">
-        📋 Registrar
-    </button>
+    ${gerarBotaoRegistro({
+    data: new Date().toISOString().split('T')[0],
+    tipo: g.temporal > 0 ? 'TEMPORAL' : 'GEOGRAFICA',
+    gre: g.nome,
+    fiscal: '',
+    motorista: '',
+    veiculo: '',
+    rota: 'Múltiplas rotas na GRE',
+    descricao: `GRE com ${g.percFraude.toFixed(1)}% de fraude — ${g.totalFraudes} ocorrências`,
+    gravidade: g.percFraude > 20 ? 'CRITICO' : g.percFraude > 10 ? 'ALTO' : 'MEDIO'
+})}
 </td></tr>`;
         }).join('') || '<tr><td colspan="6" style="color:var(--slate)">Sem dados.</td></tr>';
 
@@ -3039,19 +3037,19 @@
                 <td><span class="cpl-score-pill ${alertaCls}" style="border:1px solid currentColor;">${alertaTxt}</span></td>
                 <td>
                     <span class="cpl-score-pill ${gravCls}">${gravTxt}</span>
-                     <button onclick="abrirAlertaForms({
-                     data:'${d.data||''}',
-                     tipo:'${d.tipoAlerta||''}',
-                gre:'${(d.gre||'').replace(/'/g,'')}',
-                fiscal:'${(d.fiscal_responsavel||'').replace(/'/g,'')}',
-                motorista:'${(d.motorista||'').replace(/'/g,'')}',
-                veiculo:'${(d.veiculo||'').replace(/'/g,'')}',
-                rota:'${(d.rota||'').replace(/'/g,'').substring(0,80)}',
-                descricao:'${d.tipoAlerta==='TEMPORAL'?'Duração de '+(d.durMin||0)+'min':d.tipoAlerta==='GEOGRAFICA'?'Distância '+(d.distKm||0).toFixed(2)+'km':'Rota aberta há mais de 6h'}',
-                gravidade:'${gravTxt}'
-            })" style="margin-left:6px;padding:2px 8px;font-size:9px;background:#2980b9;color:#fff;border:none;border-radius:4px;cursor:pointer;">
-        📋 Registrar
-    </button>
+                     ${gerarBotaoRegistro({
+    data: d.data || '',
+    tipo: d.tipoAlerta || '',
+    gre: d.gre || '',
+    fiscal: d.fiscal_responsavel || '',
+    motorista: d.motorista || '',
+    veiculo: d.veiculo || '',
+    rota: (d.rota || '').substring(0, 80),
+    descricao: d.tipoAlerta === 'TEMPORAL' ? `Duração de ${d.durMin || 0}min` : 
+               d.tipoAlerta === 'GEOGRAFICA' ? `Distância ${(d.distKm || 0).toFixed(2)}km` : 
+               'Rota aberta há mais de 6h',
+    gravidade: gravTxt
+})}
 </td>
 </tr>`;
         }).join('') || `<tr><td colspan="12" style="color:var(--slate);text-align:center;padding:24px;">✅ Nenhuma rota crítica encontrada.</td></tr>`;
@@ -3102,19 +3100,17 @@
             <td style="font-size:9px;">${d.turno||''}</td>
             <td style="font-size:9px;color:var(--slate);">${d.observacao||'—'}</td>
             <td>
-                <button onclick="abrirAlertaForms({
-                    data:'${d.data||''}',
-                    tipo:'BAIXA_ASSID',
-                    gre:'${(d.gre||'').replace(/'/g,'')}',
-                    fiscal:'${(d.fiscal_responsavel||'').replace(/'/g,'')}',
-                    motorista:'${(d.motorista||'').replace(/'/g,'')}',
-                    veiculo:'${(d.veiculo||'').replace(/'/g,'')}',
-                    rota:'${(d.rota||'').replace(/'/g,'').substring(0,80)}',
-                    descricao:'Motorista sem abertura de rota',
-                    gravidade:'MEDIO'
-                })" style="padding:2px 8px;font-size:9px;background:#2980b9;color:#fff;border:none;border-radius:4px;cursor:pointer;">
-                    📋 Registrar
-                </button>
+                ${gerarBotaoRegistro({
+    data: d.data || '',
+    tipo: 'BAIXA_ASSID',
+    gre: d.gre || '',
+    fiscal: d.fiscal_responsavel || '',
+    motorista: d.motorista || '',
+    veiculo: d.veiculo || '',
+    rota: (d.rota || '').substring(0, 80),
+    descricao: 'Motorista sem abertura de rota',
+    gravidade: 'MEDIO'
+})}
             </td>
         </tr>
     `).join('') || '<tr><td colspan="9" style="color:var(--slate);text-align:center;padding:20px;">✅ Nenhum ofensor encontrado.</td></tr>';
@@ -3182,7 +3178,35 @@
             localStorage.setItem(REGISTROS_KEY, JSON.stringify(registrosPersistidos));
         } catch(e) {}
     }
-
+function gerarBotaoRegistro(dadosBotao, estiloExtra = '') {
+    // Gera uma pré-chave para verificar no localStorage
+    const chaveTeste = gerarChaveUnica(dadosBotao);
+    const jaRegistrado = !!registrosPersistidos[chaveTeste];
+    
+    if (jaRegistrado) {
+        return `<button disabled 
+            style="margin-left:6px;padding:2px 8px;font-size:9px;background:#27ae60;color:#fff;border:none;border-radius:4px;cursor:not-allowed;${estiloExtra}">
+            ✅ Salvo
+        </button>`;
+    }
+    
+    // Escapa os valores para evitar quebras no HTML
+    const escapar = (str) => String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    
+    return `<button onclick="abrirAlertaForms({
+        data:'${escapar(dadosBotao.data || '')}',
+        tipo:'${escapar(dadosBotao.tipo || '')}',
+        gre:'${escapar(dadosBotao.gre || '')}',
+        fiscal:'${escapar(dadosBotao.fiscal || '')}',
+        motorista:'${escapar(dadosBotao.motorista || '')}',
+        veiculo:'${escapar(dadosBotao.veiculo || '')}',
+        rota:'${escapar(dadosBotao.rota || '')}',
+        descricao:'${escapar(dadosBotao.descricao || '')}',
+        gravidade:'${escapar(dadosBotao.gravidade || '')}'
+    })" style="margin-left:6px;padding:2px 8px;font-size:9px;background:#2980b9;color:#fff;border:none;border-radius:4px;cursor:pointer;${estiloExtra}">
+        📋 Registrar
+    </button>`;
+}
     function abrirAlertaForms(dados) {
         if (foiRegistrado(dados)) {
             alert("ℹ️ Este registro já foi enviado anteriormente.");
