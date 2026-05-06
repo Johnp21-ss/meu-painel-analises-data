@@ -3152,52 +3152,83 @@
         html2pdf().set(opt).from(document.getElementById('aba-escala')).save();
     }
 
-    function lerPagina() {
-        const ass = document.getElementById('k-ass-perc').innerText;
-        const u = new SpeechSynthesisUtterance(`Resumo Logístico: Assiduidade atual de ${ass}.`);
-        u.lang = 'pt-BR';
-        window.speechSynthesis.speak(u);
+    // ═══════════════════════════════════════════════════════
+    // NOVO CÓDIGO - Controle de persistência + abrirAlertaForms
+    // ═══════════════════════════════════════════════════════
+    const REGISTROS_KEY = 'bi_logistica_registros';
+    let registrosPersistidos = {};
+
+    try {
+        const saved = localStorage.getItem(REGISTROS_KEY);
+        if (saved) registrosPersistidos = JSON.parse(saved);
+    } catch(e) {
+        registrosPersistidos = {};
     }
+
+    function gerarChaveUnica(dados) {
+        return `${dados.motorista||''}|${dados.rota||''}|${dados.tipo||''}|${dados.data||''}`
+            .replace(/\s+/g,'_').substring(0,80);
+    }
+
+    function foiRegistrado(dados) {
+        const chave = gerarChaveUnica(dados);
+        return !!registrosPersistidos[chave];
+    }
+
+    function marcarRegistrado(dados) {
+        const chave = gerarChaveUnica(dados);
+        registrosPersistidos[chave] = Date.now();
+        try {
+            localStorage.setItem(REGISTROS_KEY, JSON.stringify(registrosPersistidos));
+        } catch(e) {}
+    }
+
     function abrirAlertaForms(dados) {
-  const btn = event?.target;
-  if (btn) {
-    btn.disabled = true;
-    btn.innerText = "⏳ Salvando...";
-  }
+        if (foiRegistrado(dados)) {
+            alert("ℹ️ Este registro já foi enviado anteriormente.");
+            return;
+        }
 
-  const params = new URLSearchParams({
-    acao:       "registrar",
-    data:       dados.data       || "",
-    tipo:       dados.tipo       || "",
-    gre:        dados.gre        || "",
-    fiscal:     dados.fiscal     || "",
-    motorista:  dados.motorista  || "",
-    veiculo:    dados.veiculo    || "",
-    rota:       dados.rota       || "",
-    descricao:  dados.descricao  || "",
-    gravidade:  dados.gravidade  || ""
-  });
+        const btn = event?.target;
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = "⏳ Salvando...";
+        }
 
-  fetch(URL_API_SCRIPT + "?" + params.toString(), { 
-    method: "GET",
-    mode: "no-cors"  // igual ao botão ⚡ API que já funciona
-  })
-  .then(() => {
-    if (btn) {
-      btn.innerText = "✅ Salvo";
-      btn.style.background = "#27ae60";
-      btn.disabled = false;
+        const params = new URLSearchParams({
+            acao:       "registrar",
+            data:       dados.data       || "",
+            tipo:       dados.tipo       || "",
+            gre:        dados.gre        || "",
+            fiscal:     dados.fiscal     || "",
+            motorista:  dados.motorista  || "",
+            veiculo:    dados.veiculo    || "",
+            rota:       dados.rota       || "",
+            descricao:  dados.descricao  || "",
+            gravidade:  dados.gravidade  || ""
+        });
+
+        fetch(URL_API_SCRIPT + "?" + params.toString(), { 
+            method: "GET",
+            mode: "no-cors"
+        })
+        .then(() => {
+            marcarRegistrado(dados);
+            if (btn) {
+                btn.innerText = "✅ Salvo";
+                btn.style.background = "#27ae60";
+                btn.disabled = true;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            if (btn) {
+                btn.innerText = "❌ Erro";
+                btn.style.background = "#e74c3c";
+                btn.disabled = false;
+            }
+        });
     }
-  })
-  .catch(err => {
-    console.error(err);
-    if (btn) {
-      btn.innerText = "❌ Erro";
-      btn.style.background = "#e74c3c";
-      btn.disabled = false;
-    }
-  });
-}
 
     // ── Init ──────────────────────────────────────────────────────────────────
     carregar();
