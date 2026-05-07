@@ -1994,16 +1994,30 @@
     }
 
     function renderFrotaPorGre(dados) {
-        const map = {};
-        dados.forEach(d => {
-            if (!map[d.gre]) map[d.gre] = { m: new Set(), v: new Set() };
-            if (d.motorista) map[d.gre].m.add(d.motorista);
-            if (d.veiculo && d.veiculo.length > 2) map[d.gre].v.add(d.veiculo);
-        });
-        document.getElementById('tbodyFrotaGre').innerHTML = Object.entries(map).sort().map(([gr, info]) =>
-            `<tr><td>${gr}</td><td align="center">${info.m.size}</td><td align="center" style="color:var(--success)">${info.v.size}</td><td align="center" style="color:var(--danger)">${Math.max(0, info.m.size - info.v.size)}</td></tr>`
-        ).join('');
-    }
+    const map = {};
+    dados.forEach(d => {
+        const gre = d.gre || 'S/ GRE';
+        if (!map[gre]) map[gre] = { m: new Set(), v: new Set(), motComVeiculo: new Set() };
+        if (d.motorista) {
+            map[gre].m.add(d.motorista);
+            // Só conta como "com veículo" se o veículo for válido
+            if (d.veiculo && d.veiculo.length > 2) {
+                map[gre].v.add(d.veiculo);
+                map[gre].motComVeiculo.add(d.motorista);
+            }
+        }
+    });
+    
+    document.getElementById('tbodyFrotaGre').innerHTML = Object.entries(map).sort().map(([gr, info]) => {
+        const semVeiculo = info.m.size - info.motComVeiculo.size;
+        return `<tr>
+            <td>${gr}</td>
+            <td align="center">${info.m.size}</td>
+            <td align="center" style="color:var(--success)">${info.v.size}</td>
+            <td align="center" style="color:var(--danger)">${Math.max(0, semVeiculo)}</td>
+        </tr>`;
+    }).join('');
+}
 
     function renderOcorrencias(map) {
         const cont = document.getElementById('container-obs');
@@ -3115,30 +3129,33 @@ window._cplOfensores = Object.values(ofensoresMap);
     if (!tbody) return;
 
     tbody.innerHTML = lista.map(d => `
-        <tr>
-            <td style="font-size:9px;">${(d.fiscal_responsavel||'').substring(0,22)}</td>
-            <td style="font-size:9px;">${d.gre||''}</td>
-            <td style="font-size:9px;">${d.cidade||''}</td>
-            <td style="font-size:9px;">${d.motorista||''}</td>
-            <td style="font-weight:bold;">${d.veiculo||'S/P'}</td>
-            <td style="font-size:9px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(d.rota||'').substring(0,45)}</td>
-            <td style="font-size:9px;">${d.turno||''}</td>
-            <td style="font-size:9px;color:var(--slate);">${d.observacao||'—'}</td>
-            <td>
-                ${gerarBotaoRegistro({
-    data: d.data || '',
-    tipo: 'BAIXA_ASSID',
-    gre: d.gre || '',
-    fiscal: d.fiscal_responsavel || '',
-    motorista: d.motorista || '',
-    veiculo: d.veiculo || '',
-    rota: (d.rota || '').substring(0, 80),
-    descricao: 'Motorista sem abertura de rota',
-    gravidade: 'MEDIO'
-})}
-            </td>
-        </tr>
-    `).join('') || '<tr><td colspan="9" style="color:var(--slate);text-align:center;padding:20px;">✅ Nenhum ofensor encontrado.</td></tr>';
+    <tr>
+        <td style="font-size:9px;">${(d.fiscal_responsavel||'').substring(0,22)}</td>
+        <td style="font-size:9px;">${d.gre||''}</td>
+        <td style="font-size:9px;">${d.cidade||''}</td>
+        <td style="font-size:9px;">${d.motorista||''}</td>
+        <td style="font-weight:bold;">${d.veiculo||'S/P'}</td>
+        <td style="font-size:9px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+            <span style="color:#e74c3c;font-weight:bold;">${d.totalNaoAbertas || 1} rota(s)</span>
+            <br><span style="font-size:8px;color:var(--slate);">${(d.rotasNaoAbertas || []).slice(0,3).join(', ')}${(d.rotasNaoAbertas || []).length > 3 ? '...' : ''}</span>
+        </td>
+        <td style="font-size:9px;">${d.turno||''}</td>
+        <td style="font-size:9px;color:var(--slate);">${d.observacao||'—'}</td>
+        <td>
+            ${gerarBotaoRegistro({
+                data: d.data || '',
+                tipo: 'BAIXA_ASSID',
+                gre: d.gre || '',
+                fiscal: d.fiscal_responsavel || '',
+                motorista: d.motorista || '',
+                veiculo: d.veiculo || '',
+                rota: 'Motorista com ' + (d.totalNaoAbertas || 1) + ' rotas nao abertas',
+                descricao: 'Motorista sem abertura de rota - Total: ' + (d.totalNaoAbertas || 1) + ' rotas',
+                gravidade: 'MEDIO'
+            })}
+        </td>
+    </tr>
+`).join('') || '<tr><td colspan="9" style="color:var(--slate);text-align:center;padding:20px;">✅ Nenhum ofensor encontrado.</td></tr>';
 
     const summary = document.getElementById('cpl-ofens-summary');
     if (summary) summary.innerText = `${lista.length} motorista(s) sem abertura encontrado(s)`;
