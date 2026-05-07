@@ -1995,22 +1995,37 @@
 
     function renderFrotaPorGre(dados) {
     const map = {};
+    let totalMot = new Set();
+    let totalMotComVei = new Set();
+    let totalVei = new Set();
+    
     dados.forEach(d => {
         const gre = d.gre || 'S/ GRE';
         if (!map[gre]) map[gre] = { 
-            mot: new Set(),           // todos motoristas
-            vei: new Set(),           // todos veículos
-            motComVei: new Set()      // motoristas que TEM veículo
+            mot: new Set(),
+            motComVei: new Set(),
+            vei: new Set()
         };
-        if (d.motorista) {
+        
+        if (d.motorista && d.motorista.trim() !== '') {
             map[gre].mot.add(d.motorista);
+            totalMot.add(d.motorista);
+            
             if (d.veiculo && d.veiculo.length > 2) {
-                map[gre].vei.add(d.veiculo);
                 map[gre].motComVei.add(d.motorista);
+                map[gre].vei.add(d.veiculo);
+                totalMotComVei.add(d.motorista);
+                totalVei.add(d.veiculo);
             }
         }
     });
     
+    // Atualiza totais gerais baseados nos dados desta função
+    document.getElementById('f-mot').innerText = totalMot.size;
+    document.getElementById('f-vei').innerText = totalVei.size;
+    document.getElementById('f-sem').innerText = Math.max(0, totalMot.size - totalMotComVei.size);
+    
+    // Renderiza tabela por GRE
     document.getElementById('tbodyFrotaGre').innerHTML = Object.entries(map).sort().map(([gr, info]) => {
         const semVeiculo = info.mot.size - info.motComVei.size;
         return `<tr>
