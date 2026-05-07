@@ -2051,11 +2051,8 @@
             <td align="center" style="color:var(--danger)">${Math.max(0, semVeiculo)}</td>
         </tr>`;
     }).join('');
-     // Mostra motoristas em múltiplas GREs e fora das GREs
-    let infoHTML = '';
-    infoHTML += mostrarMotoristasMultiGRE(dados);
-    infoHTML += mostrarMotoristasSemGRE(dados);
-    document.getElementById('multi-gre-info').innerHTML = infoHTML;
+     // Informações adicionais
+    document.getElementById('multi-gre-info').innerHTML = mostrarMotoristasMultiGRE(dados);
 }
 
     function renderOcorrencias(map) {
@@ -3334,63 +3331,30 @@ function gerarBotaoRegistro(dadosBotao, estiloExtra = '') {
             }
         });
     }
-        function mostrarMotoristasSemGRE(dados) {
-    const motoristasComVei = new Set();
-    const motoristasNaTabela = new Set();
-    
-    function veiculoValido(v) {
-        if (!v || v.trim() === '') return false;
-        const veic = v.trim().toUpperCase();
-        const invalidos = ['N/A', '---', 'S/ VEICULO', 'SEM VEICULO', 'S/VEICULO', 'SEM', 'NAO TEM', 'NÃO TEM', '0', 'SN', 'S/N'];
-        if (invalidos.includes(veic)) return false;
-        if (veic.length < 3) return false;
-        const temLetra = /[A-Z]/.test(veic);
-        const temNumero = /[0-9]/.test(veic);
-        if (!temLetra || !temNumero) return false;
-        return true;
-    }
+    function mostrarMotoristasMultiGRE(dados) {
+    const motoristaGREs = {};
     
     dados.forEach(d => {
-        if (d.motorista && d.motorista.trim() !== '' && veiculoValido(d.veiculo)) {
-            motoristasComVei.add(d.motorista);
-            // Verifica se está em uma GRE conhecida
-            const gre = d.gre || '';
-            if (gre.trim() !== '') {
-                motoristasNaTabela.add(d.motorista);
-            }
+        if (!d.motorista || d.motorista.trim() === '') return;
+        if (!motoristaGREs[d.motorista]) {
+            motoristaGREs[d.motorista] = new Set();
         }
+        motoristaGREs[d.motorista].add(d.gre || 'S/ GRE');
     });
     
-    // Motoristas que têm veículo mas não estão em nenhuma GRE
-    const fantasmas = [...motoristasComVei].filter(m => !motoristasNaTabela.has(m));
+    const multiGRE = Object.entries(motoristaGREs)
+        .filter(([mot, gres]) => gres.size > 1)
+        .sort((a, b) => b[1].size - a[1].size);
     
-    if (fantasmas.length === 0) {
-        return '';
+    if (multiGRE.length === 0) {
+        return '<div style="font-size:10px;color:var(--success);padding:5px;">✅ Nenhum motorista em mais de uma GRE.</div>';
     }
     
-    // Busca detalhes desses motoristas
-    const detalhes = {};
-    dados.forEach(d => {
-        if (fantasmas.includes(d.motorista) && veiculoValido(d.veiculo)) {
-            if (!detalhes[d.motorista]) {
-                detalhes[d.motorista] = {
-                    gre: d.gre || 'SEM GRE',
-                    veiculo: d.veiculo,
-                    rotas: []
-                };
-            }
-            detalhes[d.motorista].rotas.push(d.rota || 'S/ ROTA');
-        }
-    });
+    let html = `<div style="font-size:10px; padding:6px 8px; background:rgba(241,196,15,.1); border-radius:6px; border-left:3px solid var(--warning); margin-top:5px;">
+        <b style="color:var(--warning);">⚠️ Motoristas em +1 GRE (${multiGRE.length}):</b><br>`;
     
-    let html = `<div style="font-size:10px; padding:6px 8px; background:rgba(231,76,60,.1); border-radius:6px; border-left:3px solid var(--danger); margin-top:5px;">
-        <b style="color:var(--danger);">🔍 Motoristas com veículo fora das GREs (${fantasmas.length}):</b><br>`;
-    
-    Object.entries(detalhes).forEach(([mot, det]) => {
-        html += `<span style="color:#fff;">👤 ${mot}</span> → 
-                 <span style="color:var(--warning);">${det.gre}</span> | 
-                 <span style="color:var(--success);">🚗 ${det.veiculo}</span> | 
-                 <span style="color:var(--slate);">Rotas: ${det.rotas.slice(0,2).join(', ')}${det.rotas.length > 2 ? '...' : ''}</span><br>`;
+    multiGRE.forEach(([mot, gres]) => {
+        html += `<span style="color:#fff;">👤 ${mot}</span> → <span style="color:var(--info);">${[...gres].join(', ')}</span><br>`;
     });
     
     html += `</div>`;
