@@ -1779,9 +1779,7 @@
         document.getElementById('k-pendente').innerText = pend;
         document.getElementById('k-ass-perc').innerText = dados.length ? ((concl / dados.length) * 100).toFixed(1) + "%" : "0%";
         document.getElementById('k-mix-extra').innerText = extras;
-        document.getElementById('f-mot').innerText = motUniq.size;
-        document.getElementById('f-vei').innerText = veiUniq.size;
-        document.getElementById('f-sem').innerText = Math.max(0, motUniq.size - veiUniq.size);
+
 
         renderRank('tFiscal', 'fiscal_responsavel', 7, dados);
         renderRank('tGre', 'gre', 10, dados);
