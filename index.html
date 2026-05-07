@@ -746,8 +746,11 @@
                         <thead><tr><th>Regional (GRE)</th><th style="text-align:center">Mot.</th><th style="text-align:center">Com V.</th><th style="text-align:center">Sem V.</th></tr></thead>
                         <tbody id="tbodyFrotaGre"></tbody>
                     </table>
+                    <!-- Após a tabela tFrotaGre, adicione: -->
+<div id="multi-gre-info" style="margin-top:5px;"></div>
                 </div>
             </div>
+            
 
             <div class="card row-2">
                 <h3>🏆 Rotas por Regional (GRE)</h3>
@@ -2048,6 +2051,8 @@
             <td align="center" style="color:var(--danger)">${Math.max(0, semVeiculo)}</td>
         </tr>`;
     }).join('');
+     // 👇 ADICIONE ESTA LINHA:
+    document.getElementById('multi-gre-info').innerHTML = mostrarMotoristasMultiGRE(dados);
 }
 
     function renderOcorrencias(map) {
@@ -3326,6 +3331,35 @@ function gerarBotaoRegistro(dadosBotao, estiloExtra = '') {
             }
         });
     }
+        function mostrarMotoristasMultiGRE(dados) {
+    const motoristaGREs = {};
+    
+    dados.forEach(d => {
+        if (!d.motorista || d.motorista.trim() === '') return;
+        if (!motoristaGREs[d.motorista]) {
+            motoristaGREs[d.motorista] = new Set();
+        }
+        motoristaGREs[d.motorista].add(d.gre || 'S/ GRE');
+    });
+    
+    const multiGRE = Object.entries(motoristaGREs)
+        .filter(([mot, gres]) => gres.size > 1)
+        .sort((a, b) => b[1].size - a[1].size);
+    
+    if (multiGRE.length === 0) {
+        return '';
+    }
+    
+    let html = `<div style="font-size:10px; padding:6px 8px; background:rgba(241,196,15,.1); border-radius:6px; border-left:3px solid var(--warning);">
+        <b style="color:var(--warning);">⚠️ Motoristas em +1 GRE (${multiGRE.length}):</b><br>`;
+    
+    multiGRE.forEach(([mot, gres]) => {
+        html += `<span style="color:#fff;">👤 ${mot}</span> → <span style="color:var(--info);">${[...gres].join(', ')}</span><br>`;
+    });
+    
+    html += `</div>`;
+    return html;
+}
 
     // ── Init ──────────────────────────────────────────────────────────────────
     carregar();
