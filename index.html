@@ -1997,6 +1997,21 @@
     let totalMotComVei = new Set();
     let totalVei = new Set();
     
+    // Função para verificar se é um veículo válido (placa ou identificador real)
+    function veiculoValido(v) {
+        if (!v || v.trim() === '') return false;
+        const veic = v.trim().toUpperCase();
+        // Lista de valores inválidos
+        const invalidos = ['N/A', '---', 'S/ VEICULO', 'SEM VEICULO', 'S/VEICULO', 'SEM', 'NAO TEM', 'NÃO TEM', '0', 'SN', 'S/N'];
+        if (invalidos.includes(veic)) return false;
+        if (veic.length < 3) return false; // Muito curto para ser placa
+        // Verifica se tem pelo menos uma letra e um número (padrão de placa)
+        const temLetra = /[A-Z]/.test(veic);
+        const temNumero = /[0-9]/.test(veic);
+        if (!temLetra || !temNumero) return false;
+        return true;
+    }
+    
     dados.forEach(d => {
         const gre = d.gre || 'S/ GRE';
         if (!map[gre]) map[gre] = { 
@@ -2009,16 +2024,16 @@
             map[gre].mot.add(d.motorista);
             totalMot.add(d.motorista);
             
-            if (d.veiculo && d.veiculo.length > 2) {
+            if (veiculoValido(d.veiculo)) {
                 map[gre].motComVei.add(d.motorista);
-                map[gre].vei.add(d.veiculo);
+                map[gre].vei.add(d.veiculo.trim().toUpperCase());
                 totalMotComVei.add(d.motorista);
-                totalVei.add(d.veiculo);
+                totalVei.add(d.veiculo.trim().toUpperCase());
             }
         }
     });
     
-    // Atualiza totais gerais baseados nos dados desta função
+    // Atualiza totais gerais
     document.getElementById('f-mot').innerText = totalMot.size;
     document.getElementById('f-vei').innerText = totalVei.size;
     document.getElementById('f-sem').innerText = Math.max(0, totalMot.size - totalMotComVei.size);
