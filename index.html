@@ -1997,23 +1997,26 @@
     const map = {};
     dados.forEach(d => {
         const gre = d.gre || 'S/ GRE';
-        if (!map[gre]) map[gre] = { m: new Set(), v: new Set(), motComVeiculo: new Set() };
+        if (!map[gre]) map[gre] = { 
+            mot: new Set(),           // todos motoristas
+            vei: new Set(),           // todos veículos
+            motComVei: new Set()      // motoristas que TEM veículo
+        };
         if (d.motorista) {
-            map[gre].m.add(d.motorista);
-            // Só conta como "com veículo" se o veículo for válido
+            map[gre].mot.add(d.motorista);
             if (d.veiculo && d.veiculo.length > 2) {
-                map[gre].v.add(d.veiculo);
-                map[gre].motComVeiculo.add(d.motorista);
+                map[gre].vei.add(d.veiculo);
+                map[gre].motComVei.add(d.motorista);
             }
         }
     });
     
     document.getElementById('tbodyFrotaGre').innerHTML = Object.entries(map).sort().map(([gr, info]) => {
-        const semVeiculo = info.m.size - info.motComVeiculo.size;
+        const semVeiculo = info.mot.size - info.motComVei.size;
         return `<tr>
             <td>${gr}</td>
-            <td align="center">${info.m.size}</td>
-            <td align="center" style="color:var(--success)">${info.v.size}</td>
+            <td align="center">${info.mot.size}</td>
+            <td align="center" style="color:var(--success)">${info.motComVei.size}</td>
             <td align="center" style="color:var(--danger)">${Math.max(0, semVeiculo)}</td>
         </tr>`;
     }).join('');
