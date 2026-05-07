@@ -2036,10 +2036,20 @@
         }
     });
     
-    // Atualiza totais gerais
-    document.getElementById('f-mot').innerText = totalMot.size;
-    document.getElementById('f-vei').innerText = totalVei.size;
-    document.getElementById('f-sem').innerText = Math.max(0, totalMot.size - totalMotComVei.size);
+        // Atualiza totais gerais baseados APENAS nas GREs da tabela
+    let motNaTabela = 0;
+    let comVeiNaTabela = 0;
+    let veiNaTabela = 0;
+    
+    Object.values(map).forEach(info => {
+        motNaTabela += info.mot.size;
+        comVeiNaTabela += info.motComVei.size;
+        veiNaTabela += info.vei.size;
+    });
+    
+    document.getElementById('f-mot').innerText = motNaTabela;
+    document.getElementById('f-vei').innerText = veiNaTabela;
+    document.getElementById('f-sem').innerText = Math.max(0, motNaTabela - comVeiNaTabela);
     
     // Renderiza tabela por GRE
     document.getElementById('tbodyFrotaGre').innerHTML = Object.entries(map).sort().map(([gr, info]) => {
