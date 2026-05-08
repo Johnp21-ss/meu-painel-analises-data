@@ -3353,7 +3353,12 @@ function gerarBotaoRegistro(dadosBotao, estiloExtra = '') {
         gre:        dados.gre        || "",
         fiscal:     dados.fiscal     || "",
         motorista:  dados.motorista  || "",
-        veiculo:    dados.veicu
+        veiculo:    dados.veiculo    || "",
+        rota:       dados.rota       || "",
+        descricao:  dados.descricao  || "",
+        gravidade:  dados.gravidade  || "",
+        mensagem:   msgPadrao
+    });
         fetch(URL_API_SCRIPT + "?" + params.toString(), { 
             method: "GET",
             mode: "no-cors"
