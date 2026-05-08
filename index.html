@@ -639,7 +639,6 @@
             text-align: right;
             flex-shrink: 0;
         }
-       
     </style>
 </head>
 <body>
@@ -683,6 +682,8 @@
                 <h2 style="margin:0; font-size: 14px;">🌍 Inteligência Logística</h2>
                 <span id="update-time" style="color:var(--success); font-size:9px; font-weight:bold;">Carregando dados...</span>
                 <div style="display:flex; gap: 5px; margin-top: 5px; flex-wrap: wrap;">
+                    <button class="btn-action btn-pdf" onclick="exportarPDF()">📄 PDF</button>
+                    <button class="btn-action btn-audio" onclick="lerPagina()">🔊 LER</button>
                     <button class="btn-action btn-refresh" onclick="carregar()">🔄 ATUALIZAR</button>
                     <div class="sync-box">
                         <input type="date" id="dataSync" class="input-date" onchange="processarDados()">
@@ -3252,46 +3253,10 @@ window._cplOfensores = Object.values(ofensoresMap);
     }
 
     // ── Utils ─────────────────────────────────────────────────────────────────
-
-    // Guarda os estilos originais para restaurar depois
-    const scrollAreas = elemento.querySelectorAll('.scroll-area, .scroll-area-sm');
-    const originais = [];
-    scrollAreas.forEach(el => {
-        originais.push({
-            el: el,
-            maxHeight: el.style.maxHeight,
-            overflow: el.style.overflow
-        });
-        el.style.maxHeight = 'none';
-        el.style.overflow = 'visible';
-    });
-    
-    const options = {
-        margin: [5, 5, 5, 5],
-        filename: `BI_Logistica_${new Date().toLocaleDateString().replace(/\//g,'-')}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 2,
-            useCORS: true, 
-            letterRendering: true,
-            scrollY: 0,
-            windowWidth: 1400
-        },
-        jsPDF: { 
-            unit: 'mm', 
-            format: 'a4', 
-            orientation: 'landscape'
-        }
-    };
-
-    html2pdf().set(options).from(elemento).save().then(() => {
-        // Restaura os scrolls originais
-        originais.forEach(item => {
-            item.el.style.maxHeight = item.maxHeight;
-            item.el.style.overflow = item.overflow;
-        });
-    });
-}
+    function exportarPDF() {
+        const opt = { margin: 5, filename: 'BI_LOGISTICA.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
+        html2pdf().set(opt).from(document.getElementById('aba-escala')).save();
+    }
 
     // ═══════════════════════════════════════════════════════
     // NOVO CÓDIGO - Controle de persistência + abrirAlertaForms
