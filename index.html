@@ -2123,6 +2123,11 @@
             Object.values(node.gres || node.cidades || {}).forEach(c => { t += calcTotal(c); });
             return t;
         };
+            // Totais para o resumo
+        let totalGeralMots = 0;
+        let totalGeralMotsOk = 0;
+        let totalGeralApp = 0;
+        let totalGeralLink = 0;
 
         let html = "", fIdx = 0;
         const todosOsFiscais = [...new Set([...Object.keys(tree), ...Object.keys(treeTotal)])].sort();
@@ -2132,6 +2137,10 @@
             const fRes = tree[fis] ? calcOk(tree[fis]) : { m: 0, a: 0, l: 0, p: 0 };
             const fTot = treeTotal[fis] ? calcTotal(treeTotal[fis]) : 0;
             const fAbert = fTot ? ((fRes.m / fTot) * 100).toFixed(0) : 0;
+        totalGeralMots += fTot;
+            totalGeralMotsOk += fRes.m;
+            totalGeralApp += fRes.a;
+            totalGeralLink += fRes.l;
 
             html += `<tr class="pointer" onclick="toggleRow('${fId}', this)">
                         <td><span class="arrow">▶</span> <b>${fis}</b></td>
@@ -2203,7 +2212,20 @@
             fIdx++;
         });
 
-        document.getElementById('tbodyTecnologia').innerHTML = html || "<tr><td colspan='7'>Sem dados.</td></tr>";
+            const percAppGeral = totalGeralMotsOk ? ((totalGeralApp / totalGeralMotsOk) * 100).toFixed(0) : 0;
+    const percAbertGeral = totalGeralMots ? ((totalGeralMotsOk / totalGeralMots) * 100).toFixed(0) : 0;
+    
+    const resumoHTML = `<tr style="background:rgba(52,152,219,.15); font-weight:bold; border-top:2px solid var(--info); border-bottom:2px solid var(--info);">
+        <td>📊 TOTAL GERAL</td>
+        <td class="col-total-mots">${totalGeralMots}</td>
+        <td class="col-mots">${totalGeralMotsOk}</td>
+        <td class="col-app">${totalGeralApp}</td>
+        <td class="col-link">${totalGeralLink}</td>
+        <td>${percAppGeral}%</td>
+        <td class="col-abertura">${percAbertGeral}%</td>
+    </tr>`;
+    
+    document.getElementById('tbodyTecnologia').innerHTML = resumoHTML + (html || "<tr><td colspan='7'>Sem dados.</td></tr>");
     }
 
     // ═════════════════════════════════════════════════════════════════════════
