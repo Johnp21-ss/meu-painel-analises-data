@@ -2692,7 +2692,8 @@
             const fiscal = d.fiscal_responsavel || 'NÃO IDENTIFICADO';
             const temObs = d.observacao && d.observacao.trim().length > 2;
 
-            if (!fiscalOcorrMap[fiscal]) fiscalOcorrMap[fiscal] = { gre, total: 0, naoAbertas: 0, comObs: 0, alertasFraude: 0 };
+            if (!fiscalOcorrMap[fiscal]) fiscalOcorrMap[fiscal] = { gres: new Set(), total: 0, naoAbertas: 0, comObs: 0, alertasFraude: 0 };
+            fiscalOcorrMap[fiscal].gres.add(gre);
             fiscalOcorrMap[fiscal].total++;
             if (isNaoAberto) fiscalOcorrMap[fiscal].naoAbertas++;
             if (temObs) fiscalOcorrMap[fiscal].comObs++;
@@ -3093,7 +3094,8 @@ window._cplOfensores = Object.values(ofensoresMap);
             const percNaoAberta = d.total > 0 ? ((d.naoAbertas / d.total) * 100).toFixed(1) : '0.0';
             const taxaSemJustif = d.naoAbertas > 0 ? ((d.naoAbertas - d.comObs) / d.naoAbertas) : 0;
             const scoreOcorr = Math.max(0, (1 - taxaSemJustif) * 100).toFixed(1);
-            return { fiscal, ...d, percNaoAberta, scoreOcorr: parseFloat(scoreOcorr) };
+            const gresStr = [...(d.gres || new Set())].sort().join(' + ');
+            return { fiscal, ...d, gresStr, percNaoAberta, scoreOcorr: parseFloat(scoreOcorr) };
         }).sort((a, b) => b.naoAbertas - a.naoAbertas);
 
         tbody.innerHTML = lista.map(r => {
@@ -3102,7 +3104,7 @@ window._cplOfensores = Object.values(ofensoresMap);
             const percCor = parseFloat(r.percNaoAberta) > 30 ? 'color:#e74c3c;font-weight:bold' : parseFloat(r.percNaoAberta) > 15 ? 'color:#f39c12;font-weight:bold' : 'color:var(--success)';
             return `<tr>
                 <td><b>${r.fiscal}</b></td>
-                <td style="font-size:9px;color:var(--info);">${r.gre}</td>
+                <td style="font-size:9px;color:var(--info);">${r.gresStr || r.gre}</td>
                 <td style="text-align:center;">${r.total}</td>
                 <td style="text-align:center;${r.naoAbertas>0?'color:#e74c3c;font-weight:bold':''}">${r.naoAbertas}</td>
                 <td style="text-align:center;color:#1abc9c;font-weight:bold;">${r.comObs}</td>
