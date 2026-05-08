@@ -639,6 +639,18 @@
             text-align: right;
             flex-shrink: 0;
         }
+        @media print {
+    .nav-tabs, .header-controls button, .btn-action { 
+        display: none !important; 
+    }
+    .card { 
+        page-break-inside: avoid; 
+    }
+    .scroll-area, .scroll-area-sm { 
+        max-height: none !important; 
+        overflow: visible !important; 
+    }
+}
     </style>
 </head>
 <body>
@@ -3254,9 +3266,47 @@ window._cplOfensores = Object.values(ofensoresMap);
 
     // ── Utils ─────────────────────────────────────────────────────────────────
     function exportarPDF() {
-        const opt = { margin: 5, filename: 'BI_LOGISTICA.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
-        html2pdf().set(opt).from(document.getElementById('aba-escala')).save();
-    }
+    const elemento = document.querySelector('.content-section.active');
+    
+    // Guarda os estilos originais para restaurar depois
+    const scrollAreas = elemento.querySelectorAll('.scroll-area, .scroll-area-sm');
+    const originais = [];
+    scrollAreas.forEach(el => {
+        originais.push({
+            el: el,
+            maxHeight: el.style.maxHeight,
+            overflow: el.style.overflow
+        });
+        el.style.maxHeight = 'none';
+        el.style.overflow = 'visible';
+    });
+    
+    const options = {
+        margin: [5, 5, 5, 5],
+        filename: `BI_Logistica_${new Date().toLocaleDateString().replace(/\//g,'-')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2,
+            useCORS: true, 
+            letterRendering: true,
+            scrollY: 0,
+            windowWidth: 1400
+        },
+        jsPDF: { 
+            unit: 'mm', 
+            format: 'a4', 
+            orientation: 'landscape'
+        }
+    };
+
+    html2pdf().set(options).from(elemento).save().then(() => {
+        // Restaura os scrolls originais
+        originais.forEach(item => {
+            item.el.style.maxHeight = item.maxHeight;
+            item.el.style.overflow = item.overflow;
+        });
+    });
+}
 
     // ═══════════════════════════════════════════════════════
     // NOVO CÓDIGO - Controle de persistência + abrirAlertaForms
