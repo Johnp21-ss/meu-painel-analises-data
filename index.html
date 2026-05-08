@@ -683,8 +683,6 @@
                 <h2 style="margin:0; font-size: 14px;">🌍 Inteligência Logística</h2>
                 <span id="update-time" style="color:var(--success); font-size:9px; font-weight:bold;">Carregando dados...</span>
                 <div style="display:flex; gap: 5px; margin-top: 5px; flex-wrap: wrap;">
-                    <button class="btn-action btn-pdf" onclick="exportarPDF()">📄 PDF</button>
-                    <button class="btn-action btn-audio" onclick="lerPagina()">🔊 LER</button>
                     <button class="btn-action btn-refresh" onclick="carregar()">🔄 ATUALIZAR</button>
                     <div class="sync-box">
                         <input type="date" id="dataSync" class="input-date" onchange="processarDados()">
@@ -3254,9 +3252,7 @@ window._cplOfensores = Object.values(ofensoresMap);
     }
 
     // ── Utils ─────────────────────────────────────────────────────────────────
-    function exportarPDF() {
-    const elemento = document.querySelector('.content-section.active');
-    
+
     // Guarda os estilos originais para restaurar depois
     const scrollAreas = elemento.querySelectorAll('.scroll-area, .scroll-area-sm');
     const originais = [];
