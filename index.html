@@ -3320,30 +3320,40 @@ function gerarBotaoRegistro(dadosBotao, estiloExtra = '') {
     </button>`;
 }
     function abrirAlertaForms(dados) {
-        if (foiRegistrado(dados)) {
-            alert("ℹ️ Este registro já foi enviado anteriormente.");
-            return;
-        }
+    if (foiRegistrado(dados)) {
+        alert("ℹ️ Este registro já foi enviado anteriormente.");
+        return;
+    }
 
-        const btn = event?.target;
-        if (btn) {
-            btn.disabled = true;
-            btn.innerText = "⏳ Salvando...";
-        }
+    const btn = event?.target;
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = "⏳ Salvando...";
+    }
 
-        const params = new URLSearchParams({
-            acao:       "registrar",
-            data:       dados.data       || "",
-            tipo:       dados.tipo       || "",
-            gre:        dados.gre        || "",
-            fiscal:     dados.fiscal     || "",
-            motorista:  dados.motorista  || "",
-            veiculo:    dados.veiculo    || "",
-            rota:       dados.rota       || "",
-            descricao:  dados.descricao  || "",
-            gravidade:  dados.gravidade  || ""
-        });
+    const mensagensPadrao = {
+        TEMPORAL: `Prezado(a) Fiscal ${dados.fiscal || ''},\n\nIdentificamos uma irregularidade operacional na rota sob sua responsabilidade:\n\n🚨 TIPO: Fraude Temporal\n👤 Motorista: ${dados.motorista || ''}\n🗺️ Rota: ${dados.rota || ''}\n🏢 GRE: ${dados.gre || ''}\n⏱️ Duração registrada: ${dados.descricao || ''}\n\nA rota apresentou duração inferior a 10 minutos, o que indica possível não execução do trajeto planejado.\n\n✅ PROVIDÊNCIA SOLICITADA:\nVerifique junto ao motorista o ocorrido e registre a justificativa. Caso confirmada a irregularidade, tome as medidas cabíveis e nos retorne até o prazo acordado.\n\nAtenciosamente,\nSetor de Monitoramento Logístico`,
 
+        GEOGRAFICA: `Prezado(a) Fiscal ${dados.fiscal || ''},\n\nIdentificamos uma irregularidade operacional na rota sob sua responsabilidade:\n\n🚨 TIPO: Fraude Geográfica\n👤 Motorista: ${dados.motorista || ''}\n🗺️ Rota: ${dados.rota || ''}\n🏢 GRE: ${dados.gre || ''}\n📍 Distância registrada: ${dados.descricao || ''}\n\nO rastreador veicular registrou início e fim da rota no mesmo ponto (distância menor que 500m), indicando que o veículo pode não ter executado o percurso.\n\n✅ PROVIDÊNCIA SOLICITADA:\nVerifique junto ao motorista e ao rastreador o ocorrido. Registre a justificativa e nos retorne até o prazo acordado.\n\nAtenciosamente,\nSetor de Monitoramento Logístico`,
+
+        GARGALO: `Prezado(a) Fiscal ${dados.fiscal || ''},\n\nIdentificamos uma rota em situação de gargalo operacional:\n\n⏳ TIPO: Rota Aberta há mais de 6 horas\n👤 Motorista: ${dados.motorista || ''}\n🗺️ Rota: ${dados.rota || ''}\n🏢 GRE: ${dados.gre || ''}\n\nA rota encontra-se em andamento por tempo superior ao esperado. Isso pode indicar problema com o motorista, veículo ou sistema.\n\n✅ PROVIDÊNCIA SOLICITADA:\nEntre em contato IMEDIATAMENTE com o motorista e verifique a situação. Atualize o status da rota e nos informe.\n\nAtenciosamente,\nSetor de Monitoramento Logístico`,
+
+        BAIXA_ASSID: `Prezado(a) Fiscal ${dados.fiscal || ''},\n\nIdentificamos motorista(s) sem abertura de rota sob sua responsabilidade:\n\n📉 TIPO: Baixa Assiduidade\n👤 Motorista: ${dados.motorista || ''}\n🗺️ Rota(s): ${dados.rota || ''}\n🏢 GRE: ${dados.gre || ''}\n\nO(s) motorista(s) listado(s) não iniciaram suas rotas regulares no período analisado.\n\n✅ PROVIDÊNCIA SOLICITADA:\nVerifique o motivo da não execução, registre a justificativa e nos retorne até o prazo acordado.\n\nAtenciosamente,\nSetor de Monitoramento Logístico`,
+
+        REINCIDENCIA: `Prezado(a) Gestor(a),\n\nInformamos reincidência de irregularidade operacional que requer atenção gerencial:\n\n🚨 TIPO: Reincidência\n👤 Motorista: ${dados.motorista || ''}\n🗺️ Rota: ${dados.rota || ''}\n🏢 GRE: ${dados.gre || ''}\n📋 Ocorrência: ${dados.descricao || ''}\n\nEste motorista já teve ocorrência registrada anteriormente e a situação se repete. Solicitamos análise e providências de nível gerencial.\n\n✅ PROVIDÊNCIA SOLICITADA:\nReunião com o fiscal responsável e definição de plano de ação formal com prazo de resolução.\n\nAtenciosamente,\nSetor de Monitoramento Logístico`
+    };
+
+    const msgPadrao = mensagensPadrao[dados.tipo] ||
+        `Ocorrência registrada pelo Setor de Monitoramento.\nTipo: ${dados.tipo || ''}\nMotorista: ${dados.motorista || ''}\nRota: ${dados.rota || ''}\nGRE: ${dados.gre || ''}`;
+
+    const params = new URLSearchParams({
+        acao:       "registrar",
+        data:       dados.data       || "",
+        tipo:       dados.tipo       || "",
+        gre:        dados.gre        || "",
+        fiscal:     dados.fiscal     || "",
+        motorista:  dados.motorista  || "",
+        veiculo:    dados.veicu
         fetch(URL_API_SCRIPT + "?" + params.toString(), { 
             method: "GET",
             mode: "no-cors"
