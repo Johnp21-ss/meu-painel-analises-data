@@ -2350,7 +2350,6 @@
         const filtroTurno = document.getElementById('fTurnoFraude')?.value || 'TODOS';
         const filtroRota = document.getElementById('fRotaFraude')?.value || 'TODOS';
 
-        const filtroCidade = elCidade?.value || 'TODOS';
         
         const dados = bruto.filter(d =>
             (filtroGre === 'TODOS' || d.gre === filtroGre) &&
@@ -2793,15 +2792,16 @@
         [...new Set(bruto.map(d => d.cidade))].filter(Boolean).sort().forEach(v => elCidade.add(new Option(v, v)));
     }
 
-        const filtroGre = elGre?.value || 'TODOS';
-        const filtroFiscal = elFiscal?.value || 'TODOS';
+            const filtroGre = elGre?.value || 'TODOS';
+    const filtroFiscal = elFiscal?.value || 'TODOS';
+    const elCidade = document.getElementById('cpl-filtro-cidade');
+    const filtroCidade = elCidade?.value || 'TODOS';
 
-        const dados = bruto.filter(d =>
-            (filtroGre === 'TODOS' || d.gre === filtroGre) &&
-            (filtroFiscal === 'TODOS' || d.fiscal_responsavel === filtroFiscal) &&
-            (filtroCidade === 'TODOS' || d.cidade === filtroCidade)
-        );
-
+    const dados = bruto.filter(d =>
+        (filtroGre === 'TODOS' || d.gre === filtroGre) &&
+        (filtroFiscal === 'TODOS' || d.fiscal_responsavel === filtroFiscal) &&
+        (filtroCidade === 'TODOS' || d.cidade === filtroCidade)
+    );
         const agora = new Date();
         cplDadosCriticos = [];
         cplDadosDetalheAlertas = { temporais: [], geograficas: [], gargalos: [], veiculosRisco: [], rotasSemJustif: [] };
