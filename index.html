@@ -644,6 +644,24 @@
 <body>
 
     <!-- ══════════════════════════════════════
+         MODAL: CONFIRMAÇÃO DE REGISTRO
+    ══════════════════════════════════════ -->
+    <div id="modalConfirmarRegistro" class="cpl-modal-overlay" onclick="fecharModalConfirmar(event)">
+        <div class="cpl-modal-box" onclick="event.stopPropagation()" style="max-width:550px;">
+            <button class="cpl-modal-close" onclick="fecharModalConfirmar()" title="Fechar">✕</button>
+            <div style="text-align:center; margin-bottom:12px;">
+                <div style="font-size:40px;">📋</div>
+                <div style="font-size:14px; font-weight:bold; color:#fff; margin:8px 0;">Confirmar Registro</div>
+            </div>
+            <div id="modalConfirmarConteudo" style="font-size:10px; color:var(--slate); max-height:200px; overflow-y:auto; margin-bottom:14px; line-height:1.6; white-space:pre-wrap;"></div>
+            <div style="display:flex; gap:8px; justify-content:center;">
+                <button onclick="fecharModalConfirmar()" style="padding:8px 20px; background:var(--border); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">❌ Cancelar</button>
+                <button id="btnConfirmarEnvio" style="padding:8px 20px; background:var(--success); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">✅ Confirmar Envio</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
          MODAL: PILAR ICO (Anexo 1 → Anexo 4)
     ══════════════════════════════════════ -->
     <div id="modalPilarICO" class="cpl-modal-overlay" onclick="fecharModalPilar(event)">
@@ -1653,10 +1671,88 @@
         document.body.style.overflow = 'hidden';
     }
 
-    function fecharModalFormula(event) {
+        function fecharModalFormula(event) {
         if (event && event.target !== document.getElementById('modalFormulaICO')) return;
         document.getElementById('modalFormulaICO').classList.remove('open');
         document.body.style.overflow = '';
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  MODAL DE CONFIRMAÇÃO DE REGISTRO
+    // ═══════════════════════════════════════════════════════
+    let _dadosPendentes = null;
+
+    function abrirModalConfirmar(dados) {
+        _dadosPendentes = dados;
+        
+        const mensagensPadrao = {
+            TEMPORAL: `🚨 TIPO: Fraude Temporal\n👤 Motorista: ${dados.motorista || ''}\n🗺️ Rota: ${dados.rota || ''}\n🏢 GRE: ${dados.gre || ''}\n⏱️ Duração: ${dados.descricao || ''}\n\nPrezado(a) Fiscal ${dados.fiscal || ''},\n\nA rota apresentou duração inferior a 10 minutos. Verifique junto ao motorista e registre a justificativa.`,
+            GEOGRAFICA: `🚨 TIPO: Fraude Geográfica\n👤 Motorista: ${dados.motorista || ''}\n🗺️ Rota: ${dados.rota || ''}\n🏢 GRE: ${dados.gre || ''}\n📍 Distância: ${dados.descricao || ''}\n\nPrezado(a) Fiscal ${dados.fiscal || ''},\n\nRastreador registrou início e fim no mesmo local. Verifique o ocorrido.`,
+            GARGALO: `⏳ TIPO: Gargalo +6h\n👤 Motorista: ${dados.motorista || ''}\n🗺️ Rota: ${dados.rota || ''}\n🏢 GRE: ${dados.gre || ''}\n\nPrezado(a) Fiscal ${dados.fiscal || ''},\n\nRota aberta há mais de 6 horas. Contate o motorista IMEDIATAMENTE.`,
+            BAIXA_ASSID: `📉 TIPO: Baixa Assiduidade\n👤 Motorista: ${dados.motorista || ''}\n🗺️ Rota(s): ${dados.rota || ''}\n🏢 GRE: ${dados.gre || ''}\n\nPrezado(a) Fiscal ${dados.fiscal || ''},\n\nMotorista sem abertura de rota. Verifique o motivo.`
+        };
+        
+        const conteudo = mensagensPadrao[dados.tipo] || 
+            `📋 Registro de Ocorrência\nTipo: ${dados.tipo || ''}\nMotorista: ${dados.motorista || ''}\nRota: ${dados.rota || ''}\nGRE: ${dados.gre || ''}`;
+        
+        document.getElementById('modalConfirmarConteudo').innerText = conteudo;
+        document.getElementById('modalConfirmarRegistro').classList.add('open');
+        document.body.style.overflow = 'hidden';
+        
+        document.getElementById('btnConfirmarEnvio').onclick = function() {
+            fecharModalConfirmar();
+            enviarRegistro(_dadosPendentes);
+        };
+    }
+
+    function fecharModalConfirmar(event) {
+        if (event && event.target !== document.getElementById('modalConfirmarRegistro')) return;
+        document.getElementById('modalConfirmarRegistro').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function enviarRegistro(dados) {
+        const btn = event?.target;
+        
+        const mensagensPadrao = {
+            TEMPORAL: `Prezado(a) Fiscal ${dados.fiscal || ''},\n\nIdentificamos uma irregularidade operacional na rota sob sua responsabilidade:\n\n🚨 TIPO: Fraude Temporal\n👤 Motorista: ${dados.motorista || ''}\n🗺️ Rota: ${dados.rota || ''}\n🏢 GRE: ${dados.gre || ''}\n⏱️ Duração registrada: ${dados.descricao || ''}\n\nA rota apresentou duração inferior a 10 minutos, o que indica possível não execução do trajeto planejado.\n\n✅ PROVIDÊNCIA SOLICITADA:\nVerifique junto ao motorista o ocorrido e registre a justificativa.\n\nAtenciosamente,\nSetor de Monitoramento Logístico`,
+            GEOGRAFICA: `Prezado(a) Fiscal ${dados.fiscal || ''},\n\nIdentificamos uma irregularidade operacional:\n\n🚨 TIPO: Fraude Geográfica\n👤 Motorista: ${dados.motorista || ''}\n🗺️ Rota: ${dados.rota || ''}\n🏢 GRE: ${dados.gre || ''}\n📍 Distância registrada: ${dados.descricao || ''}\n\nO rastreador veicular registrou início e fim da rota no mesmo ponto.\n\n✅ PROVIDÊNCIA SOLICITADA:\nVerifique junto ao motorista e ao rastreador o ocorrido.\n\nAtenciosamente,\nSetor de Monitoramento Logístico`,
+            GARGALO: `Prezado(a) Fiscal ${dados.fiscal || ''},\n\nIdentificamos uma rota em situação de gargalo:\n\n⏳ TIPO: Rota Aberta há mais de 6 horas\n👤 Motorista: ${dados.motorista || ''}\n🗺️ Rota: ${dados.rota || ''}\n🏢 GRE: ${dados.gre || ''}\n\n✅ PROVIDÊNCIA SOLICITADA:\nEntre em contato IMEDIATAMENTE com o motorista.\n\nAtenciosamente,\nSetor de Monitoramento Logístico`,
+            BAIXA_ASSID: `Prezado(a) Fiscal ${dados.fiscal || ''},\n\nIdentificamos motorista(s) sem abertura de rota:\n\n📉 TIPO: Baixa Assiduidade\n👤 Motorista: ${dados.motorista || ''}\n🗺️ Rota(s): ${dados.rota || ''}\n🏢 GRE: ${dados.gre || ''}\n\n✅ PROVIDÊNCIA SOLICITADA:\nVerifique o motivo da não execução e registre a justificativa.\n\nAtenciosamente,\nSetor de Monitoramento Logístico`
+        };
+        
+        const msgPadrao = mensagensPadrao[dados.tipo] || `Ocorrência registrada.\nTipo: ${dados.tipo || ''}\nMotorista: ${dados.motorista || ''}\nRota: ${dados.rota || ''}\nGRE: ${dados.gre || ''}`;
+        
+        const params = new URLSearchParams({
+            acao: "registrar",
+            data: dados.data || "",
+            tipo: dados.tipo || "",
+            gre: dados.gre || "",
+            fiscal: dados.fiscal || "",
+            motorista: dados.motorista || "",
+            veiculo: dados.veiculo || "",
+            rota: dados.rota || "",
+            descricao: dados.descricao || "",
+            gravidade: dados.gravidade || "",
+            mensagem: msgPadrao
+        });
+        
+        fetch(URL_API_SCRIPT + "?" + params.toString(), { 
+            method: "GET",
+            mode: "no-cors"
+        })
+        .then(() => {
+            marcarRegistrado(dados);
+            const abaAtiva = document.querySelector('.content-section.active');
+            if (abaAtiva) {
+                if (abaAtiva.id === 'aba-assiduidade') processarAssiduidadeTemporal();
+                else if (abaAtiva.id === 'aba-compliance') processarCompliance();
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("❌ Erro ao enviar registro. Tente novamente.");
+        });
     }
 
     // Fechar modais com ESC
@@ -2412,10 +2508,24 @@
             .map(([nome, d]) => ({ nome, ...d, percFraude: d.total > 0 ? (d.fraudes / d.total * 100) : 0 }))
             .sort((a, b) => b.percFraude - a.percFraude);
         document.querySelector('#tFiscaisFraude tbody').innerHTML = rankFiscais.map(f => {
-            const prov = f.percFraude > 20 ? 'NOTIFICAR IMEDIATO' : f.percFraude > 10 ? 'ALERTA POR E-MAIL' : 'OK';
-            const badgeCor = f.percFraude > 20 ? 'badge-danger' : f.percFraude > 10 ? 'badge-warning' : 'badge-success';
-            return `<tr><td>${f.nome}</td><td>${f.total}</td><td class="val-fraude">${f.fraudes}</td><td>${f.percFraude.toFixed(1)}%</td><td><span class="badge ${badgeCor}">${prov}</span></td></tr>`;
-        }).join('') || '<tr><td colspan="5" style="color:var(--slate)">Sem dados.</td></tr>';
+    const prov = f.percFraude > 20 ? 'NOTIFICAR IMEDIATO' : f.percFraude > 10 ? 'ALERTA POR E-MAIL' : 'OK';
+    const badgeCor = f.percFraude > 20 ? 'badge-danger' : f.percFraude > 10 ? 'badge-warning' : 'badge-success';
+    const temFraude = f.percFraude > 10;
+    return `<tr><td>${f.nome}</td><td>${f.total}</td><td class="val-fraude">${f.fraudes}</td><td>${f.percFraude.toFixed(1)}%</td><td>
+        <span class="badge ${badgeCor}">${prov}</span>
+        ${temFraude ? gerarBotaoRegistro({
+            data: new Date().toISOString().split('T')[0],
+            tipo: 'BAIXA_ASSID',
+            gre: '',
+            fiscal: f.nome,
+            motorista: '',
+            veiculo: '',
+            rota: 'Fiscal com ' + f.percFraude.toFixed(1) + '% de fraudes',
+            descricao: 'Fiscal ' + f.nome + ' com ' + f.fraudes + ' fraudes em ' + f.total + ' rotas',
+            gravidade: f.percFraude > 20 ? 'CRITICO' : 'ALTO'
+        }) : ''}
+    </td></tr>`;
+}).join('') || '<tr><td colspan="5" style="color:var(--slate)">Sem dados.</td></tr>';;
 
         document.querySelector('#tIrregularidadesFraude tbody').innerHTML = rotasSuspeitas.slice(0, 100).map(r => {
             const badgeCor = r.tipo === 'TEMPORAL' ? 'badge-danger' : 'badge-warning';
@@ -3343,12 +3453,10 @@ function gerarBotaoRegistro(dadosBotao, estiloExtra = '') {
         alert("ℹ️ Este registro já foi enviado anteriormente.");
         return;
     }
-
-    const btn = event?.target;
-    if (btn) {
-        btn.disabled = true;
-        btn.innerText = "⏳ Salvando...";
-    }
+    
+    // Abre modal de confirmação
+    abrirModalConfirmar(dados);
+}
 
     const mensagensPadrao = {
         TEMPORAL: `Prezado(a) Fiscal ${dados.fiscal || ''},\n\nIdentificamos uma irregularidade operacional na rota sob sua responsabilidade:\n\n🚨 TIPO: Fraude Temporal\n👤 Motorista: ${dados.motorista || ''}\n🗺️ Rota: ${dados.rota || ''}\n🏢 GRE: ${dados.gre || ''}\n⏱️ Duração registrada: ${dados.descricao || ''}\n\nA rota apresentou duração inferior a 10 minutos, o que indica possível não execução do trajeto planejado.\n\n✅ PROVIDÊNCIA SOLICITADA:\nVerifique junto ao motorista o ocorrido e registre a justificativa. Caso confirmada a irregularidade, tome as medidas cabíveis e nos retorne até o prazo acordado.\n\nAtenciosamente,\nSetor de Monitoramento Logístico`,
