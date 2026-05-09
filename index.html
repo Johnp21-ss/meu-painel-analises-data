@@ -2906,7 +2906,7 @@
         const p4_planej = Math.max(0, 1 - (taxaExtras / 0.15) * 0.5);
 
         // ── PILAR 5: Adesão Digital (15%) ──
-    // Mede % de motoristas que estão usando o sistema (OK ÷ Total)
+        // Mede % de motoristas que estão usando o sistema (OK ÷ Total)
         const totalMotoristas = new Set(dados.map(d => d.motorista)).size || 1;
         const motoristasOk = new Set(dados.filter(d => 
         norm(d.status).includes('CONCLUID') || norm(d.status).includes('ANDAMENTO') ).map(d => d.motorista)).size;
