@@ -1072,7 +1072,7 @@
                     onmouseover="this.style.color='#5dade2'"
                     onmouseout="this.style.color='var(--info)'"
                     title="Clique para ver o significado de cada pilar">
-                    ⚙️ Assid.×25% + Conform.×15% + Integrid.×25% + Planej.×10% + Adesão×10% + Ocorr.×15%
+                    ⚙️ Assid.×25% + Conform.×15% + Integrid.×15% + Planej.×15% + Adesão×15% + Ocorr.×15%
                 </div>
             </div>
 
@@ -1346,7 +1346,7 @@
         key: 'integridade',
         label: 'Integrid.',
         titulo: 'Integridade Operacional',
-        peso: '20%',
+        peso: '15%',
         icone: '🛡️',
         cor: '#f1c40f',
         bg: 'rgba(241,196,15,0.15)',
@@ -1358,7 +1358,7 @@
         key: 'planejamento',
         label: 'Planej.',
         titulo: 'Controle de Planejamento',
-        peso: '10%',
+        peso: '15%',
         icone: '📋',
         cor: '#9b59b6',
         bg: 'rgba(155,89,182,0.15)',
@@ -1370,13 +1370,13 @@
         key: 'adesao',
         label: 'Adesão',
         titulo: 'Adesão Digital',
-        peso: '10%',
+        peso: '15%',
         icone: '📲',
         cor: '#e67e22',
         bg: 'rgba(230,126,34,0.15)',
         formula: 'Motoristas OK Via App ÷ Total de Motoristas OK × 100',
         desc: 'Percentual de motoristas que concluíram rotas utilizando o aplicativo. Mede a adesão à tecnologia de rastreamento digital, essencial para a confiabilidade dos dados.',
-        meta: '≥ 60%'
+        meta: '≥ 80%'
     },
     {
         key: 'ocorrencias',
@@ -2816,8 +2816,8 @@
 
         // ── ICO COMPOSTO ──
         const icoRaw = (
-        p1_assid * 0.25 + p2_conformidade * 0.15 + p3_integridade * 0.25 +
-        p4_planej * 0.10 + p5_adesao * 0.10 + p6_ocorr * 0.15
+        p1_assid * 0.25 + p2_conformidade * 0.15 + p3_integridade * 0.15 +
+        p4_planej * 0.15 + p5_adesao * 0.15 + p6_ocorr * 0.15
         ) * 100;
         const ico = icoRaw.toFixed(1);
 
