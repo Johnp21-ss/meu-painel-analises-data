@@ -1072,7 +1072,7 @@
                     onmouseover="this.style.color='#5dade2'"
                     onmouseout="this.style.color='var(--info)'"
                     title="Clique para ver o significado de cada pilar">
-                    ⚙️ Assid.×30% + Conform.×15% + Integrid.×25% + Planej.×10% + Ocorr.×20%
+                    ⚙️ Assid.×25% + Conform.×15% + Integrid.×25% + Planej.×10% + Adesão×10% + Ocorr.×15%
                 </div>
             </div>
 
@@ -1318,67 +1318,79 @@
     //  DADOS DOS PILARES ICO — referência central para os dois modais
     // ════════════════════════════════════════════════════════════════
     const PILARES_ICO = [
-        {
-            key: 'assid',
-            label: 'Assid.',
-            titulo: 'Assiduidade Operacional',
-            peso: '25%',
-            icone: '✅',
-            cor: '#2ecc71',
-            bg: 'rgba(46,204,113,0.15)',
-            formula: 'Rotas Regulares Concluídas ÷ Total de Rotas Regulares × 100',
-            desc: 'Mede quantas rotas planejadas (excluindo extras) foram efetivamente concluídas. É o pilar mais básico: se não há execução, nada mais importa.',
-            meta: '≥ 85%'
-        },
-        {
-            key: 'conformidade',
-            label: 'Conform.',
-            titulo: 'Conformidade Temporal',
-            peso: '15%',
-            icone: '🕐',
-            cor: '#3498db',
-            bg: 'rgba(52,152,219,0.15)',
-            formula: 'Rotas Executadas Dentro da Janela (±60min) ÷ Total com Horário Planejado × 100',
-            desc: 'Percentual de rotas executadas dentro da janela horária planejada com tolerância de ±60 minutos. Avalia o cumprimento dos horários programados.',
-            meta: '≥ 80%'
-        },
-        {
-            key: 'integridade',
-            label: 'Integrid.',
-            titulo: 'Integridade Operacional',
-            peso: '20%',
-            icone: '🛡️',
-            cor: '#f1c40f',
-            bg: 'rgba(241,196,15,0.15)',
-            formula: 'MAX(0, 1 − (Qtd Fraudes ÷ Total Rotas)) × 100',
-            desc: 'Ausência de fraudes temporais (duração <10 min) ou geográficas (distância <500m entre início e fim). Quanto maior, melhor — indica operação genuína.',
-            meta: '≥ 90%'
-        },
-        {
-            key: 'planejamento',
-            label: 'Planej.',
-            titulo: 'Controle de Planejamento',
-            peso: '10%',
-            icone: '📋',
-            cor: '#9b59b6',
-            bg: 'rgba(155,89,182,0.15)',
-            formula: 'MAX(0, 1 − (Taxa Extras ÷ 0,15) × 0,5) × 100',
-            desc: 'Controle do volume de rotas extras em relação ao total. Penaliza quando as rotas extras excedem 15% do total, sinalizando desplanejamento ou demanda não prevista.',
-            meta: 'Extras < 15% do total'
-        },
-        {
-            key: 'ocorrencias',
-            label: 'Ocorr.',
-            titulo: 'Ocorrências Documentadas',
-            peso: '15%',
-            icone: '📝',
-            cor: '#1abc9c',
-            bg: 'rgba(26,188,156,0.15)',
-            formula: 'MAX(0, 1 − (Rotas Não Abertas sem Obs ÷ Total Não Abertas)) × 100',
-            desc: 'Percentual de rotas não abertas (pendentes) que possuem justificativa/observação registrada. Bônus por documentação adequada — demonstra responsabilidade do fiscal.',
-            meta: '100% das pendências justificadas'
-        }
-    ];
+    {
+        key: 'assid',
+        label: 'Assid.',
+        titulo: 'Assiduidade Operacional',
+        peso: '25%',
+        icone: '✅',
+        cor: '#2ecc71',
+        bg: 'rgba(46,204,113,0.15)',
+        formula: 'Rotas Regulares Concluídas ÷ Total de Rotas Regulares × 100',
+        desc: 'Mede quantas rotas planejadas (excluindo extras) foram efetivamente concluídas. É o pilar mais básico: se não há execução, nada mais importa.',
+        meta: '≥ 85%'
+    },
+    {
+        key: 'conformidade',
+        label: 'Conform.',
+        titulo: 'Conformidade Temporal',
+        peso: '15%',
+        icone: '🕐',
+        cor: '#3498db',
+        bg: 'rgba(52,152,219,0.15)',
+        formula: 'Rotas Executadas Dentro da Janela (±60min) ÷ Total com Horário Planejado × 100',
+        desc: 'Percentual de rotas executadas dentro da janela horária planejada com tolerância de ±60 minutos. Avalia o cumprimento dos horários programados.',
+        meta: '≥ 80%'
+    },
+    {
+        key: 'integridade',
+        label: 'Integrid.',
+        titulo: 'Integridade Operacional',
+        peso: '20%',
+        icone: '🛡️',
+        cor: '#f1c40f',
+        bg: 'rgba(241,196,15,0.15)',
+        formula: 'MAX(0, 1 − (Qtd Fraudes ÷ Total Rotas)) × 100',
+        desc: 'Ausência de fraudes temporais (duração <10 min) ou geográficas (distância <500m entre início e fim). Quanto maior, melhor — indica operação genuína.',
+        meta: '≥ 90%'
+    },
+    {
+        key: 'planejamento',
+        label: 'Planej.',
+        titulo: 'Controle de Planejamento',
+        peso: '10%',
+        icone: '📋',
+        cor: '#9b59b6',
+        bg: 'rgba(155,89,182,0.15)',
+        formula: 'MAX(0, 1 − (Taxa Extras ÷ 0,15) × 0,5) × 100',
+        desc: 'Controle do volume de rotas extras em relação ao total. Penaliza quando as rotas extras excedem 15% do total, sinalizando desplanejamento ou demanda não prevista.',
+        meta: 'Extras < 15% do total'
+    },
+    {
+        key: 'adesao',
+        label: 'Adesão',
+        titulo: 'Adesão Digital',
+        peso: '10%',
+        icone: '📲',
+        cor: '#e67e22',
+        bg: 'rgba(230,126,34,0.15)',
+        formula: 'Motoristas OK Via App ÷ Total de Motoristas OK × 100',
+        desc: 'Percentual de motoristas que concluíram rotas utilizando o aplicativo. Mede a adesão à tecnologia de rastreamento digital, essencial para a confiabilidade dos dados.',
+        meta: '≥ 60%'
+    },
+    {
+        key: 'ocorrencias',
+        label: 'Ocorr.',
+        titulo: 'Ocorrências Documentadas',
+        peso: '15%',
+        icone: '📝',
+        cor: '#1abc9c',
+        bg: 'rgba(26,188,156,0.15)',
+        formula: 'MAX(0, 1 − (Rotas Não Abertas sem Obs ÷ Total Não Abertas)) × 100',
+        desc: 'Percentual de rotas não abertas (pendentes) que possuem justificativa/observação registrada. Bônus por documentação adequada — demonstra responsabilidade do fiscal.',
+        meta: '100% das pendências justificadas'
+    }
+];
 
     // Guarda os scores calculados para exibir nos modais
     let _icoScoresAtuais = {};
@@ -2783,6 +2795,12 @@
         const taxaExtras = extrasCount / total;
         const p4_planej = Math.max(0, 1 - (taxaExtras / 0.15) * 0.5);
 
+        // ── PILAR 5: Adesão Digital (10%) ──
+        const motoristasOk = dados.filter(d => norm(d.status).includes('CONCLUID'));
+        const totalMotOk = new Set(motoristasOk.map(d => d.motorista)).size || 1;
+        const motApp = new Set(motoristasOk.filter(d => norm(d.origem).includes('APP')).map(d => d.motorista)).size;
+        const p5_adesao = motApp / totalMotOk;
+
        // Pilar Alertas removido — fraudes já contabilizadas na Integridade
 
         // ── PILAR 6: Ocorrências (15%) ──
@@ -2798,8 +2816,8 @@
 
         // ── ICO COMPOSTO ──
         const icoRaw = (
-        p1_assid * 0.30 + p2_conformidade * 0.15 + p3_integridade * 0.25 +
-        p4_planej * 0.10 + p6_ocorr * 0.20
+        p1_assid * 0.25 + p2_conformidade * 0.15 + p3_integridade * 0.25 +
+        p4_planej * 0.10 + p5_adesao * 0.10 + p6_ocorr * 0.15
         ) * 100;
         const ico = icoRaw.toFixed(1);
 
@@ -2809,6 +2827,7 @@
             conformidade: p2_conformidade * 100,
             integridade: p3_integridade * 100,
             planejamento: p4_planej * 100,
+            adesao: p5_adesao * 100,
             ocorrencias: p6_ocorr * 100
         };
 
