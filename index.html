@@ -2905,11 +2905,15 @@
         const taxaExtras = extrasCount / total;
         const p4_planej = Math.max(0, 1 - (taxaExtras / 0.15) * 0.5);
 
-        // ── PILAR 5: Adesão Digital (10%) ──
-        const motoristasOk = dados.filter(d => norm(d.status).includes('CONCLUID'));
+         // ── PILAR 5: Adesão Digital (15%) ──
+        const motoristasOk = dados.filter(d => 
+        norm(d.status).includes('CONCLUID') || norm(d.status).includes('ANDAMENTO')
+        );
         const totalMotOk = new Set(motoristasOk.map(d => d.motorista)).size || 1;
-        const motApp = new Set(motoristasOk.filter(d => norm(d.origem).includes('APP')).map(d => d.motorista)).size;
-        const p5_adesao = motApp / totalMotOk;
+        const motDigital = new Set(motoristasOk.filter(d => 
+        norm(d.origem).includes('APP') || norm(d.origem).includes('LINK')
+        ).map(d => d.motorista)).size;
+        const p5_adesao = motDigital / totalMotOk;
 
        // Pilar Alertas removido — fraudes já contabilizadas na Integridade
 
