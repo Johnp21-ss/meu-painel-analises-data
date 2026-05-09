@@ -2772,7 +2772,7 @@
         // ── PILAR 1: Assiduidade (25%) ──
         const rotasRegulares = dados.filter(d => !d.isExtra);
         const totalReg = rotasRegulares.length || 1;
-        const conclReg = rotasRegulares.filter(d => norm(d.status).includes('CONCLUID')).length;
+        const conclReg = rotasRegulares.filter(d => norm(d.status).includes('CONCLUID') || norm(d.status).includes('ANDAMENTO')).length;
         const p1_assid = conclReg / totalReg;
 
         // ── PILAR 2: Conformidade Temporal (15%) ──
