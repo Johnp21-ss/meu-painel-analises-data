@@ -1069,6 +1069,9 @@
                 <select id="cpl-filtro-fiscal" onchange="processarCompliance()" style="width:auto;min-width:150px;font-size:10px;padding:6px;">
                     <option value="TODOS">Todos Fiscais</option>
                 </select>
+                <select id="cpl-filtro-cidade" onchange="processarCompliance()" style="width:auto;min-width:150px;font-size:10px;padding:6px;">
+                    <option value="TODOS">Todas Cidades</option>
+                </select>
                 <button onclick="processarCompliance()" style="padding:6px 14px;background:var(--info);color:#fff;border:none;border-radius:6px;font-size:10px;font-weight:bold;cursor:pointer;">🔄 Atualizar</button>
             </div>
         </div>
@@ -2783,13 +2786,18 @@
         if (elFiscal && elFiscal.options.length === 1) {
             [...new Set(bruto.map(d => d.fiscal_responsavel))].filter(Boolean).sort().forEach(v => elFiscal.add(new Option(v, v)));
         }
+            const elCidade = document.getElementById('cpl-filtro-cidade');
+    if (elCidade && elCidade.options.length === 1) {
+        [...new Set(bruto.map(d => d.cidade))].filter(Boolean).sort().forEach(v => elCidade.add(new Option(v, v)));
+    }
 
         const filtroGre = elGre?.value || 'TODOS';
         const filtroFiscal = elFiscal?.value || 'TODOS';
 
         const dados = bruto.filter(d =>
             (filtroGre === 'TODOS' || d.gre === filtroGre) &&
-            (filtroFiscal === 'TODOS' || d.fiscal_responsavel === filtroFiscal)
+            (filtroFiscal === 'TODOS' || d.fiscal_responsavel === filtroFiscal) &&
+            (filtroCidade === 'TODOS' || d.cidade === filtroCidade)
         );
 
         const agora = new Date();
