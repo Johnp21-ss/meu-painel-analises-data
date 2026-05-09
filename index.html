@@ -2793,11 +2793,10 @@
     }
 
             const filtroGre = elGre?.value || 'TODOS';
-    const filtroFiscal = elFiscal?.value || 'TODOS';
-    const elCidade = document.getElementById('cpl-filtro-cidade');
-    const filtroCidade = elCidade?.value || 'TODOS';
+            const filtroFiscal = elFiscal?.value || 'TODOS';
+            const filtroCidade = elCidade?.value || 'TODOS';
 
-    const dados = bruto.filter(d =>
+        const dados = bruto.filter(d =>
         (filtroGre === 'TODOS' || d.gre === filtroGre) &&
         (filtroFiscal === 'TODOS' || d.fiscal_responsavel === filtroFiscal) &&
         (filtroCidade === 'TODOS' || d.cidade === filtroCidade)
