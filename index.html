@@ -2350,6 +2350,8 @@
         const filtroTurno = document.getElementById('fTurnoFraude')?.value || 'TODOS';
         const filtroRota = document.getElementById('fRotaFraude')?.value || 'TODOS';
 
+        const filtroCidade = elCidade?.value || 'TODOS';
+        
         const dados = bruto.filter(d =>
             (filtroGre === 'TODOS' || d.gre === filtroGre) &&
             (filtroCidade === 'TODOS' || d.cidade === filtroCidade) &&
