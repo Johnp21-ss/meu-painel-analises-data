@@ -639,6 +639,25 @@
             text-align: right;
             flex-shrink: 0;
         }
+            /* ── Spinner de carregamento ── */
+    .spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255,255,255,.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin .6s linear infinite;
+        margin-right: 5px;
+        vertical-align: middle;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    .btn-carregando {
+        opacity: .7;
+        pointer-events: none;
+    }
     </style>
 </head>
 <body>
@@ -702,11 +721,11 @@
                 <div style="display:flex; gap: 5px; margin-top: 5px; flex-wrap: wrap;">
                     <button class="btn-action btn-pdf" onclick="exportarPDF()">📄 PDF</button>
                     <button class="btn-action btn-audio" onclick="lerPagina()">🔊 LER</button>
-                    <button class="btn-action btn-refresh" onclick="carregar()">🔄 ATUALIZAR</button>
                     <div class="sync-box">
-                        <input type="date" id="dataSync" class="input-date" onchange="processarDados()">
-                        <button id="btnSync" class="btn-action btn-sync" onclick="sincronizarAPI()">⚡ API</button>
-                    </div>
+                        <input type="date" id="dataSync" class="input-date">
+                        <button id="btnSyncUnificado" class="btn-action" onclick="sincronizarEAtualizar()" style="background:var(--info);">🔄 SINCRONIZAR</button>
+                </div>
+            <span id="sync-hora" style="color:var(--slate); font-size:8px; margin-left:5px;"></span>
                 </div>
             </div>
             <select id="fTipo" onchange="processarDados()"><option value="TODOS">TIPO: TODOS</option><option value="REGULAR">REGULARES</option><option value="EXTRA">EXTRAS</option></select>
@@ -1428,41 +1447,116 @@
     }
 
     // ── Carregar dados ────────────────────────────────────────────────────────
-    async function sincronizarAPI() {
-        const campoData = document.getElementById("dataSync");
-        const btn = document.getElementById("btnSync");
-        const timeLabel = document.getElementById('update-time');
-        if (!campoData.value) { alert("⚠️ Selecione uma data no calendário antes de clicar em API."); return; }
-        btn.disabled = true;
-        btn.innerText = "⏳ PROCESSANDO...";
-        timeLabel.innerText = "📡 Solicitando dados para " + campoData.value.split("-").reverse().join("/") + "...";
-        const urlFinal = URL_API_SCRIPT + "?data=" + campoData.value;
-        fetch(urlFinal, { mode: 'no-cors', method: 'GET' })
-            .then(() => {
-                timeLabel.innerText = "✅ API acionada! Aguarde ~10s e clique em ATUALIZAR.";
-                btn.innerText = "⚡ API OK";
-                setTimeout(() => { btn.disabled = false; btn.innerText = "⚡ API"; }, 5000);
-            })
-            .catch(err => {
-                console.error(err);
-                timeLabel.innerText = "❌ Erro ao contactar a API.";
-                btn.disabled = false;
-                btn.innerText = "⚡ API";
-            });
+    async function sincronizarEAtualizar() {
+    const campoData = document.getElementById("dataSync");
+    const btn = document.getElementById("btnSyncUnificado");
+    const timeLabel = document.getElementById('update-time');
+    const horaLabel = document.getElementById('sync-hora');
+    
+    // Se não tem data, apenas recarrega
+    if (!campoData.value) {
+        btn.innerHTML = '<span class="spinner"></span> ATUALIZANDO...';
+        btn.classList.add('btn-carregando');
+        timeLabel.innerText = "🔄 Recarregando dados...";
+        
+        await carregarDadosAsync();
+        
+        const agora = new Date();
+        timeLabel.innerText = "✅ DADOS ATUALIZADOS";
+        horaLabel.innerText = "🕐 " + agora.toLocaleTimeString('pt-BR');
+        btn.innerHTML = '✅ ATUALIZADO';
+        btn.style.background = '#27ae60';
+        
+        setTimeout(() => {
+            btn.innerHTML = '🔄 SINCRONIZAR';
+            btn.style.background = 'var(--info)';
+            btn.classList.remove('btn-carregando');
+        }, 2000);
+        return;
     }
+    
+    // Tem data - sincroniza e espera
+    btn.innerHTML = '<span class="spinner"></span> ENVIANDO...';
+    btn.classList.add('btn-carregando');
+    btn.style.background = '#8e44ad';
+    
+    const dataFormatada = campoData.value.split("-").reverse().join("/");
+    timeLabel.innerText = "📡 Enviando dados para " + dataFormatada + "...";
+    
+    const urlFinal = URL_API_SCRIPT + "?data=" + campoData.value;
+    
+    try {
+        // Passo 1: Enviar para a API
+        await fetch(urlFinal, { mode: 'no-cors', method: 'GET' });
+        
+        // Passo 2: Esperar e tentar carregar (com retry)
+        let sucesso = false;
+        let dadosAnteriores = bruto.length;
+        
+        for (let tentativa = 1; tentativa <= 10; tentativa++) {
+            const tempoEspera = tentativa * 2000; // 2s, 4s, 6s... até 20s
+            
+            btn.innerHTML = `<span class="spinner"></span> TENTATIVA ${tentativa}/10`;
+            timeLabel.innerText = `⏳ Aguardando dados... (${tempoEspera}s)`;
+            
+            await new Promise(resolve => setTimeout(resolve, tempoEspera));
+            
+            // Tenta carregar a planilha
+            await carregarDadosAsync();
+            
+            // Verifica se os dados mudaram (novos dados chegaram)
+            if (bruto.length > 0 && bruto.length !== dadosAnteriores) {
+                sucesso = true;
+                console.log(`✅ Tentativa ${tentativa}: ${bruto.length} registros carregados!`);
+                break;
+            }
+            
+            console.log(`⏳ Tentativa ${tentativa}: ${bruto.length} registros (ainda não atualizou)`);
+            dadosAnteriores = bruto.length;
+        }
+        
+        if (sucesso) {
+            const agora = new Date();
+            timeLabel.innerText = "✅ VISUALIZANDO: " + dataFormatada;
+            horaLabel.innerText = "🕐 Sincronizado às " + agora.toLocaleTimeString('pt-BR');
+            btn.innerHTML = '✅ SINCRONIZADO';
+            btn.style.background = '#27ae60';
+        } else {
+            timeLabel.innerText = "⚠️ Dados não atualizaram. Clique novamente.";
+            horaLabel.innerText = "🕐 Timeout - tente recarregar";
+            btn.innerHTML = '⚠️ TENTAR NOVAMENTE';
+            btn.style.background = '#e67e22';
+        }
+        
+        btn.classList.remove('btn-carregando');
+        
+        setTimeout(() => {
+            btn.innerHTML = '🔄 SINCRONIZAR';
+            btn.style.background = 'var(--info)';
+        }, 3000);
+        
+    } catch(err) {
+        console.error("Erro:", err);
+        timeLabel.innerText = "❌ Erro ao contactar a API.";
+        btn.innerHTML = '❌ ERRO';
+        btn.style.background = '#e74c3c';
+        btn.classList.remove('btn-carregando');
+        
+        setTimeout(() => {
+            btn.innerHTML = '🔄 SINCRONIZAR';
+            btn.style.background = 'var(--info)';
+        }, 3000);
+    }
+}
 
-    async function carregar() {
-        const timeLabel = document.getElementById('update-time');
-        const btnRefresh = document.querySelector(".btn-refresh");
-        timeLabel.innerText = "🔄 Sincronizando com a Planilha...";
-        if (btnRefresh) btnRefresh.disabled = true;
-
-        Papa.parse(URL_PLANILHA + '&refresh=' + Math.random(), {
+// Função assíncrona para carregar dados via PapaParse
+function carregarDadosAsync() {
+    return new Promise((resolve) => {
+        Papa.parse(URL_PLANILHA + '&t=' + Date.now(), {
             download: true,
             header: true,
             skipEmptyLines: true,
             complete: (r) => {
-                if (btnRefresh) btnRefresh.disabled = false;
                 bruto = r.data.filter(d => (d.rota || d.ROTA || "").trim() !== "").map(d => {
                     d.rota = (d.rota || d.ROTA || "").trim();
                     d.data = (d.data || d.DATA || "").trim();
@@ -1488,14 +1582,23 @@
                     d.isExtra = norm(d.rota).includes("EXTRA");
                     return d;
                 });
+                
                 popularFiltros();
                 popularFiltrosFraude();
                 popularFiltrosExtras();
                 processarDados();
-            }
+                
+                resolve();
+            },
+            error: () => resolve()
         });
-    }
+    });
+}
 
+// Simplifica a função carregar() para usar a versão assíncrona
+function carregar() {
+    carregarDadosAsync();
+}
     // ── Filtros ───────────────────────────────────────────────────────────────
     function popularFiltros() {
         const preencher = (id, campo) => {
