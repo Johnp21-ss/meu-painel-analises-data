@@ -1379,10 +1379,19 @@
     window.addEventListener('load', function() {
         const status = sessionStorage.getItem("logado");
         const usuarioSalvo = sessionStorage.getItem("usuario");
+        
         if (status === "true") {
             document.getElementById("login-overlay").style.display = "none";
             document.getElementById("nome-logado").innerText = usuarioSalvo.toUpperCase();
         }
+
+        // === ADICIONE ESTA PARTE ABAIXO PARA O ENTER FUNCIONAR ===
+        document.getElementById("user-pass").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                efetuarLogin();
+            }
+        });
+        // ========================================================
     });
     Chart.defaults.color = '#a4b0be';
 
