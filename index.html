@@ -1490,8 +1490,14 @@
         }
         
         if (sucesso) {
-            // Interface Final Profissional
-            timeLabel.innerText = "✅ VISUALIZANDO: " + dataFormatada;
+            // Captura data e hora atual do sistema
+            const agora = new Date();
+            const horaAtual = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            const dataAtual = agora.toLocaleDateString('pt-BR');
+
+            // Interface Final Profissional com a hora incluída
+            timeLabel.innerText = "✅ VISUALIZANDO: " + dataFormatada + " (Acionado em: " + dataAtual + " às " + horaAtual + ")";
+            
             btn.innerHTML = '✅ SUCESSO';
             btn.style.background = '#27ae60';
         } else {
