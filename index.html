@@ -662,19 +662,19 @@
 </head>
 <body>
     <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1a1a1a; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-        <div style="background: #2c3e50; padding: 30px; border-radius: 12px; text-align: center; width: 320px;">
-            <h2 style="color: white; margin-bottom: 20px;">Portal Logística</h2>
-            <input type="text" id="user-name" placeholder="Usuário" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 6px; border: none;">
-            <input type="password" id="user-pass" placeholder="Senha" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 6px; border: none;" onkeypress="if(event.key === 'Enter') efetuarLogin()">
-            <button onclick="efetuarLogin()" style="width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">ENTRAR</button>
-            <p id="login-erro" style="color: #e74c3c; font-size: 12px; margin-top: 10px; display: none;">Dados incorretos!</p>
-        </div>
+    <div style="background: #2c3e50; padding: 30px; border-radius: 12px; text-align: center; width: 320px;">
+        <h2 style="color: white; margin-bottom: 20px;">Portal Logística</h2>
+        <input type="text" id="user-name" placeholder="Usuário" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 6px;">
+        <input type="password" id="user-pass" placeholder="Senha" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 6px;" onkeypress="if(event.key === 'Enter') entrarSistema()">
+        <button onclick="entrarSistema()" style="width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">ENTRAR</button>
+        <p id="login-erro" style="color: #e74c3c; font-size: 12px; margin-top: 10px; display: none;">Dados incorretos!</p>
     </div>
+</div>
 
-    <div id="user-display" style="position: absolute; top: 15px; right: 20px; color: #ecf0f1; font-size: 13px; z-index: 10;">
-        Olá, <span id="nome-logado" style="color: #27ae60; font-weight: bold;">Visitante</span> | 
-        <a href="#" onclick="sessionStorage.clear(); location.reload();" style="color: #e74c3c; text-decoration: none;">[ Sair ]</a>
-    </div>
+<div id="user-display" style="position: absolute; top: 15px; right: 20px; color: #ecf0f1; z-index: 10;">
+    Olá, <span id="nome-logado" style="color: #27ae60; font-weight: bold;">Visitante</span> | 
+    <a href="#" onclick="sessionStorage.clear(); location.reload();" style="color: #e74c3c; text-decoration: none;">[ Sair ]</a>
+</div>
 
     <div class="wrapper">
 
@@ -1370,20 +1370,20 @@
     </section>
 
     </script> <script>
-    // BLOCO DE LOGIN INDEPENDENTE
-    const CREDENCIAIS = {
+    // ESTE BLOCO ESTÁ TOTALMENTE ISOLADO
+    const LOGIN_DATA = {
         "john_petter": "admin123",
         "diretoria": "admin123"
     };
 
-    function efetuarLogin() {
+    function entrarSistema() {
+        console.log("Clique detectado");
         const u = document.getElementById("user-name").value;
         const p = document.getElementById("user-pass").value;
         
-        if (CREDENCIAIS[u] && CREDENCIAIS[u] === p) {
+        if (LOGIN_DATA[u] && LOGIN_DATA[u] === p) {
             sessionStorage.setItem("logado", "true");
             sessionStorage.setItem("usuario", u);
-            // Esconde o login e mostra o nome sem precisar dar F5
             document.getElementById("login-overlay").style.display = "none";
             document.getElementById("nome-logado").innerText = u.toUpperCase();
         } else {
@@ -1391,8 +1391,9 @@
         }
     }
 
-    // Verifica se já está logado ao carregar
-    window.addEventListener('load', function() {
+    // Verifica assim que a página abre
+    window.addEventListener('DOMContentLoaded', function() {
+        console.log("Sistema de Login Pronto");
         if (sessionStorage.getItem("logado") === "true") {
             document.getElementById("login-overlay").style.display = "none";
             document.getElementById("nome-logado").innerText = sessionStorage.getItem("usuario").toUpperCase();
@@ -1401,7 +1402,7 @@
 </script>
 
 <script>
-    // AQUI RECOMEÇA O SEU BI ORIGINAL
+    // AQUI VOCÊ RECOMEÇA O SEU CÓDIGO ORIGINAL DAS TABELAS
     Chart.defaults.color = '#a4b0be';
     // ... restante do seu código PapaParse e tabelas
 
