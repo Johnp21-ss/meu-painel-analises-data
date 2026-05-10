@@ -1490,25 +1490,28 @@
             timeLabel.innerText = "✅ Dados recebidos! Atualizando visualização...";
             
             // Aguarda um pouco e recarrega os dados
+                        // Aguarda 8 segundos para o Google Sheets processar
             setTimeout(() => {
-                carregar(); // Isso vai buscar a planilha atualizada e processar tudo
+                btn.innerHTML = '<span class="spinner"></span> AGUARDANDO...';
+                timeLabel.innerText = "⏳ Aguardando processamento...";
                 
-                // Feedback visual
+                carregar(); // Recarrega a planilha atualizada
+                
+                // Feedback visual quando os dados carregarem
                 setTimeout(() => {
                     const agora = new Date();
                     timeLabel.innerText = "✅ VISUALIZANDO: " + campoData.value.split("-").reverse().join("/");
                     horaLabel.innerText = "🕐 Sincronizado às " + agora.toLocaleTimeString('pt-BR');
                     btn.innerHTML = '✅ SINCRONIZADO';
                     btn.style.background = '#27ae60';
+                    btn.classList.remove('btn-carregando');
                     
                     setTimeout(() => {
                         btn.innerHTML = '🔄 SINCRONIZAR';
                         btn.style.background = 'var(--info)';
-                        btn.classList.remove('btn-carregando');
                     }, 2000);
                 }, 500);
-            }, 1500);
-        })
+            }, 8000);
         .catch(err => {
             console.error(err);
             timeLabel.innerText = "❌ Erro ao contactar a API.";
