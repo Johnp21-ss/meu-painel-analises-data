@@ -1452,95 +1452,62 @@
     const timeLabel = document.getElementById('update-time');
     const horaLabel = document.getElementById('sync-hora');
     
-    // Se não tem data, apenas recarrega
     if (!campoData.value) {
-        btn.innerHTML = '<span class="spinner"></span> ATUALIZANDO...';
-        btn.classList.add('btn-carregando');
-        timeLabel.innerText = "🔄 Recarregando dados...";
-        
-        await carregarDadosAsync();
-        
-        const agora = new Date();
-        timeLabel.innerText = "✅ DADOS ATUALIZADOS";
-        horaLabel.innerText = "🕐 " + agora.toLocaleTimeString('pt-BR');
-        btn.innerHTML = '✅ ATUALIZADO';
-        btn.style.background = '#27ae60';
-        
-        setTimeout(() => {
-            btn.innerHTML = '🔄 SINCRONIZAR';
-            btn.style.background = 'var(--info)';
-            btn.classList.remove('btn-carregando');
-        }, 2000);
+        alert("⚠️ Por favor, selecione uma data.");
         return;
     }
     
-    // Tem data - sincroniza e espera
-    btn.innerHTML = '<span class="spinner"></span> ENVIANDO...';
+    // Configuração Visual Inicial - Limpa e Direta
+    btn.innerHTML = '<span class="spinner"></span> SINCRONIZANDO...';
     btn.classList.add('btn-carregando');
-    btn.style.background = '#8e44ad';
-    
+    btn.style.background = '#8e44ad'; // Cor de processamento
+    timeLabel.innerText = "⏳ Sincronizando...";
+    horaLabel.innerText = ""; // Remove o "Sincronizado às..."
+
     const dataFormatada = campoData.value.split("-").reverse().join("/");
-    timeLabel.innerText = "📡 Enviando dados para " + dataFormatada + "...";
-    
     const urlFinal = URL_API_SCRIPT + "?data=" + campoData.value;
     
     try {
-        // Passo 1: Enviar para a API
+        // Dispara a API
         await fetch(urlFinal, { mode: 'no-cors', method: 'GET' });
         
-        // Passo 2: Esperar e tentar carregar (com retry)
         let sucesso = false;
         let dadosAnteriores = bruto.length;
         
+        // Loop de espera silencioso
         for (let tentativa = 1; tentativa <= 10; tentativa++) {
-            const tempoEspera = tentativa * 2000; // 2s, 4s, 6s... até 20s
+            // Espera sem mostrar contagem para o usuário
+            await new Promise(resolve => setTimeout(resolve, tentativa * 2000));
             
-            btn.innerHTML = `<span class="spinner"></span> TENTATIVA ${tentativa}/10`;
-            timeLabel.innerText = `⏳ Aguardando dados... (${tempoEspera}s)`;
-            
-            await new Promise(resolve => setTimeout(resolve, tempoEspera));
-            
-            // Tenta carregar a planilha
             await carregarDadosAsync();
             
-            // Verifica se os dados mudaram (novos dados chegaram)
+            // Verifica se os dados chegaram
             if (bruto.length > 0 && bruto.length !== dadosAnteriores) {
                 sucesso = true;
-                console.log(`✅ Tentativa ${tentativa}: ${bruto.length} registros carregados!`);
                 break;
             }
-            
-            console.log(`⏳ Tentativa ${tentativa}: ${bruto.length} registros (ainda não atualizou)`);
             dadosAnteriores = bruto.length;
         }
         
         if (sucesso) {
-            const agora = new Date();
+            // Interface Final Profissional
             timeLabel.innerText = "✅ VISUALIZANDO: " + dataFormatada;
-            horaLabel.innerText = "🕐 Sincronizado às " + agora.toLocaleTimeString('pt-BR');
-            btn.innerHTML = '✅ SINCRONIZADO';
+            btn.innerHTML = '✅ SUCESSO';
             btn.style.background = '#27ae60';
         } else {
-            timeLabel.innerText = "⚠️ Dados não atualizaram. Clique novamente.";
-            horaLabel.innerText = "🕐 Timeout - tente recarregar";
-            btn.innerHTML = '⚠️ TENTAR NOVAMENTE';
+            timeLabel.innerText = "⚠️ Dados não sincronizados. Tente novamente.";
+            btn.innerHTML = '🔄 REENTRAR';
             btn.style.background = '#e67e22';
         }
         
-        btn.classList.remove('btn-carregando');
-        
-        setTimeout(() => {
-            btn.innerHTML = '🔄 SINCRONIZAR';
-            btn.style.background = 'var(--info)';
-        }, 3000);
-        
     } catch(err) {
-        console.error("Erro:", err);
-        timeLabel.innerText = "❌ Erro ao contactar a API.";
+        timeLabel.innerText = "❌ Erro na conexão.";
         btn.innerHTML = '❌ ERRO';
         btn.style.background = '#e74c3c';
+    } finally {
         btn.classList.remove('btn-carregando');
         
+        // Volta o botão ao estado original após 3 segundos, mas mantém o "VISUALIZANDO"
         setTimeout(() => {
             btn.innerHTML = '🔄 SINCRONIZAR';
             btn.style.background = 'var(--info)';
