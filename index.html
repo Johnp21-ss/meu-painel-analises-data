@@ -658,7 +658,7 @@
         opacity: .7;
         pointer-events: none;
     }
-        #user-display {
+#user-display {
     position: fixed;
     top: 12px;
     right: 20px;
@@ -669,6 +669,7 @@
     font-size: 11px;
     backdrop-filter: blur(5px);
     border: 1px solid rgba(255,255,255,0.1);
+    display: none;
 }
 #user-display a:hover {
     color: #ff6b6b !important;
@@ -685,11 +686,7 @@
             <p id="login-erro" style="color: #e74c3c; font-size: 12px; margin-top: 10px; display: none;">Usuário ou senha incorretos!</p>
         </div>
     </div>
-
-    <div id="user-display" style="position: absolute; top: 15px; right: 20px; color: #ecf0f1; z-index: 10;">
-    Olá, <span id="nome-logado" style="color: #27ae60; font-weight: bold;">Visitante</span> | 
-    <a href="#" onclick="sessionStorage.clear(); location.reload();" style="color: #e74c3c; text-decoration: none;">[ Sair ]</a>
-</div>
+    
     <!-- ── Display do Usuário Logado ── -->
 <div id="user-display" style="position: fixed; top: 12px; right: 20px; z-index: 10000; background: rgba(0,0,0,0.6); padding: 6px 14px; border-radius: 20px; font-size: 11px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); display: none;">
     👤 Olá, <span id="nome-logado" style="color: #27ae60; font-weight: bold;">Visitante</span> 
@@ -697,7 +694,7 @@
     <a href="#" onclick="sessionStorage.clear(); location.reload();" style="color: #e74c3c; text-decoration: none; font-weight: bold;">🚪 Sair</a>
 </div>
 
-<div class="wrapper"> 
+<div class="wrapper">
 
     <!-- ══════════════════════════════════════
          MODAL: CONFIRMAÇÃO DE REGISTRO
