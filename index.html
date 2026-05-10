@@ -1368,33 +1368,50 @@
         </div>
     </section>
 
-    <script>
-const LOGIN_DATA = { "john_petter": "admin123", "diretoria": "admin123" };
+   <script>
+    // 1. DADOS DE ACESSO
+    const LOGIN_DATA = {
+        "john_petter": "admin123",
+        "diretoria": "admin123"
+    };
 
-function entrarSistema() {
-    const u = document.getElementById("user-name").value;
-    const p = document.getElementById("user-pass").value;
-    if (LOGIN_DATA[u] && LOGIN_DATA[u] === p) {
-        sessionStorage.setItem("logado", "true");
-        sessionStorage.setItem("usuario", u);
-        document.getElementById("login-overlay").style.display = "none";
-        document.getElementById("nome-logado").innerText = u.toUpperCase();
-    } else {
-        document.getElementById("login-erro").style.display = "block";
-    }
-}
+    // 2. FUNÇÃO DE LOGIN
+    function entrarSistema() {
+        console.log("Tentativa de login iniciada...");
+        const u = document.getElementById("user-name").value;
+        const p = document.getElementById("user-pass").value;
+        const erro = document.getElementById("login-erro");
 
-// Verifica se já está logado ao abrir a página
-window.addEventListener('load', function() {
-    if (sessionStorage.getItem("logado") === "true") {
-        document.getElementById("login-overlay").style.display = "none";
-        document.getElementById("nome-logado").innerText = sessionStorage.getItem("usuario").toUpperCase();
+        if (LOGIN_DATA[u] && LOGIN_DATA[u] === p) {
+            sessionStorage.setItem("logado", "true");
+            sessionStorage.setItem("usuario", u);
+            document.getElementById("login-overlay").style.display = "none";
+            document.getElementById("nome-logado").innerText = u.toUpperCase();
+            console.log("Login realizado com sucesso!");
+        } else {
+            erro.style.display = "block";
+            document.getElementById("user-pass").value = "";
+            console.warn("Usuário ou senha incorretos.");
+        }
     }
-});
-</script>
+
+    // 3. VERIFICAÇÃO AO CARREGAR A PÁGINA
+    window.addEventListener('load', function() {
+        console.log("Monitoramento de Login: Ativo");
+        const status = sessionStorage.getItem("logado");
+        const usuarioSalvo = sessionStorage.getItem("usuario");
         
-    // --- CONTINUE O SEU CÓDIGO ORIGINAL ABAIXO (Chart.defaults...) ---
-    Chart.defaults.color = '#a4b0be';
+        if (status === "true") {
+            const overlay = document.getElementById("login-overlay");
+            if (overlay) overlay.style.display = "none";
+            const txt = document.getElementById("nome-logado");
+            if (txt) txt.innerText = usuarioSalvo.toUpperCase();
+        }
+    });
+
+    // --- DAQUI PARA BAIXO SEGUE O RESTANTE DO SEU CÓDIGO (Chart.defaults, etc) ---
+    // IMPORTANTE: NÃO COLOQUE MAIS TAGS <script> OU  </script> AQUI!
+     Chart.defaults.color = '#a4b0be';
     // ... restante do seu código PapaParse e tabelas
 
     const URL_PLANILHA = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-PWDRlSYT4cY9rOK7Dz1R2Fe0HzoXFbu4icqnPk5M6eGOBUngZFwkhI-9TXPpT9d-wvWCzXNVxteq/pub?gid=498256387&single=true&output=csv';
