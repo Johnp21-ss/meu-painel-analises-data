@@ -1373,65 +1373,60 @@
     </section>
 
     <script>
-// ==========================================
-// SISTEMA DE ACESSO - LOGÍSTICA
-// ==========================================
-    const CREDENCIAIS = {
+// 1. DADOS DE ACESSO
+const CREDENCIAIS = {
     "john_petter": "admin123",
     "diretoria": "admin123"
 };
 
-    function efetuarLogin() {
-    console.log("Botão clicado! Iniciando verificação...");
+// 2. FUNÇÃO DE LOGIN
+function efetuarLogin() {
+    console.log("-> Botão de login acionado");
     
-    const userField = document.getElementById("user-name");
-    const passField = document.getElementById("user-pass");
-    const erroMsg = document.getElementById("login-erro");
-    
-    if (!userField || !passField) {
-        console.error("Erro: Campos de login não encontrados no HTML!");
+    const u = document.getElementById("user-name");
+    const p = document.getElementById("user-pass");
+    const e = document.getElementById("login-erro");
+
+    if (!u || !p) {
+        alert("Erro técnico: Campos de login não encontrados no HTML.");
         return;
     }
 
-    const user = userField.value;
-    const pass = passField.value;
-
-    if (CREDENCIAIS[user] && CREDENCIAIS[user] === pass) {
-        console.log("Login bem-sucedido para:", user);
+    if (CREDENCIAIS[u.value] && CREDENCIAIS[u.value] === p.value) {
+        console.log("-> Sucesso! Logado como:", u.value);
         sessionStorage.setItem("logado", "true");
-        sessionStorage.setItem("usuario", user);
+        sessionStorage.setItem("usuario", u.value);
         document.getElementById("login-overlay").style.display = "none";
-        document.getElementById("nome-logado").innerText = user.toUpperCase();
+        document.getElementById("nome-logado").innerText = u.value.toUpperCase();
     } else {
-        console.warn("Falha no login: Usuário ou senha incorretos.");
-        erroMsg.style.display = "block";
-        passField.value = "";
+        console.warn("-> Falha: Usuário ou senha incorretos.");
+        e.style.display = "block";
+        p.value = "";
     }
 }
 
-    function deslogar() {
-    if (confirm("Deseja realmente sair do sistema?")) {
+// 3. FUNÇÃO DE SAIR
+function deslogar() {
+    if (confirm("Deseja sair do sistema?")) {
         sessionStorage.clear();
         window.location.reload();
     }
 }
 
-// Verifica se já estava logado ao abrir a página
-    window.onload = function() {
-    console.log("Página carregada. Verificando sessão...");
-    const status = sessionStorage.getItem("logado");
-    const usuarioSalvo = sessionStorage.getItem("usuario");
-    
-    if (status === "true") {
+// 4. INICIALIZAÇÃO (Ao carregar a página)
+window.onload = function() {
+    console.log("-> Sistema de Monitoramento Iniciado");
+    const logado = sessionStorage.getItem("logado");
+    const user = sessionStorage.getItem("usuario");
+
+    if (logado === "true") {
         document.getElementById("login-overlay").style.display = "none";
-        document.getElementById("nome-logado").innerText = usuarioSalvo.toUpperCase();
+        document.getElementById("nome-logado").innerText = user.toUpperCase();
     }
 };
 
-    // ==========================================
-    // CONFIGURAÇÕES DO BI (CÓDIGO ORIGINAL)
-    // ==========================================
-    Chart.defaults.color = '#a4b0be';
+// --- DAQUI PARA BAIXO SEGUE SEU CÓDIGO ORIGINAL ---
+Chart.defaults.color = '#a4b0be';
 
     const URL_PLANILHA = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-PWDRlSYT4cY9rOK7Dz1R2Fe0HzoXFbu4icqnPk5M6eGOBUngZFwkhI-9TXPpT9d-wvWCzXNVxteq/pub?gid=498256387&single=true&output=csv';
     const URL_API_SCRIPT = 'https://script.google.com/macros/s/AKfycbyLis6Vs8Z3oqlt2BXkBpSqcSAdw1orEJvk2VotHJ_WuZRXQ5Qe8UnIKgKySCjKVz26/exec';
