@@ -720,7 +720,6 @@
                 <span id="update-time" style="color:var(--success); font-size:9px; font-weight:bold;">Carregando dados...</span>
                 <div style="display:flex; gap: 5px; margin-top: 5px; flex-wrap: wrap;">
                     <button class="btn-action btn-pdf" onclick="exportarPDF()">📄 PDF</button>
-                    <button class="btn-action btn-audio" onclick="lerPagina()">🔊 LER</button>
                     <div class="sync-box">
                         <input type="date" id="dataSync" class="input-date">
                         <button id="btnSyncUnificado" class="btn-action" onclick="sincronizarEAtualizar()" style="background:var(--info);">🔄 SINCRONIZAR</button>
@@ -1455,15 +1454,15 @@
     
     // Se não tem data, apenas recarrega
     if (!campoData.value) {
-        btn.innerHTML = '<span class="spinner"></span> ATUALIZANDO...';
+        btn.innerHTML = '<span class="spinner"></span> Atualizando...';
         btn.classList.add('btn-carregando');
         
         await carregarDadosAsync();
         
         const agora = new Date();
-        timeLabel.innerText = "✅ DADOS ATUALIZADOS";
-        horaLabel.innerText = "🕐 " + agora.toLocaleTimeString('pt-BR');
-        btn.innerHTML = '✅ ATUALIZADO';
+        timeLabel.innerText = "✅ Dados atualizados";
+        horaLabel.innerText = agora.toLocaleTimeString('pt-BR');
+        btn.innerHTML = '✅ Atualizado';
         btn.style.background = '#27ae60';
         
         setTimeout(() => {
@@ -1475,23 +1474,24 @@
     }
     
     // Tem data - sincroniza silenciosamente
-    btn.innerHTML = '<span class="spinner"></span> SINCRONIZANDO...';
+    btn.innerHTML = '<span class="spinner"></span> Sincronizando...';
     btn.classList.add('btn-carregando');
     btn.style.background = '#8e44ad';
     
     const dataFormatada = campoData.value.split("-").reverse().join("/");
     timeLabel.innerText = "⏳ Sincronizando " + dataFormatada + "...";
+    horaLabel.innerText = "";
     
     const urlFinal = URL_API_SCRIPT + "?data=" + campoData.value;
     
     try {
-        // Envia para a API
+        // Envia para API
         await fetch(urlFinal, { mode: 'no-cors', method: 'GET' });
         
-        // Tenta carregar 3 vezes com intervalo
+        // Tenta carregar os dados (3 tentativas)
         let sucesso = false;
         
-        for (let tentativa = 0; tentativa < 3; tentativa++) {
+        for (let i = 0; i < 3; i++) {
             await new Promise(resolve => setTimeout(resolve, 10000));
             await carregarDadosAsync();
             
@@ -1501,15 +1501,17 @@
             }
         }
         
+        const agora = new Date();
+        
         if (sucesso) {
-            const agora = new Date();
-            timeLabel.innerText = "✅ VISUALIZANDO: " + dataFormatada;
-            horaLabel.innerText = "🕐 Sincronizado às " + agora.toLocaleTimeString('pt-BR');
-            btn.innerHTML = '✅ CONCLUÍDO';
+            timeLabel.innerText = "✅ " + bruto.length + " registros - " + dataFormatada;
+            horaLabel.innerText = agora.toLocaleTimeString('pt-BR');
+            btn.innerHTML = '✅ Concluído';
             btn.style.background = '#27ae60';
         } else {
-            timeLabel.innerText = "⚠️ Nenhum dado encontrado";
-            btn.innerHTML = '⚠️ SEM DADOS';
+            timeLabel.innerText = "⚠️ Nenhum dado encontrado para " + dataFormatada;
+            horaLabel.innerText = agora.toLocaleTimeString('pt-BR');
+            btn.innerHTML = '⚠️ Vazio';
             btn.style.background = '#e67e22';
         }
         
@@ -1522,7 +1524,7 @@
         
     } catch(err) {
         timeLabel.innerText = "❌ Erro na sincronização";
-        btn.innerHTML = '❌ ERRO';
+        btn.innerHTML = '❌ Erro';
         btn.style.background = '#e74c3c';
         btn.classList.remove('btn-carregando');
         
@@ -1533,6 +1535,7 @@
     }
 }
 
+// Função assíncrona para carregar dados via PapaParse
 function carregarDadosAsync() {
     return new Promise((resolve) => {
         Papa.parse(URL_PLANILHA + '&t=' + Date.now(), {
@@ -1576,10 +1579,6 @@ function carregarDadosAsync() {
             error: () => resolve()
         });
     });
-}
-
-function carregar() {
-    carregarDadosAsync();
 }
 
 // Simplifica a função carregar() para usar a versão assíncrona
