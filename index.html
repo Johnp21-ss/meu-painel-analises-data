@@ -1473,65 +1473,53 @@
         return;
     }
     
-    // Tem data - sincroniza silenciosamente
+    // Tem data - sincroniza
     btn.innerHTML = '<span class="spinner"></span> Sincronizando...';
     btn.classList.add('btn-carregando');
     btn.style.background = '#8e44ad';
     
     const dataFormatada = campoData.value.split("-").reverse().join("/");
     timeLabel.innerText = "⏳ Sincronizando " + dataFormatada + "...";
+    horaLabel.innerText = "";
     
     const urlFinal = URL_API_SCRIPT + "?data=" + campoData.value;
     
-    try {
-        // Envia para API
-        await fetch(urlFinal, { mode: 'no-cors', method: 'GET' });
+    // Envia para API (não espera resposta)
+    fetch(urlFinal, { mode: 'no-cors', method: 'GET' });
+    
+    // Aguarda e tenta carregar várias vezes
+    let sucesso = false;
+    
+    for (let i = 0; i < 10; i++) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        await carregarDadosAsync();
         
-        // Aguarda e tenta carregar (máximo 35 segundos)
-        let sucesso = false;
-        
-        for (let i = 0; i < 5; i++) {
-            await new Promise(resolve => setTimeout(resolve, 7000));
-            await carregarDadosAsync();
-            
-            if (bruto.length > 0) {
-                sucesso = true;
-                break;
-            }
+        if (bruto.length > 0) {
+            sucesso = true;
+            break;
         }
-        
-        const agora = new Date();
-        
-        if (sucesso) {
-            timeLabel.innerText = "✅ VISUALIZANDO: " + dataFormatada;
-            horaLabel.innerText = agora.toLocaleTimeString('pt-BR');
-            btn.innerHTML = '✅ Concluído';
-            btn.style.background = '#27ae60';
-        } else {
-            timeLabel.innerText = "⚠️ Nenhum dado para " + dataFormatada;
-            horaLabel.innerText = agora.toLocaleTimeString('pt-BR');
-            btn.innerHTML = '⚠️ Vazio';
-            btn.style.background = '#e67e22';
-        }
-        
-        btn.classList.remove('btn-carregando');
-        
-        setTimeout(() => {
-            btn.innerHTML = '🔄 SINCRONIZAR';
-            btn.style.background = 'var(--info)';
-        }, 3000);
-        
-    } catch(err) {
-        timeLabel.innerText = "❌ Erro na sincronização";
-        btn.innerHTML = '❌ Erro';
-        btn.style.background = '#e74c3c';
-        btn.classList.remove('btn-carregando');
-        
-        setTimeout(() => {
-            btn.innerHTML = '🔄 SINCRONIZAR';
-            btn.style.background = 'var(--info)';
-        }, 3000);
     }
+    
+    const agora = new Date();
+    
+    if (sucesso) {
+        timeLabel.innerText = "✅ VISUALIZANDO: " + dataFormatada;
+        horaLabel.innerText = agora.toLocaleTimeString('pt-BR');
+        btn.innerHTML = '✅ Concluído';
+        btn.style.background = '#27ae60';
+    } else {
+        timeLabel.innerText = "⚠️ Nenhum dado para " + dataFormatada;
+        horaLabel.innerText = agora.toLocaleTimeString('pt-BR');
+        btn.innerHTML = '⚠️ Vazio';
+        btn.style.background = '#e67e22';
+    }
+    
+    btn.classList.remove('btn-carregando');
+    
+    setTimeout(() => {
+        btn.innerHTML = '🔄 SINCRONIZAR';
+        btn.style.background = 'var(--info)';
+    }, 3000);
 }
 
 // Simplifica a função carregar() para usar a versão assíncrona
