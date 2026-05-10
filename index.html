@@ -662,21 +662,18 @@
 </head>
 <body>
     <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1a1a1a; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-    <div style="background: #2c3e50; padding: 30px; border-radius: 12px; text-align: center; width: 320px;">
-        <h2 style="color: white; margin-bottom: 20px;">Portal Logística</h2>
-        <input type="text" id="user-name" placeholder="Usuário" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 6px; border: none;">
-        <input type="password" id="user-pass" placeholder="Senha" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 6px; border: none;" onkeypress="if(event.key === 'Enter') entrar()">
-        <button onclick="entrar()" style="width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">ENTRAR</button>
-        <p id="login-erro" style="color: #e74c3c; font-size: 12px; margin-top: 10px; display: none;">Dados incorretos!</p>
-    </div>
-</div>
-
-    <div id="user-display" style="position: absolute; top: 15px; right: 20px; color: #ecf0f1; font-size: 13px; font-weight: 500; z-index: 10; text-align: right;">
-        <div>
-            <span style="opacity: 0.7;">Olá,</span> 
-            <span id="nome-logado" style="color: #27ae60; font-weight: bold;">Visitante</span>
+        <div style="background: #2c3e50; padding: 30px; border-radius: 12px; text-align: center; width: 320px;">
+            <h2 style="color: white; margin-bottom: 20px;">Portal Logística</h2>
+            <input type="text" id="user-name" placeholder="Usuário" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 6px; border: none;">
+            <input type="password" id="user-pass" placeholder="Senha" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 6px; border: none;" onkeypress="if(event.key === 'Enter') efetuarLogin()">
+            <button onclick="efetuarLogin()" style="width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">ENTRAR</button>
+            <p id="login-erro" style="color: #e74c3c; font-size: 12px; margin-top: 10px; display: none;">Dados incorretos!</p>
         </div>
-        <a href="#" onclick="deslogar()" style="color: #e74c3c; text-decoration: none; font-size: 11px; font-weight: bold; cursor: pointer;">[ SAIR ]</a>
+    </div>
+
+    <div id="user-display" style="position: absolute; top: 15px; right: 20px; color: #ecf0f1; font-size: 13px; z-index: 10;">
+        Olá, <span id="nome-logado" style="color: #27ae60; font-weight: bold;">Visitante</span> | 
+        <a href="#" onclick="sessionStorage.clear(); location.reload();" style="color: #e74c3c; text-decoration: none;">[ Sair ]</a>
     </div>
 
     <div class="wrapper">
@@ -1372,37 +1369,39 @@
         </div>
     </section>
 
-    <script>
-    // ESTE BLOCO ESTÁ ISOLADO PARA NÃO TRAVAR
-    const ACESSO = {
+    </script> <script>
+    // BLOCO DE LOGIN INDEPENDENTE
+    const CREDENCIAIS = {
         "john_petter": "admin123",
         "diretoria": "admin123"
     };
 
-    function entrar() {
+    function efetuarLogin() {
         const u = document.getElementById("user-name").value;
         const p = document.getElementById("user-pass").value;
         
-        if (ACESSO[u] && ACESSO[u] === p) {
-            sessionStorage.setItem("logado", "sim");
+        if (CREDENCIAIS[u] && CREDENCIAIS[u] === p) {
+            sessionStorage.setItem("logado", "true");
             sessionStorage.setItem("usuario", u);
-            location.reload(); // Recarrega para aplicar o acesso
+            // Esconde o login e mostra o nome sem precisar dar F5
+            document.getElementById("login-overlay").style.display = "none";
+            document.getElementById("nome-logado").innerText = u.toUpperCase();
         } else {
             document.getElementById("login-erro").style.display = "block";
         }
     }
 
-    // Verifica assim que o navegador ler este script
-    (function() {
-        if (sessionStorage.getItem("logado") === "sim") {
-            // Se já logou, remove a tela antes mesmo do resto do site carregar
-            document.write('<style>#login-overlay { display: none !important; }</style>');
+    // Verifica se já está logado ao carregar
+    window.addEventListener('load', function() {
+        if (sessionStorage.getItem("logado") === "true") {
+            document.getElementById("login-overlay").style.display = "none";
+            document.getElementById("nome-logado").innerText = sessionStorage.getItem("usuario").toUpperCase();
         }
-    })();
+    });
 </script>
 
 <script>
-    // AQUI EMBAIXO VOCÊ CONTINUA O SEU CÓDIGO ORIGINAL
+    // AQUI RECOMEÇA O SEU BI ORIGINAL
     Chart.defaults.color = '#a4b0be';
     // ... restante do seu código PapaParse e tabelas
 
