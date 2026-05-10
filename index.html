@@ -662,6 +662,18 @@
 </head>
 <body>
 
+    <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1a1a1a; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <div style="background: #2c3e50; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; width: 320px;">
+            <h2 style="color: white; margin-bottom: 20px; font-family: sans-serif;">Portal Logística</h2>
+            <input type="text" id="user-name" placeholder="Usuário" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 6px; border: none; outline: none;">
+            <input type="password" id="user-pass" placeholder="Senha" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 6px; border: none; outline: none;">
+            <button onclick="efetuarLogin()" style="width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">ENTRAR</button>
+            <p id="login-erro" style="color: #e74c3c; font-size: 12px; margin-top: 10px; display: none;">Usuário ou senha incorretos!</p>
+        </div>
+    </div>
+    <div class="wrapper"> 
+    ...
+
     <!-- ══════════════════════════════════════
          MODAL: CONFIRMAÇÃO DE REGISTRO
     ══════════════════════════════════════ -->
@@ -1342,6 +1354,36 @@
     </section>
 
     <script>
+        // COLE ESTA PARTE NO INÍCIO DO SEU SCRIPT ATUAL
+    const CREDENCIAIS = {
+        "john_petter": "admin123", 
+        "diretoria": "admin123"
+    };
+
+    function efetuarLogin() {
+        const user = document.getElementById("user-name").value;
+        const pass = document.getElementById("user-pass").value;
+        const erro = document.getElementById("login-erro");
+
+        if (CREDENCIAIS[user] && CREDENCIAIS[user] === pass) {
+            sessionStorage.setItem("logado", "true");
+            sessionStorage.setItem("usuario", user);
+            document.getElementById("login-overlay").style.display = "none";
+            document.getElementById("nome-logado").innerText = user.toUpperCase();
+        } else {
+            erro.style.display = "block";
+            document.getElementById("user-pass").value = "";
+        }
+    }
+
+    window.addEventListener('load', function() {
+        const status = sessionStorage.getItem("logado");
+        const usuarioSalvo = sessionStorage.getItem("usuario");
+        if (status === "true") {
+            document.getElementById("login-overlay").style.display = "none";
+            document.getElementById("nome-logado").innerText = usuarioSalvo.toUpperCase();
+        }
+    });
     Chart.defaults.color = '#a4b0be';
 
     const URL_PLANILHA = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-PWDRlSYT4cY9rOK7Dz1R2Fe0HzoXFbu4icqnPk5M6eGOBUngZFwkhI-9TXPpT9d-wvWCzXNVxteq/pub?gid=498256387&single=true&output=csv';
