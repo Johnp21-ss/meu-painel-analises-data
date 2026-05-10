@@ -1484,46 +1484,47 @@
     
     const urlFinal = URL_API_SCRIPT + "?data=" + campoData.value;
     
-    fetch(urlFinal, { mode: 'no-cors', method: 'GET' })
-        .then(() => {
-            btn.innerHTML = '<span class="spinner"></span> ATUALIZANDO...';
-            timeLabel.innerText = "✅ Dados recebidos! Atualizando visualização...";
+    try {
+        await fetch(urlFinal, { mode: 'no-cors', method: 'GET' });
+        
+        btn.innerHTML = '<span class="spinner"></span> ATUALIZANDO...';
+        timeLabel.innerText = "✅ Dados recebidos! Atualizando visualização...";
+        
+        // Aguarda 8 segundos para o Google Sheets processar
+        setTimeout(() => {
+            btn.innerHTML = '<span class="spinner"></span> AGUARDANDO...';
+            timeLabel.innerText = "⏳ Aguardando processamento...";
             
-            // Aguarda um pouco e recarrega os dados
-                        // Aguarda 8 segundos para o Google Sheets processar
+            carregar(); // Recarrega a planilha atualizada
+            
+            // Feedback visual quando os dados carregarem
             setTimeout(() => {
-                btn.innerHTML = '<span class="spinner"></span> AGUARDANDO...';
-                timeLabel.innerText = "⏳ Aguardando processamento...";
+                const agora = new Date();
+                timeLabel.innerText = "✅ VISUALIZANDO: " + campoData.value.split("-").reverse().join("/");
+                horaLabel.innerText = "🕐 Sincronizado às " + agora.toLocaleTimeString('pt-BR');
+                btn.innerHTML = '✅ SINCRONIZADO';
+                btn.style.background = '#27ae60';
+                btn.classList.remove('btn-carregando');
                 
-                carregar(); // Recarrega a planilha atualizada
-                
-                // Feedback visual quando os dados carregarem
                 setTimeout(() => {
-                    const agora = new Date();
-                    timeLabel.innerText = "✅ VISUALIZANDO: " + campoData.value.split("-").reverse().join("/");
-                    horaLabel.innerText = "🕐 Sincronizado às " + agora.toLocaleTimeString('pt-BR');
-                    btn.innerHTML = '✅ SINCRONIZADO';
-                    btn.style.background = '#27ae60';
-                    btn.classList.remove('btn-carregando');
-                    
-                    setTimeout(() => {
-                        btn.innerHTML = '🔄 SINCRONIZAR';
-                        btn.style.background = 'var(--info)';
-                    }, 2000);
-                }, 500);
-            }, 8000);
-        .catch(err => {
-            console.error(err);
-            timeLabel.innerText = "❌ Erro ao contactar a API.";
-            btn.innerHTML = '❌ ERRO';
-            btn.style.background = '#e74c3c';
-            btn.classList.remove('btn-carregando');
-            
-            setTimeout(() => {
-                btn.innerHTML = '🔄 SINCRONIZAR';
-                btn.style.background = 'var(--info)';
-            }, 2000);
-        });
+                    btn.innerHTML = '🔄 SINCRONIZAR';
+                    btn.style.background = 'var(--info)';
+                }, 2000);
+            }, 500);
+        }, 8000);
+        
+    } catch(err) {
+        console.error(err);
+        timeLabel.innerText = "❌ Erro ao contactar a API.";
+        btn.innerHTML = '❌ ERRO';
+        btn.style.background = '#e74c3c';
+        btn.classList.remove('btn-carregando');
+        
+        setTimeout(() => {
+            btn.innerHTML = '🔄 SINCRONIZAR';
+            btn.style.background = 'var(--info)';
+        }, 2000);
+    }
 }
     async function carregar() {
         const timeLabel = document.getElementById('update-time');
