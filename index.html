@@ -1473,105 +1473,45 @@
         return;
     }
     
-    // Tem data - sincroniza
+    // Tem data - sincroniza silenciosamente
     btn.innerHTML = '<span class="spinner"></span> Sincronizando...';
     btn.classList.add('btn-carregando');
     btn.style.background = '#8e44ad';
     
     const dataFormatada = campoData.value.split("-").reverse().join("/");
     timeLabel.innerText = "⏳ Sincronizando " + dataFormatada + "...";
-    horaLabel.innerText = "";
     
     const urlFinal = URL_API_SCRIPT + "?data=" + campoData.value;
     
     try {
-        // Passo 1: Enviar para API
+        // Envia para API
         await fetch(urlFinal, { mode: 'no-cors', method: 'GET' });
         
-        // Passo 2: Aguardar processamento
-        await new Promise(resolve => setTimeout(resolve, 15000));
+        // Aguarda e tenta carregar (máximo 35 segundos)
+        let sucesso = false;
         
-        // Passo 3: Forçar recarregamento limpando cache
-        await carregarDadosAsync();
-        
-        // Se ainda estiver vazio, tenta mais 2 vezes
-        if (bruto.length === 0) {
-            await new Promise(resolve => setTimeout(resolve, 10000));
+        for (let i = 0; i < 5; i++) {
+            await new Promise(resolve => setTimeout(resolve, 7000));
             await carregarDadosAsync();
-        }
-        
-        if (bruto.length === 0) {
-            await new Promise(resolve => setTimeout(resolve, 10000));
-            await carregarDadosAsync();
+            
+            if (bruto.length > 0) {
+                sucesso = true;
+                break;
+            }
         }
         
         const agora = new Date();
         
-        if (bruto.length > 0) {
+        if (sucesso) {
             timeLabel.innerText = "✅ VISUALIZANDO: " + dataFormatada;
             horaLabel.innerText = agora.toLocaleTimeString('pt-BR');
             btn.innerHTML = '✅ Concluído';
             btn.style.background = '#27ae60';
         } else {
-            // Última tentativa: recarregar com URL direta
-            timeLabel.innerText = "🔄 Tentando URL direta...";
-            
-            // Tenta carregar diretamente sem PapaParse
-            try {
-                const response = await fetch(URL_PLANILHA + '&t=' + Date.now());
-                const csvText = await response.text();
-                
-                Papa.parse(csvText, {
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: (r) => {
-                        bruto = r.data.filter(d => (d.rota || d.ROTA || "").trim() !== "").map(d => {
-                            d.rota = (d.rota || d.ROTA || "").trim();
-                            d.data = (d.data || d.DATA || "").trim();
-                            d.cidade = d.cidade || d.CIDADE || "";
-                            d.gre = d.gre || d.GRE || "";
-                            d.status = d.status || d.STATUS || "";
-                            d.veiculo = d.veiculo || d.VEICULO || d.PLACA || "";
-                            d.motorista = d.motorista || d.MOTORISTA || "S/ NOME";
-                            d.fiscal_responsavel = d.fiscal_responsavel || d.FISCAL || "NÃO IDENTIFICADO";
-                            d.observacao = d.observacao || d.OBS || "";
-                            d.turno = d.turno || d.TURNO || "";
-                            d.direcao = d.direcao || d.DIRECAO || "";
-                            d.tipo_fornecedor = d.tipo_fornecedor || d.TIPO_FORNECEDOR || "";
-                            d.fornecedor_motorista = d.fornecedor_motorista || d.FORNECEDOR || "";
-                            d.origem = d.origem || d.ORIGEM || "OUTROS";
-                            d.km_planejado = d.km_planejado || d.KM_PLANEJADO || "0";
-                            d.coordenadas_inicio = d.coordenadas_inicio || d.COORDENADAS_INICIO || "---";
-                            d.coordenadas_fim = d.coordenadas_fim || d.COORDENADAS_FIM || "---";
-                            d.inicio_execucao = d.inicio_execucao || d.INICIO_EXECUCAO || "--:--";
-                            d.fim_execucao = d.fim_execucao || d.FIM_EXECUCAO || "--:--";
-                            d.percentual_conclusao = d.percentual_conclusao || d.PERCENTUAL_CONCLUSAO || "0%";
-                            d.horario = d.horario || d.HORARIO || "";
-                            d.isExtra = norm(d.rota).includes("EXTRA");
-                            return d;
-                        });
-                        
-                        popularFiltros();
-                        popularFiltrosFraude();
-                        popularFiltrosExtras();
-                        processarDados();
-                    }
-                });
-            } catch(e) {
-                console.error("Erro ao carregar URL direta:", e);
-            }
-            
-            if (bruto.length > 0) {
-                timeLabel.innerText = "✅ VISUALIZANDO: " + dataFormatada;
-                horaLabel.innerText = agora.toLocaleTimeString('pt-BR');
-                btn.innerHTML = '✅ Concluído';
-                btn.style.background = '#27ae60';
-            } else {
-                timeLabel.innerText = "⚠️ Planilha vazia para " + dataFormatada;
-                horaLabel.innerText = agora.toLocaleTimeString('pt-BR');
-                btn.innerHTML = '⚠️ Sem dados';
-                btn.style.background = '#e67e22';
-            }
+            timeLabel.innerText = "⚠️ Nenhum dado para " + dataFormatada;
+            horaLabel.innerText = agora.toLocaleTimeString('pt-BR');
+            btn.innerHTML = '⚠️ Vazio';
+            btn.style.background = '#e67e22';
         }
         
         btn.classList.remove('btn-carregando');
@@ -1582,7 +1522,6 @@
         }, 3000);
         
     } catch(err) {
-        console.error("❌ Erro:", err);
         timeLabel.innerText = "❌ Erro na sincronização";
         btn.innerHTML = '❌ Erro';
         btn.style.background = '#e74c3c';
