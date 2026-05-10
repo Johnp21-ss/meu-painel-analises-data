@@ -1373,23 +1373,15 @@
     </section>
 
     <script>
-        function deslogar() {
-    if (confirm("Deseja realmente sair do sistema?")) {
-        // 1. Limpa os dados da sessão
-        sessionStorage.removeItem("logado");
-        sessionStorage.removeItem("usuario");
-
-        // 2. Recarrega a página para o bloqueio de login voltar a aparecer
-        window.location.reload();
-    }
-}
-        // COLE ESTA PARTE NO INÍCIO DO SEU SCRIPT ATUAL
+    // 1. AS CREDENCIAIS (Sempre no topo)
     const CREDENCIAIS = {
         "john_petter": "admin123", 
         "diretoria": "admin123"
     };
 
+    // 2. FUNÇÃO DE LOGIN (Movi para fora para o HTML encontrar)
     function efetuarLogin() {
+        console.log("Tentando login..."); // Isso ajuda a testar
         const user = document.getElementById("user-name").value;
         const pass = document.getElementById("user-pass").value;
         const erro = document.getElementById("login-erro");
@@ -1399,12 +1391,22 @@
             sessionStorage.setItem("usuario", user);
             document.getElementById("login-overlay").style.display = "none";
             document.getElementById("nome-logado").innerText = user.toUpperCase();
+            alert("Acesso concedido! Bem-vindo.");
         } else {
             erro.style.display = "block";
             document.getElementById("user-pass").value = "";
         }
     }
 
+    // 3. FUNÇÃO DE LOGOUT
+    function deslogar() {
+        if (confirm("Deseja realmente sair?")) {
+            sessionStorage.clear();
+            window.location.reload();
+        }
+    }
+
+    // 4. VERIFICAÇÃO AO CARREGAR A PÁGINA
     window.addEventListener('load', function() {
         const status = sessionStorage.getItem("logado");
         const usuarioSalvo = sessionStorage.getItem("usuario");
@@ -1413,15 +1415,9 @@
             document.getElementById("login-overlay").style.display = "none";
             document.getElementById("nome-logado").innerText = usuarioSalvo.toUpperCase();
         }
-
-        // === ADICIONE ESTA PARTE ABAIXO PARA O ENTER FUNCIONAR ===
-        document.getElementById("user-pass").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                efetuarLogin();
-            }
-        });
-        // ========================================================
     });
+
+    // --- ABAIXO DAQUI CONTINUA O SEU CÓDIGO ORIGINAL (Chart.js, etc) ---
     Chart.defaults.color = '#a4b0be';
 
     const URL_PLANILHA = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-PWDRlSYT4cY9rOK7Dz1R2Fe0HzoXFbu4icqnPk5M6eGOBUngZFwkhI-9TXPpT9d-wvWCzXNVxteq/pub?gid=498256387&single=true&output=csv';
