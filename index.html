@@ -1373,55 +1373,64 @@
     </section>
 
     <script>
-    // 1. CONFIGURAÇÃO DE ACESSO
-    const CREDENCIAIS = {
-        "john_petter": "admin123", 
+// ==========================================
+// SISTEMA DE ACESSO - LOGÍSTICA
+// ==========================================
+        const CREDENCIAIS = {
+        "john_petter": "admin123",
         "diretoria": "admin123"
-    };
+};
 
-    // 2. FUNÇÃO DE LOGIN (FORA DE QUALQUER OUTRA FUNÇÃO)
-    function efetuarLogin() {
-        const user = document.getElementById("user-name").value;
-        const pass = document.getElementById("user-pass").value;
-        const erro = document.getElementById("login-erro");
-
-        console.log("Tentativa de login com:", user); // Para você ver no F12 se está funcionando
-
-        if (CREDENCIAIS[user] && CREDENCIAIS[user] === pass) {
-            sessionStorage.setItem("logado", "true");
-            sessionStorage.setItem("usuario", user);
-            document.getElementById("login-overlay").style.display = "none";
-            document.getElementById("nome-logado").innerText = user.toUpperCase();
-        } else {
-            erro.style.display = "block";
-            document.getElementById("user-pass").value = "";
-        }
+     function efetuarLogin() {
+    console.log("Botão clicado! Iniciando verificação...");
+    
+    const userField = document.getElementById("user-name");
+    const passField = document.getElementById("user-pass");
+    const erroMsg = document.getElementById("login-erro");
+    
+    if (!userField || !passField) {
+        console.error("Erro: Campos de login não encontrados no HTML!");
+        return;
     }
 
-    // 3. FUNÇÃO DE LOGOUT
+    const user = userField.value;
+    const pass = passField.value;
+
+    if (CREDENCIAIS[user] && CREDENCIAIS[user] === pass) {
+        console.log("Login bem-sucedido para:", user);
+        sessionStorage.setItem("logado", "true");
+        sessionStorage.setItem("usuario", user);
+        document.getElementById("login-overlay").style.display = "none";
+        document.getElementById("nome-logado").innerText = user.toUpperCase();
+    } else {
+        console.warn("Falha no login: Usuário ou senha incorretos.");
+        erroMsg.style.display = "block";
+        passField.value = "";
+    }
+}
+
     function deslogar() {
-        if (confirm("Deseja realmente sair?")) {
-            sessionStorage.clear();
-            window.location.reload();
-        }
+    if (confirm("Deseja realmente sair do sistema?")) {
+        sessionStorage.clear();
+        window.location.reload();
     }
+}
 
-    // 4. VERIFICAÇÃO AUTOMÁTICA AO CARREGAR
-    window.addEventListener('load', function() {
-        const status = sessionStorage.getItem("logado");
-        const usuarioSalvo = sessionStorage.getItem("usuario");
-        
-        if (status === "true") {
-            if(document.getElementById("login-overlay")) {
-                document.getElementById("login-overlay").style.display = "none";
-            }
-            if(document.getElementById("nome-logado")) {
-                document.getElementById("nome-logado").innerText = usuarioSalvo.toUpperCase();
-            }
-        }
-    });
+// Verifica se já estava logado ao abrir a página
+    window.onload = function() {
+    console.log("Página carregada. Verificando sessão...");
+    const status = sessionStorage.getItem("logado");
+    const usuarioSalvo = sessionStorage.getItem("usuario");
+    
+    if (status === "true") {
+        document.getElementById("login-overlay").style.display = "none";
+        document.getElementById("nome-logado").innerText = usuarioSalvo.toUpperCase();
+    }
+};
 
-    // --- CONTINUAÇÃO DO SEU CÓDIGO ORIGINAL ---
+    // ==========================================
+    // CONFIGURAÇÕES DO BI (CÓDIGO ORIGINAL)
+    // ==========================================
     Chart.defaults.color = '#a4b0be';
 
     const URL_PLANILHA = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-PWDRlSYT4cY9rOK7Dz1R2Fe0HzoXFbu4icqnPk5M6eGOBUngZFwkhI-9TXPpT9d-wvWCzXNVxteq/pub?gid=498256387&single=true&output=csv';
