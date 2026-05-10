@@ -676,19 +676,6 @@
     </div>
 
     <div class="wrapper"> 
-        ```
-
-    <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1a1a1a; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-        <div style="background: #2c3e50; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; width: 320px;">
-            <h2 style="color: white; margin-bottom: 20px; font-family: sans-serif;">Portal Logística</h2>
-            <input type="text" id="user-name" placeholder="Usuário" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 6px; border: none; outline: none;">
-            <input type="password" id="user-pass" placeholder="Senha" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 6px; border: none; outline: none;" onkeypress="if(event.key === 'Enter') efetuarLogin()">
-            <button onclick="efetuarLogin()" style="width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">ENTRAR</button>
-            <p id="login-erro" style="color: #e74c3c; font-size: 12px; margin-top: 10px; display: none;">Usuário ou senha incorretos!</p>
-        </div>
-    </div>
-    <div class="wrapper"> 
-    ...
 
     <!-- ══════════════════════════════════════
          MODAL: CONFIRMAÇÃO DE REGISTRO
@@ -1369,49 +1356,68 @@
         </div>
     </section>
 
-   <script>
-    <script>
-    // 2. O SCRIPT QUE CONTROLA O ACESSO
-    const ACESSO_VALIDO = {
+ <script>
+    // ══════════════════════════════════════════════
+    // 1. BASE DE DADOS DE ACESSO
+    // ══════════════════════════════════════════════
+    const ACESSO_PORTAL = {
         "john_petter": "admin123",
         "diretoria": "admin123"
     };
 
+    // ══════════════════════════════════════════════
+    // 2. FUNÇÃO PRINCIPAL DE LOGIN
+    // ══════════════════════════════════════════════
     function entrarSistema() {
-        console.log("Tentando login...");
-        const u = document.getElementById("user-name").value;
-        const p = document.getElementById("user-pass").value;
+        console.log("Tentativa de acesso detectada...");
         
-        if (ACESSO_VALIDO[u] && ACESSO_VALIDO[u] === p) {
+        const campoUser = document.getElementById("user-name");
+        const campoPass = document.getElementById("user-pass");
+        const msgErro = document.getElementById("login-erro");
+
+        if (!campoUser || !campoPass) return;
+
+        const usuario = campoUser.value.trim();
+        const senha = campoPass.value.trim();
+
+        // Verifica se usuário e senha estão corretos
+        if (ACESSO_PORTAL[usuario] && ACESSO_PORTAL[usuario] === senha) {
+            console.log("Acesso concedido para:", usuario);
             sessionStorage.setItem("logado", "true");
-            sessionStorage.setItem("usuario", u);
+            sessionStorage.setItem("usuario", usuario);
+            
+            // Esconde o bloqueio e atualiza o nome
             document.getElementById("login-overlay").style.display = "none";
-            document.getElementById("nome-logado").innerText = u.toUpperCase();
+            document.getElementById("nome-logado").innerText = usuario.toUpperCase();
         } else {
-            document.getElementById("login-erro").style.display = "block";
+            console.warn("Dados de acesso inválidos.");
+            msgErro.style.display = "block";
+            campoPass.value = ""; // Limpa a senha para nova tentativa
         }
     }
 
-    // 3. O SCRIPT QUE RECONHECE O ACESSO AO CARREGAR
-    window.onload = function() {
-        console.log("Monitor de Acesso: Ativo");
-        const status = sessionStorage.getItem("logado");
-        const user = sessionStorage.getItem("usuario");
+    // ══════════════════════════════════════════════
+    // 3. VERIFICAÇÃO AUTOMÁTICA AO CARREGAR A PÁGINA
+    // ══════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("Sistema de Segurança: Ativo");
+        const estaLogado = sessionStorage.getItem("logado");
+        const nomeSalvo = sessionStorage.getItem("usuario");
 
-        if (status === "true") {
-            if(document.getElementById("login-overlay")) {
-                document.getElementById("login-overlay").style.display = "none";
-            }
-            if(document.getElementById("nome-logado")) {
-                document.getElementById("nome-logado").innerText = user.toUpperCase();
-            }
+        if (estaLogado === "true") {
+            const telaLogin = document.getElementById("login-overlay");
+            if (telaLogin) telaLogin.style.display = "none";
+            
+            const areaNome = document.getElementById("nome-logado");
+            if (areaNome && nomeSalvo) areaNome.innerText = nomeSalvo.toUpperCase();
         }
-    };
+    });
 
-    // --- CONTINUAÇÃO DO SEU BI ---
+    // ══════════════════════════════════════════════
+    // 4. CONTINUAÇÃO DO SEU CÓDIGO BI (JÁ EXISTENTE)
+    // ══════════════════════════════════════════════
     Chart.defaults.color = '#a4b0be';
-    // ... restante do código
-
+     
     const URL_PLANILHA = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-PWDRlSYT4cY9rOK7Dz1R2Fe0HzoXFbu4icqnPk5M6eGOBUngZFwkhI-9TXPpT9d-wvWCzXNVxteq/pub?gid=498256387&single=true&output=csv';
     const URL_API_SCRIPT = 'https://script.google.com/macros/s/AKfycbyLis6Vs8Z3oqlt2BXkBpSqcSAdw1orEJvk2VotHJ_WuZRXQ5Qe8UnIKgKySCjKVz26/exec';
 
