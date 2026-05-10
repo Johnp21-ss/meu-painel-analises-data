@@ -639,6 +639,25 @@
             text-align: right;
             flex-shrink: 0;
         }
+            /* ── Spinner de carregamento ── */
+    .spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255,255,255,.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin .6s linear infinite;
+        margin-right: 5px;
+        vertical-align: middle;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    .btn-carregando {
+        opacity: .7;
+        pointer-events: none;
+    }
     </style>
 </head>
 <body>
@@ -702,11 +721,11 @@
                 <div style="display:flex; gap: 5px; margin-top: 5px; flex-wrap: wrap;">
                     <button class="btn-action btn-pdf" onclick="exportarPDF()">📄 PDF</button>
                     <button class="btn-action btn-audio" onclick="lerPagina()">🔊 LER</button>
-                    <button class="btn-action btn-refresh" onclick="carregar()">🔄 ATUALIZAR</button>
                     <div class="sync-box">
-                        <input type="date" id="dataSync" class="input-date" onchange="processarDados()">
-                        <button id="btnSync" class="btn-action btn-sync" onclick="sincronizarAPI()">⚡ API</button>
-                    </div>
+                        <input type="date" id="dataSync" class="input-date">
+                        <button id="btnSyncUnificado" class="btn-action" onclick="sincronizarEAtualizar()" style="background:var(--info);">🔄 SINCRONIZAR</button>
+                </div>
+            <span id="sync-hora" style="color:var(--slate); font-size:8px; margin-left:5px;"></span>
                 </div>
             </div>
             <select id="fTipo" onchange="processarDados()"><option value="TODOS">TIPO: TODOS</option><option value="REGULAR">REGULARES</option><option value="EXTRA">EXTRAS</option></select>
@@ -1428,29 +1447,81 @@
     }
 
     // ── Carregar dados ────────────────────────────────────────────────────────
-    async function sincronizarAPI() {
-        const campoData = document.getElementById("dataSync");
-        const btn = document.getElementById("btnSync");
-        const timeLabel = document.getElementById('update-time');
-        if (!campoData.value) { alert("⚠️ Selecione uma data no calendário antes de clicar em API."); return; }
-        btn.disabled = true;
-        btn.innerText = "⏳ PROCESSANDO...";
-        timeLabel.innerText = "📡 Solicitando dados para " + campoData.value.split("-").reverse().join("/") + "...";
-        const urlFinal = URL_API_SCRIPT + "?data=" + campoData.value;
-        fetch(urlFinal, { mode: 'no-cors', method: 'GET' })
-            .then(() => {
-                timeLabel.innerText = "✅ API acionada! Aguarde ~10s e clique em ATUALIZAR.";
-                btn.innerText = "⚡ API OK";
-                setTimeout(() => { btn.disabled = false; btn.innerText = "⚡ API"; }, 5000);
-            })
-            .catch(err => {
-                console.error(err);
-                timeLabel.innerText = "❌ Erro ao contactar a API.";
-                btn.disabled = false;
-                btn.innerText = "⚡ API";
-            });
+    async function sincronizarEAtualizar() {
+    const campoData = document.getElementById("dataSync");
+    const btn = document.getElementById("btnSyncUnificado");
+    const timeLabel = document.getElementById('update-time');
+    const horaLabel = document.getElementById('sync-hora');
+    
+    if (!campoData.value) {
+        // Se não tem data selecionada, apenas atualiza com dados já carregados
+        btn.innerHTML = '<span class="spinner"></span> ATUALIZANDO...';
+        btn.classList.add('btn-carregando');
+        timeLabel.innerText = "🔄 Processando dados locais...";
+        
+        setTimeout(() => {
+            processarDados();
+            const agora = new Date();
+            timeLabel.innerText = "✅ DADOS ATUALIZADOS";
+            horaLabel.innerText = "🕐 " + agora.toLocaleTimeString('pt-BR');
+            btn.innerHTML = '✅ ATUALIZADO';
+            btn.style.background = '#27ae60';
+            
+            setTimeout(() => {
+                btn.innerHTML = '🔄 SINCRONIZAR';
+                btn.style.background = 'var(--info)';
+                btn.classList.remove('btn-carregando');
+            }, 2000);
+        }, 300);
+        return;
     }
-
+    
+    // Tem data selecionada - busca na API
+    btn.innerHTML = '<span class="spinner"></span> BUSCANDO...';
+    btn.classList.add('btn-carregando');
+    btn.style.background = '#8e44ad';
+    timeLabel.innerText = "📡 Solicitando dados para " + campoData.value.split("-").reverse().join("/") + "...";
+    
+    const urlFinal = URL_API_SCRIPT + "?data=" + campoData.value;
+    
+    fetch(urlFinal, { mode: 'no-cors', method: 'GET' })
+        .then(() => {
+            btn.innerHTML = '<span class="spinner"></span> ATUALIZANDO...';
+            timeLabel.innerText = "✅ Dados recebidos! Atualizando visualização...";
+            
+            // Aguarda um pouco e recarrega os dados
+            setTimeout(() => {
+                carregar(); // Isso vai buscar a planilha atualizada e processar tudo
+                
+                // Feedback visual
+                setTimeout(() => {
+                    const agora = new Date();
+                    timeLabel.innerText = "✅ VISUALIZANDO: " + campoData.value.split("-").reverse().join("/");
+                    horaLabel.innerText = "🕐 Sincronizado às " + agora.toLocaleTimeString('pt-BR');
+                    btn.innerHTML = '✅ SINCRONIZADO';
+                    btn.style.background = '#27ae60';
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = '🔄 SINCRONIZAR';
+                        btn.style.background = 'var(--info)';
+                        btn.classList.remove('btn-carregando');
+                    }, 2000);
+                }, 500);
+            }, 1500);
+        })
+        .catch(err => {
+            console.error(err);
+            timeLabel.innerText = "❌ Erro ao contactar a API.";
+            btn.innerHTML = '❌ ERRO';
+            btn.style.background = '#e74c3c';
+            btn.classList.remove('btn-carregando');
+            
+            setTimeout(() => {
+                btn.innerHTML = '🔄 SINCRONIZAR';
+                btn.style.background = 'var(--info)';
+            }, 2000);
+        });
+}
     async function carregar() {
         const timeLabel = document.getElementById('update-time');
         const btnRefresh = document.querySelector(".btn-refresh");
