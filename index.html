@@ -764,6 +764,7 @@
         <button class="tab-btn" onclick="switchTab(event,'aba-assiduidade')">⏱️ Assiduidade Temporal</button>
         <button class="tab-btn" onclick="switchTab(event,'aba-extras')">🚀 Rotas Extras</button>
         <button class="tab-btn" onclick="switchTab(event,'aba-compliance')">🛡️ Compliance</button>
+        <button class="tab-btn" onclick="switchTab(event,'aba-gestao')">🔐 Gestão</button>
     </nav>
 
     <!-- ══════════════════════════════════════════════════════════
@@ -912,6 +913,64 @@
         </div>
 
     </section>
+    <!-- ══════════════════════════════════════════════════════════
+     ABA GESTÃO DE ACESSOS (ADMIN)
+══════════════════════════════════════════════════════════ -->
+<section id="aba-gestao" class="content-section">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+        <div>
+            <div style="font-size:18px; font-weight:bold; color:#fff;">🔐 Gestão de Acessos</div>
+            <div style="font-size:10px; color:var(--slate); margin-top:3px;">Controle de permissões · Usuários · Níveis de acesso</div>
+        </div>
+        <button onclick="adicionarNovoUsuario()" style="padding:8px 16px;background:var(--success);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer;">➕ Novo Usuário</button>
+    </div>
+
+    <!-- Configuração de Permissões por Nível -->
+    <div class="card row-new" style="margin-bottom:16px; border-top-color:var(--extra);">
+        <h3 style="font-size:13px;">⚙️ Configuração de Permissões por Nível</h3>
+        <div style="font-size:9px;color:var(--slate);margin-top:-8px;margin-bottom:12px;">Defina o que cada nível pode fazer. Clique em "Salvar Configurações" para aplicar.</div>
+        <div style="overflow-x:auto;">
+            <table id="tbl-permissoes" style="table-layout:auto;min-width:700px;">
+                <thead>
+                    <tr>
+                        <th>Nível</th>
+                        <th>Dados Escala</th>
+                        <th>Assiduidade</th>
+                        <th>Rotas Extras</th>
+                        <th>Compliance</th>
+                        <th>Registrar Ocorrências</th>
+                        <th>Gestão de Acessos</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-permissoes"></tbody>
+            </table>
+        </div>
+        <div style="margin-top:12px; text-align:right;">
+            <button onclick="salvarPermissoes()" style="padding:8px 20px;background:var(--info);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer;">💾 Salvar Configurações</button>
+        </div>
+    </div>
+
+    <!-- Lista de Usuários -->
+    <div class="card row-new" style="border-top-color:var(--success);">
+        <h3 style="font-size:13px;">👥 Usuários Cadastrados</h3>
+        <div style="font-size:9px;color:var(--slate);margin-top:-8px;margin-bottom:12px;">Gerencie usuários, níveis de acesso e senhas.</div>
+        <div style="overflow-x:auto; max-height:400px; overflow-y:auto;">
+            <table id="tbl-usuarios" style="table-layout:auto;min-width:800px;">
+                <thead>
+                    <tr>
+                        <th>Usuário</th>
+                        <th>Nome Completo</th>
+                        <th>Nível</th>
+                        <th>Senha</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-usuarios"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
 
     <!-- ══════════════════════════════════════════════════════════
          ABA ASSIDUIDADE TEMPORAL
@@ -1467,42 +1526,36 @@ if (nivelExibicao === 'ADMIN') {
     }
 }
      function aplicarNivelAcesso(nivel) {
+    const permissoes = carregarPermissoes();
+    const config = permissoes[nivel] || PERMISSOES_PADRAO[nivel];
+    
     // Referências das abas
-    const abaEscala = document.querySelector('.tab-btn[onclick*="aba-escala"]');
-    const abaAssiduidade = document.querySelector('.tab-btn[onclick*="aba-assiduidade"]');
-    const abaExtras = document.querySelector('.tab-btn[onclick*="aba-extras"]');
-    const abaCompliance = document.querySelector('.tab-btn[onclick*="aba-compliance"]');
+    const abasMap = {
+        'escala': document.querySelector('.tab-btn[onclick*="aba-escala"]'),
+        'assiduidade': document.querySelector('.tab-btn[onclick*="aba-assiduidade"]'),
+        'extras': document.querySelector('.tab-btn[onclick*="aba-extras"]'),
+        'compliance': document.querySelector('.tab-btn[onclick*="aba-compliance"]'),
+        'gestao': document.querySelector('.tab-btn[onclick*="aba-gestao"]')
+    };
     
-    // Por padrão, esconde todas as abas primeiro
-    if (abaAssiduidade) abaAssiduidade.style.display = 'none';
-    if (abaExtras) abaExtras.style.display = 'none';
-    if (abaCompliance) abaCompliance.style.display = 'none';
+    // Esconde todas primeiro
+    Object.values(abasMap).forEach(aba => {
+        if (aba) aba.style.display = 'none';
+    });
     
-    // Mostra abas conforme o nível
-    switch(nivel) {
-        case 'ADMIN':
-            // Vê TUDO
-            if (abaAssiduidade) abaAssiduidade.style.display = '';
-            if (abaExtras) abaExtras.style.display = '';
-            if (abaCompliance) abaCompliance.style.display = '';
-            break;
-            
-        case 'GESTOR':
-            // Vê Escala + Compliance
-            if (abaCompliance) abaCompliance.style.display = '';
-            break;
-            
-        case 'FISCAL':
-            // Vê apenas Escala (já está visível por padrão)
-            break;
-    }
+    // Mostra apenas as permitidas
+    config.abas.forEach(abaId => {
+        if (abasMap[abaId]) abasMap[abaId].style.display = '';
+    });
     
-    // Garante que a aba Escala está sempre ativa ao logar
-    if (abaEscala) {
+    // Garante que a primeira aba permitida está ativa
+    const primeiraAba = config.abas[0];
+    if (primeiraAba && abasMap[primeiraAba]) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        abaEscala.classList.add('active');
+        abasMap[primeiraAba].classList.add('active');
         document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-        document.getElementById('aba-escala').classList.add('active');
+        const secao = document.getElementById(`aba-${primeiraAba}`);
+        if (secao) secao.classList.add('active');
     }
 }
      // ══════════════════════════════════════════════
@@ -1510,7 +1563,8 @@ if (nivelExibicao === 'ADMIN') {
 // ══════════════════════════════════════════════
 function podeRegistrar() {
     const nivel = sessionStorage.getItem("nivel");
-    return nivel === "ADMIN" || nivel === "GESTOR";
+    const permissoes = carregarPermissoes();
+    return permissoes[nivel] ? permissoes[nivel].podeRegistrar : false;
 }
 
 function getNivelUsuario() {
@@ -1660,6 +1714,7 @@ if (areaNivel && nivelSalvo) {
         if (tabId === 'aba-assiduidade') processarAssiduidadeTemporal();
         if (tabId === 'aba-extras') processarExtras();
         if (tabId === 'aba-compliance') processarCompliance();
+        if (tabId === 'aba-gestao') initGestaoAcessos();
     }
 
     // ── Carregar dados ────────────────────────────────────────────────────────
@@ -3810,7 +3865,234 @@ function gerarBotaoRegistro(dadosBotao, estiloExtra = '') {
     html += `</div>`;
     return html;
 }
+// ══════════════════════════════════════════════
+// GESTÃO DE ACESSOS - CONFIGURAÇÕES
+// ══════════════════════════════════════════════
 
+// Permissões padrão por nível
+const PERMISSOES_PADRAO = {
+    ADMIN: {
+        abas: ['escala', 'assiduidade', 'extras', 'compliance', 'gestao'],
+        podeRegistrar: true,
+        corBadge: 'admin'
+    },
+    GESTOR: {
+        abas: ['escala', 'assiduidade', 'extras', 'compliance'],
+        podeRegistrar: true,
+        corBadge: 'gestor'
+    },
+    FISCAL: {
+        abas: ['escala'],
+        podeRegistrar: false,
+        corBadge: 'fiscal'
+    }
+};
+
+// Carrega permissões salvas ou usa padrão
+function carregarPermissoes() {
+    try {
+        const saved = localStorage.getItem('bi_permissoes');
+        return saved ? JSON.parse(saved) : PERMISSOES_PADRAO;
+    } catch(e) {
+        return PERMISSOES_PADRAO;
+    }
+}
+
+// Salva permissões
+function salvarPermissoes() {
+    const permissoes = carregarPermissoes();
+    const niveis = ['FISCAL', 'GESTOR', 'ADMIN'];
+    
+    niveis.forEach(nivel => {
+        permissoes[nivel].podeRegistrar = document.getElementById(`perm-registrar-${nivel}`).checked;
+        ['escala', 'assiduidade', 'extras', 'compliance', 'gestao'].forEach(aba => {
+            const checkbox = document.getElementById(`perm-${aba}-${nivel}`);
+            if (checkbox) {
+                if (checkbox.checked && !permissoes[nivel].abas.includes(aba)) {
+                    permissoes[nivel].abas.push(aba);
+                } else if (!checkbox.checked && permissoes[nivel].abas.includes(aba)) {
+                    permissoes[nivel].abas = permissoes[nivel].abas.filter(a => a !== aba);
+                }
+            }
+        });
+    });
+    
+    localStorage.setItem('bi_permissoes', JSON.stringify(permissoes));
+    alert('✅ Permissões salvas com sucesso! As mudanças serão aplicadas no próximo login.');
+}
+
+// Carrega usuários (do ACESSO_PORTAL + localStorage)
+function carregarUsuarios() {
+    try {
+        const saved = localStorage.getItem('bi_usuarios_extra');
+        const extras = saved ? JSON.parse(saved) : {};
+        return { ...ACESSO_PORTAL, ...extras };
+    } catch(e) {
+        return { ...ACESSO_PORTAL };
+    }
+}
+
+// Salva usuários extras no localStorage
+function salvarUsuariosExtras(usuarios) {
+    const extras = {};
+    Object.entries(usuarios).forEach(([key, valor]) => {
+        if (!ACESSO_PORTAL[key]) {
+            extras[key] = valor;
+        }
+    });
+    localStorage.setItem('bi_usuarios_extra', JSON.stringify(extras));
+}
+
+// Renderiza tabela de permissões
+function renderizarTabelaPermissoes() {
+    const permissoes = carregarPermissoes();
+    const tbody = document.getElementById('tbody-permissoes');
+    if (!tbody) return;
+    
+    const niveis = ['FISCAL', 'GESTOR', 'ADMIN'];
+    const abas = [
+        { id: 'escala', nome: '📡 Dados Escala' },
+        { id: 'assiduidade', nome: '⏱️ Assiduidade' },
+        { id: 'extras', nome: '🚀 Rotas Extras' },
+        { id: 'compliance', nome: '🛡️ Compliance' },
+        { id: 'gestao', nome: '🔐 Gestão' }
+    ];
+    
+    tbody.innerHTML = niveis.map(nivel => {
+        const p = permissoes[nivel] || PERMISSOES_PADRAO[nivel];
+        const cor = nivel === 'ADMIN' ? '#e74c3c' : nivel === 'GESTOR' ? '#f39c12' : '#3498db';
+        
+        const checkboxesAbas = abas.map(aba => {
+            const checked = p.abas.includes(aba.id) ? 'checked' : '';
+            const disabled = nivel === 'ADMIN' && aba.id === 'escala' ? 'disabled' : '';
+            return `<td style="text-align:center;">
+                <input type="checkbox" id="perm-${aba.id}-${nivel}" ${checked} ${disabled}
+                    style="accent-color:${cor}; width:16px; height:16px; cursor:pointer;">
+            </td>`;
+        }).join('');
+        
+        return `<tr>
+            <td><span class="cpl-score-pill" style="background:${cor}22; color:${cor}; border:1px solid ${cor}44;">${nivel}</span></td>
+            ${checkboxesAbas}
+            <td style="text-align:center;">
+                <input type="checkbox" id="perm-registrar-${nivel}" ${p.podeRegistrar ? 'checked' : ''}
+                    style="accent-color:${cor}; width:16px; height:16px; cursor:pointer;">
+            </td>
+            <td style="text-align:center; color:var(--slate); font-size:9px;">
+                ${nivel === 'ADMIN' ? '🔒 Fixo' : '⚙️ Configurável'}
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// Renderiza tabela de usuários
+function renderizarTabelaUsuarios() {
+    const usuarios = carregarUsuarios();
+    const tbody = document.getElementById('tbody-usuarios');
+    if (!tbody) return;
+    
+    tbody.innerHTML = Object.entries(usuarios).map(([username, dados]) => {
+        const corNivel = dados.nivel === 'ADMIN' ? '#e74c3c' : dados.nivel === 'GESTOR' ? '#f39c12' : '#3498db';
+        const isOriginal = ACESSO_PORTAL[username] ? true : false;
+        
+        return `<tr>
+            <td><b>${username}</b>${isOriginal ? ' <span style="font-size:8px;color:var(--success);">(original)</span>' : ''}</td>
+            <td>${dados.nome || ''}</td>
+            <td><span class="cpl-score-pill" style="background:${corNivel}22; color:${corNivel}; border:1px solid ${corNivel}44;">${dados.nivel}</span></td>
+            <td><input type="text" value="${dados.senha || ''}" id="senha-${username}" 
+                style="background:var(--bg);color:white;border:1px solid var(--border);padding:4px 8px;border-radius:4px;width:100px;font-size:10px;"></td>
+            <td><span class="badge badge-success">ATIVO</span></td>
+            <td style="white-space:nowrap;">
+                <select id="nivel-${username}" style="width:auto;min-width:90px;font-size:10px;padding:3px;">
+                    <option value="FISCAL" ${dados.nivel === 'FISCAL' ? 'selected' : ''}>FISCAL</option>
+                    <option value="GESTOR" ${dados.nivel === 'GESTOR' ? 'selected' : ''}>GESTOR</option>
+                    <option value="ADMIN" ${dados.nivel === 'ADMIN' ? 'selected' : ''}>ADMIN</option>
+                </select>
+                <button onclick="salvarAlteracoesUsuario('${username}')" 
+                    style="margin-left:4px;padding:4px 10px;background:var(--info);color:#fff;border:none;border-radius:4px;font-size:9px;cursor:pointer;">💾</button>
+                ${!isOriginal ? `<button onclick="excluirUsuario('${username}')" 
+                    style="margin-left:2px;padding:4px 8px;background:var(--danger);color:#fff;border:none;border-radius:4px;font-size:9px;cursor:pointer;">🗑️</button>` : ''}
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// Salva alterações de um usuário
+function salvarAlteracoesUsuario(username) {
+    const novoNivel = document.getElementById(`nivel-${username}`).value;
+    const novaSenha = document.getElementById(`senha-${username}`).value;
+    
+    if (!novaSenha || novaSenha.trim() === '') {
+        alert('⚠️ A senha não pode ficar em branco!');
+        return;
+    }
+    
+    const usuarios = carregarUsuarios();
+    
+    if (usuarios[username]) {
+        usuarios[username].nivel = novoNivel;
+        usuarios[username].senha = novaSenha.trim();
+        salvarUsuariosExtras(usuarios);
+        alert(`✅ Usuário "${username}" atualizado com sucesso!`);
+        renderizarTabelaUsuarios();
+    }
+}
+
+// Exclui um usuário extra
+function excluirUsuario(username) {
+    if (ACESSO_PORTAL[username]) {
+        alert('⚠️ Não é possível excluir usuários originais do sistema!');
+        return;
+    }
+    
+    if (confirm(`Tem certeza que deseja excluir o usuário "${username}"?`)) {
+        const usuarios = carregarUsuarios();
+        delete usuarios[username];
+        salvarUsuariosExtras(usuarios);
+        alert(`✅ Usuário "${username}" excluído com sucesso!`);
+        renderizarTabelaUsuarios();
+    }
+}
+
+// Adiciona novo usuário
+function adicionarNovoUsuario() {
+    const username = prompt('👤 Nome de usuário (login):');
+    if (!username || username.trim() === '') return;
+    
+    const usuarios = carregarUsuarios();
+    if (usuarios[username.trim()]) {
+        alert('⚠️ Este usuário já existe!');
+        return;
+    }
+    
+    const nome = prompt('📝 Nome completo:');
+    if (!nome || nome.trim() === '') return;
+    
+    const senha = prompt('🔑 Senha:');
+    if (!senha || senha.trim() === '') return;
+    
+    const nivel = prompt('🏷️ Nível (FISCAL, GESTOR, ADMIN):', 'FISCAL');
+    if (!nivel || !['FISCAL', 'GESTOR', 'ADMIN'].includes(nivel.toUpperCase())) {
+        alert('⚠️ Nível inválido! Use: FISCAL, GESTOR ou ADMIN');
+        return;
+    }
+    
+    usuarios[username.trim()] = {
+        senha: senha.trim(),
+        nivel: nivel.toUpperCase(),
+        nome: nome.trim()
+    };
+    
+    salvarUsuariosExtras(usuarios);
+    alert(`✅ Usuário "${username}" adicionado com sucesso!`);
+    renderizarTabelaUsuarios();
+}
+
+// Inicializa a aba de gestão
+function initGestaoAcessos() {
+    renderizarTabelaPermissoes();
+    renderizarTabelaUsuarios();
+}
     // ── Init ──────────────────────────────────────────────────────────────────
     carregar();
 </script>
