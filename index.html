@@ -1108,9 +1108,29 @@
         </div>
 
         <div class="card row-new" style="margin-bottom:15px;">
-            <h3>📋 Rotas com Irregularidades (Horário + Pontos)</h3>
-            <div class="scroll-area" style="max-height:350px; overflow-x:auto;">
-                <table id="tIrregularidadesFraude" style="min-width:1200px;">
+    <h3>📋 Rotas com Irregularidades (Horário + Pontos)</h3>
+    
+    <!-- 🆕 FILTROS -->
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; align-items:center;">
+        <select id="fIrregFiscal" onchange="filtrarIrregularidades()" style="width:auto;min-width:150px;font-size:10px;padding:5px;">
+            <option value="TODOS">👔 TODOS FISCAIS</option>
+        </select>
+        <select id="fIrregGre" onchange="filtrarIrregularidades()" style="width:auto;min-width:130px;font-size:10px;padding:5px;">
+            <option value="TODOS">🏢 TODAS GREs</option>
+        </select>
+        <select id="fIrregCidade" onchange="filtrarIrregularidades()" style="width:auto;min-width:150px;font-size:10px;padding:5px;">
+            <option value="TODOS">🏙️ TODAS CIDADES</option>
+        </select>
+        <select id="fIrregTipo" onchange="filtrarIrregularidades()" style="width:auto;min-width:160px;font-size:10px;padding:5px;">
+            <option value="TODOS">⚠️ TODAS IRREGULARIDADES</option>
+            <option value="TEMPORAL">⏱️ Fraude Temporal</option>
+            <option value="MESMO_LOCAL">📍 Mesmo Local</option>
+        </select>
+        <span id="irreg-count" style="font-size:10px;color:var(--info);margin-left:auto;"></span>
+    </div>
+    
+    <div class="scroll-area" style="max-height:350px; overflow-x:auto;">
+        <table id="tIrregularidadesFraude" style="min-width:1200px;">
                     <thead>
                         <tr>
                             <th style="width:8%">Data</th>
@@ -3245,11 +3265,13 @@ function carregar() {
     </td></tr>`;
 }).join('') || '<tr><td colspan="5" style="color:var(--slate)">Sem dados.</td></tr>';;
 
-        document.querySelector('#tIrregularidadesFraude tbody').innerHTML = rotasSuspeitas.slice(0, 100).map(r => {
-            const badgeCor = r.tipo === 'TEMPORAL' ? 'badge-danger' : 'badge-warning';
-            const badgeTxt = r.tipo === 'TEMPORAL' ? '⏱️ Fraude Temporal' : '📍 Mesmo Local';
-            return `<tr><td>${r.data}</td><td style="word-break:break-word;">${r.rota.substring(0,50)}</td><td>${r.motorista}</td><td>${r.gre}</td><td>${r.fiscal}</td><td>${r.inicio}</td><td>${r.fim}</td><td>${r.duracao > 0 ? r.duracao + ' min' : 'N/A'}</td><td>${r.distPontos ? r.distPontos.toFixed(1) + ' km' : 'N/A'}</td><td><span class="badge ${badgeCor}">${badgeTxt}</span><br><small style="font-size:8px;">${r.detalhe}</small></td></tr>`;
-        }).join('') || '<tr><td colspan="10" style="color:var(--slate)">Sem irregularidades detectadas.</td></tr>';
+        // Salva as irregularidades completas para os filtros
+irregularidadesCompletas = rotasSuspeitas.map(r => ({
+    ...r,
+    cidade: bruto.find(d => d.rota === r.rota && d.motorista === r.motorista)?.cidade || ''
+}));
+popularFiltrosIrregularidades();
+filtrarIrregularidades();
 
         if (charts.tiposFraude) charts.tiposFraude.destroy();
         const ctxTipos = document.getElementById('chartTiposFraude');
@@ -4698,6 +4720,68 @@ function initGestaoAcessos() {
             clearInterval(window._gestaoInterval);
         }
     }, 30000);
+}
+     // ══════════════════════════════════════════════
+// FILTROS DA TABELA DE IRREGULARIDADES
+// ══════════════════════════════════════════════
+
+let irregularidadesCompletas = [];
+
+function popularFiltrosIrregularidades() {
+    if (!irregularidadesCompletas.length) return;
+    
+    const fiscais = [...new Set(irregularidadesCompletas.map(r => r.fiscal))].filter(Boolean).sort();
+    const gres = [...new Set(irregularidadesCompletas.map(r => r.gre))].filter(Boolean).sort();
+    const cidades = [...new Set(irregularidadesCompletas.map(r => r.cidade || ''))].filter(Boolean).sort();
+    
+    const preencher = (id, lista, label) => {
+        const el = document.getElementById(id);
+        if (!el || el.options.length > 1) return;
+        lista.forEach(v => el.add(new Option(v, v)));
+    };
+    
+    preencher('fIrregFiscal', fiscais, '👔 TODOS FISCAIS');
+    preencher('fIrregGre', gres, '🏢 TODAS GREs');
+    preencher('fIrregCidade', cidades, '🏙️ TODAS CIDADES');
+}
+
+function filtrarIrregularidades() {
+    const filtroFiscal = document.getElementById('fIrregFiscal')?.value || 'TODOS';
+    const filtroGre = document.getElementById('fIrregGre')?.value || 'TODOS';
+    const filtroCidade = document.getElementById('fIrregCidade')?.value || 'TODOS';
+    const filtroTipo = document.getElementById('fIrregTipo')?.value || 'TODOS';
+    
+    const filtradas = irregularidadesCompletas.filter(r => {
+        if (filtroFiscal !== 'TODOS' && r.fiscal !== filtroFiscal) return false;
+        if (filtroGre !== 'TODOS' && r.gre !== filtroGre) return false;
+        if (filtroCidade !== 'TODOS' && r.cidade !== filtroCidade) return false;
+        if (filtroTipo !== 'TODOS' && r.tipo !== filtroTipo) return false;
+        return true;
+    });
+    
+    // Atualiza a tabela
+    document.querySelector('#tIrregularidadesFraude tbody').innerHTML = filtradas.slice(0, 200).map(r => {
+        const badgeCor = r.tipo === 'TEMPORAL' ? 'badge-danger' : 'badge-warning';
+        const badgeTxt = r.tipo === 'TEMPORAL' ? '⏱️ Fraude Temporal' : '📍 Mesmo Local';
+        return `<tr>
+            <td>${r.data}</td>
+            <td style="word-break:break-word;">${r.rota.substring(0,50)}</td>
+            <td>${r.motorista}</td>
+            <td>${r.gre}</td>
+            <td>${r.fiscal}</td>
+            <td>${r.inicio}</td>
+            <td>${r.fim}</td>
+            <td>${r.duracao > 0 ? r.duracao + ' min' : 'N/A'}</td>
+            <td>${r.distPontos ? r.distPontos.toFixed(1) + ' km' : 'N/A'}</td>
+            <td><span class="badge ${badgeCor}">${badgeTxt}</span><br><small style="font-size:8px;">${r.detalhe}</small></td>
+        </tr>`;
+    }).join('') || '<tr><td colspan="10" style="color:var(--slate);text-align:center;padding:20px;">Nenhuma irregularidade encontrada para os filtros selecionados.</td></tr>';
+    
+    // Atualiza contador
+    const countEl = document.getElementById('irreg-count');
+    if (countEl) {
+        countEl.innerText = `Mostrando ${Math.min(filtradas.length, 200)} de ${filtradas.length} irregularidades`;
+    }
 }
     // ── Init ──────────────────────────────────────────────────────────────────
     carregar();
