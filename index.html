@@ -4764,8 +4764,8 @@ function filtrarIrregularidades() {
         if (filtroGre !== 'TODOS' && r.gre !== filtroGre) return false;
         if (filtroCidade !== 'TODOS' && r.cidade !== filtroCidade) return false;
         if (filtroTipo !== 'TODOS' && r.tipo !== filtroTipo) return false;
-          // Filtro de duração para fraudes temporais
-        if (filtroTipo === 'TEMPORAL' && r.tipo === 'TEMPORAL' && r.duracao > duracaoMaxima) return false;
+        // 🆕 Filtro de duração - só aplica quando tipo = TEMPORAL
+        if (filtroTipo === 'TEMPORAL' && r.duracao > duracaoMaxima) return false;
         return true;
     });
     
