@@ -1126,6 +1126,13 @@
             <option value="TEMPORAL">⏱️ Fraude Temporal</option>
             <option value="MESMO_LOCAL">📍 Mesmo Local</option>
         </select>
+        <div style="display:flex; align-items:center; gap:6px; font-size:10px; color:var(--slate);">
+    <span>⏱️ Duração máx:</span>
+    <input type="range" id="fIrregDuracao" min="1" max="30" value="10" step="1" 
+        oninput="document.getElementById('fIrregDuracaoValor').innerText = this.value + 'min'; filtrarIrregularidades();"
+        style="width:80px; accent-color:#e74c3c;">
+    <span id="fIrregDuracaoValor" style="color:#e74c3c; font-weight:bold; min-width:35px;">10min</span>
+</div>
         <span id="irreg-count" style="font-size:10px;color:var(--info);margin-left:auto;"></span>
     </div>
     
@@ -4750,12 +4757,15 @@ function filtrarIrregularidades() {
     const filtroGre = document.getElementById('fIrregGre')?.value || 'TODOS';
     const filtroCidade = document.getElementById('fIrregCidade')?.value || 'TODOS';
     const filtroTipo = document.getElementById('fIrregTipo')?.value || 'TODOS';
+    const duracaoMaxima = parseInt(document.getElementById('fIrregDuracao')?.value || 10);
     
     const filtradas = irregularidadesCompletas.filter(r => {
         if (filtroFiscal !== 'TODOS' && r.fiscal !== filtroFiscal) return false;
         if (filtroGre !== 'TODOS' && r.gre !== filtroGre) return false;
         if (filtroCidade !== 'TODOS' && r.cidade !== filtroCidade) return false;
         if (filtroTipo !== 'TODOS' && r.tipo !== filtroTipo) return false;
+          // Filtro de duração para fraudes temporais
+        if (filtroTipo === 'TEMPORAL' && r.tipo === 'TEMPORAL' && r.duracao > duracaoMaxima) return false;
         return true;
     });
     
