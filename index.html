@@ -3122,16 +3122,16 @@ function carregar() {
     <td style="white-space:nowrap;min-width:200px;">
         <span class="badge ${badgeCor}">${acao}</span>
         ${gerarBotaoRegistro({
-            data: new Date().toISOString().split('T')[0],
-            tipo: m.tipos.includes('TEMPORAL') ? 'TEMPORAL' : 'GEOGRAFICA',
-            gre: m.gre,
-            fiscal: '',
-            motorista: m.nome.substring(0, 40),
-            veiculo: '',
-            rota: 'Múltiplas rotas',
-            descricao: 'Motorista com ' + m.fraudes + ' fraudes em ' + m.total + ' rotas (' + m.percFraude.toFixed(1) + '%)',
-            gravidade: m.percFraude > 30 ? 'CRITICO' : m.percFraude > 15 ? 'ALTO' : 'MEDIO'
-        })}
+    data: new Date().toISOString().split('T')[0],
+    tipo: m.tipos.includes('TEMPORAL') ? 'TEMPORAL' : 'GEOGRAFICA',
+    gre: m.gre,
+    fiscal: 'Fiscal responsável não identificado',   // ✅ Agora preenchido
+    motorista: m.nome,
+    veiculo: 'Verificar na escala',                    // ✅ Agora preenchido
+    rota: 'Múltiplas rotas',
+    descricao: 'Motorista com ' + m.fraudes + ' fraudes em ' + m.total + ' rotas (' + m.percFraude.toFixed(1) + '%)',
+    gravidade: m.percFraude > 30 ? 'CRITICO' : m.percFraude > 15 ? 'ALTO' : 'MEDIO'
+})}
     </td>
 </tr>`;
             m.rotasFraude.slice(0, 10).forEach(rf => {
