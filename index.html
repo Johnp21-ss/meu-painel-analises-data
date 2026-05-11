@@ -675,6 +675,26 @@
     color: #ff6b6b !important;
     text-decoration: underline !important;
 }
+        #nivel-badge {
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 8px;
+    margin-left: 5px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+#nivel-badge.admin {
+    background: #e74c3c;
+    color: white;
+}
+#nivel-badge.gestor {
+    background: #f39c12;
+    color: #1e272e;
+}
+#nivel-badge.fiscal {
+    background: #3498db;
+    color: white;
+}
     </style> </head>
 <body>
     <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1a1a1a; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center;">
@@ -1422,7 +1442,19 @@
         const nomeExibicao = ACESSO_PORTAL[usuario].nome;
         const nivelExibicao = ACESSO_PORTAL[usuario].nivel;
         document.getElementById("nome-logado").innerText = nomeExibicao.toUpperCase();
-        document.getElementById("nivel-logado").innerText = nivelExibicao;
+        const nivelBadge = document.getElementById("nivel-badge");
+        const nivelLogado = document.getElementById("nivel-logado");
+        nivelLogado.innerText = nivelExibicao;
+
+// Aplica cor conforme o nível
+nivelBadge.className = '';
+if (nivelExibicao === 'ADMIN') {
+    nivelBadge.classList.add('admin');
+} else if (nivelExibicao === 'GESTOR') {
+    nivelBadge.classList.add('gestor');
+} else {
+    nivelBadge.classList.add('fiscal');
+}
         document.getElementById("user-display").style.display = "block";
         
         // Aplica restrições de acesso conforme o nível
@@ -1464,6 +1496,17 @@
             // Vê apenas Escala (já está visível por padrão)
             break;
     }
+         // ══════════════════════════════════════════════
+// VERIFICA SE USUÁRIO PODE REGISTRAR OCORRÊNCIAS
+// ══════════════════════════════════════════════
+function podeRegistrar() {
+    const nivel = sessionStorage.getItem("nivel");
+    return nivel === "ADMIN" || nivel === "GESTOR";
+}
+
+function getNivelUsuario() {
+    return sessionStorage.getItem("nivel") || "FISCAL";
+}
     
     // Garante que a aba Escala está sempre ativa ao logar
     if (abaEscala) {
@@ -1473,6 +1516,18 @@
         document.getElementById('aba-escala').classList.add('active');
     }
 }
+     // ══════════════════════════════════════════════
+// VERIFICA SE USUÁRIO PODE REGISTRAR OCORRÊNCIAS
+// ══════════════════════════════════════════════
+function podeRegistrar() {
+    const nivel = sessionStorage.getItem("nivel");
+    return nivel === "ADMIN" || nivel === "GESTOR";
+}
+
+function getNivelUsuario() {
+    return sessionStorage.getItem("nivel") || "FISCAL";
+}
+     
 
     // ══════════════════════════════════════════════
     // 3. VERIFICAÇÃO AUTOMÁTICA AO CARREGAR A PÁGINA
@@ -1491,8 +1546,18 @@
         const areaNome = document.getElementById("nome-logado");
         if (areaNome && nomeCompleto) areaNome.innerText = nomeCompleto.toUpperCase();
         
-        const areaNivel = document.getElementById("nivel-logado");
-        if (areaNivel && nivelSalvo) areaNivel.innerText = nivelSalvo;
+        const nivelBadge = document.getElementById("nivel-badge");
+const areaNivel = document.getElementById("nivel-logado");
+if (areaNivel && nivelSalvo) {
+    areaNivel.innerText = nivelSalvo;
+    // Aplica cor conforme o nível
+    if (nivelBadge) {
+        nivelBadge.className = '';
+        if (nivelSalvo === 'ADMIN') nivelBadge.classList.add('admin');
+        else if (nivelSalvo === 'GESTOR') nivelBadge.classList.add('gestor');
+        else nivelBadge.classList.add('fiscal');
+    }
+}
         
         const userDisplay = document.getElementById("user-display");
         if (userDisplay) userDisplay.style.display = "block";
@@ -1953,6 +2018,11 @@ function carregar() {
     }
 
     function enviarRegistro(dados) {
+        // Verificação de segurança antes de enviar
+    if (!podeRegistrar()) {
+        alert("⛔ Acesso negado! Registro não autorizado.");
+        return;
+    }
         const btn = event?.target;
         
         const mensagensPadrao = {
@@ -3669,6 +3739,16 @@ window._cplOfensores = Object.values(ofensoresMap);
         } catch(e) {}
     }
 function gerarBotaoRegistro(dadosBotao, estiloExtra = '') {
+    // Verifica se usuário tem permissão para registrar
+    if (!podeRegistrar()) {
+        const nivel = getNivelUsuario();
+        return `<button disabled 
+            style="margin-left:6px;padding:2px 8px;font-size:9px;background:#555;color:#999;border:none;border-radius:4px;cursor:not-allowed;${estiloExtra}"
+            title="Apenas ADMIN e GESTOR podem registrar ocorrências">
+            🔒 ${nivel}
+        </button>`;
+    }
+    
     // Gera uma pré-chave para verificar no localStorage
     const chaveTeste = gerarChaveUnica(dadosBotao);
     const jaRegistrado = !!registrosPersistidos[chaveTeste];
@@ -3696,8 +3776,32 @@ function gerarBotaoRegistro(dadosBotao, estiloExtra = '') {
     })" style="margin-left:6px;padding:2px 8px;font-size:9px;background:#2980b9;color:#fff;border:none;border-radius:4px;cursor:pointer;${estiloExtra}">
         📋 Registrar
     </button>`;
+}}
+    
+    // Escapa os valores para evitar quebras no HTML
+    const escapar = (str) => String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    
+    return `<button onclick="abrirAlertaForms({
+        data:'${escapar(dadosBotao.data || '')}',
+        tipo:'${escapar(dadosBotao.tipo || '')}',
+        gre:'${escapar(dadosBotao.gre || '')}',
+        fiscal:'${escapar(dadosBotao.fiscal || '')}',
+        motorista:'${escapar(dadosBotao.motorista || '')}',
+        veiculo:'${escapar(dadosBotao.veiculo || '')}',
+        rota:'${escapar(dadosBotao.rota || '')}',
+        descricao:'${escapar(dadosBotao.descricao || '')}',
+        gravidade:'${escapar(dadosBotao.gravidade || '')}'
+    })" style="margin-left:6px;padding:2px 8px;font-size:9px;background:#2980b9;color:#fff;border:none;border-radius:4px;cursor:pointer;${estiloExtra}">
+        📋 Registrar
+    </button>`;
 }
     function abrirAlertaForms(dados) {
+    // Verificação dupla de segurança
+    if (!podeRegistrar()) {
+        alert("⛔ Acesso negado! Apenas ADMIN e GESTOR podem registrar ocorrências.");
+        return;
+    }
+    
     if (foiRegistrado(dados)) {
         alert("ℹ️ Este registro já foi enviado anteriormente.");
         return;
