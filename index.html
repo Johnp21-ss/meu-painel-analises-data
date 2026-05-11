@@ -1453,14 +1453,18 @@
         </div>
 
         <!-- ── LINHA 5: Tabela de auditoria prioritária ── -->
-        <div class="card row-new" style="border-top-color:#e74c3c; margin-bottom:20px; padding:10px 14px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:4px;">
-        <h3 style="margin:0;font-size:12px;">📋 Auditoria Prioritária — Rotas Críticas</h3>
-        <button onclick="exportarCplCSV()" style="padding:3px 8px;background:#27ae60;color:#fff;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">📥 CSV</button>
+        <div class="card row-new" style="border-top-color:#e74c3c; margin-bottom:20px; padding:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+        <div>
+            <h3 style="margin:0;font-size:13px;">📋 Auditoria Prioritária — Rotas Críticas</h3>
+            <div style="font-size:9px;color:var(--slate);margin-top:2px;">Somente rotas com comportamento de fraude temporal, geográfica ou gargalo. Ordenadas por gravidade.</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        </div>
     </div>
     
-    <!-- 🆕 FILTROS COMPACTOS -->
-    <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:4px; align-items:center;">>
+        <!-- 🆕 FILTROS COMPACTOS -->
+    <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:4px; align-items:center;">
         <select id="cpl-audit-fiscal" onchange="renderCplAuditoria()" style="width:auto;min-width:120px;font-size:9px;padding:4px;">
             <option value="TODOS">👔 Fiscais</option>
         </select>
