@@ -691,6 +691,10 @@
     background: #f39c12;
     color: #1e272e;
 }
+#nivel-badge.monitor {
+    background: #1abc9c;
+    color: white;
+}
 #nivel-badge.fiscal {
     background: #3498db;
     color: white;
@@ -1487,6 +1491,7 @@ verificarLogoutForcado();
     "john_petter":  { senha: "admin123",  nivel: "ADMIN",  nome: "John Petter" },
     "diretoria":    { senha: "admin123",  nivel: "ADMIN",  nome: "Diretoria" },
     "gestor_pi":    { senha: "gestor123", nivel: "GESTOR", nome: "Gestor Piauí" },
+    "monitor_ana":  { senha: "monitor123", nivel: "MONITOR", nome: "Ana Monitora" },  // ← NOVO
     "fiscal_maria": { senha: "fiscal123", nivel: "FISCAL", nome: "Maria Silva" },
     "fiscal_joao":  { senha: "fiscal123", nivel: "FISCAL", nome: "João Santos" }
 };
@@ -1539,6 +1544,8 @@ if (nivelExibicao === 'ADMIN') {
     nivelBadge.classList.add('admin');
 } else if (nivelExibicao === 'GESTOR') {
     nivelBadge.classList.add('gestor');
+} else if (nivelExibicao === 'MONITOR') {
+    nivelBadge.classList.add('monitor');
 } else {
     nivelBadge.classList.add('fiscal');
 }
@@ -3909,6 +3916,11 @@ const PERMISSOES_PADRAO = {
         podeRegistrar: true,
         corBadge: 'gestor'
     },
+    MONITOR: {                              // ← NOVO NÍVEL
+        abas: ['escala', 'assiduidade', 'compliance'],
+        podeRegistrar: false,
+        corBadge: 'monitor'
+    },
     FISCAL: {
         abas: ['escala'],
         podeRegistrar: false,
@@ -3929,7 +3941,7 @@ function carregarPermissoes() {
 // Salva permissões
 function salvarPermissoes() {
     const permissoes = carregarPermissoes();
-    const niveis = ['FISCAL', 'GESTOR', 'ADMIN'];
+    const niveis = ['FISCAL', 'MONITOR', 'GESTOR', 'ADMIN'];
     
     niveis.forEach(nivel => {
         permissoes[nivel].podeRegistrar = document.getElementById(`perm-registrar-${nivel}`).checked;
@@ -3977,7 +3989,7 @@ function renderizarTabelaPermissoes() {
     const tbody = document.getElementById('tbody-permissoes');
     if (!tbody) return;
     
-    const niveis = ['FISCAL', 'GESTOR', 'ADMIN'];
+    const niveis = ['FISCAL', 'MONITOR', 'GESTOR', 'ADMIN'];
     const abas = [
         { id: 'escala', nome: '📡 Dados Escala' },
         { id: 'assiduidade', nome: '⏱️ Assiduidade' },
@@ -4043,6 +4055,7 @@ function renderizarTabelaUsuarios() {
             <td style="white-space:nowrap;">
                 <select id="nivel-${username}" style="width:auto;min-width:90px;font-size:10px;padding:3px;">
                     <option value="FISCAL" ${dados.nivel === 'FISCAL' ? 'selected' : ''}>FISCAL</option>
+                    <option value="MONITOR" ${dados.nivel === 'MONITOR' ? 'selected' : ''}>MONITOR</option>
                     <option value="GESTOR" ${dados.nivel === 'GESTOR' ? 'selected' : ''}>GESTOR</option>
                     <option value="ADMIN" ${dados.nivel === 'ADMIN' ? 'selected' : ''}>ADMIN</option>
                 </select>
@@ -4110,9 +4123,9 @@ function adicionarNovoUsuario() {
     const senha = prompt('🔑 Senha:');
     if (!senha || senha.trim() === '') return;
     
-    const nivel = prompt('🏷️ Nível (FISCAL, GESTOR, ADMIN):', 'FISCAL');
-    if (!nivel || !['FISCAL', 'GESTOR', 'ADMIN'].includes(nivel.toUpperCase())) {
-        alert('⚠️ Nível inválido! Use: FISCAL, GESTOR ou ADMIN');
+    const nivel = prompt('🏷️ Nível (FISCAL, MONITOR, GESTOR, ADMIN):', 'FISCAL');
+if (!nivel || !['FISCAL', 'MONITOR', 'GESTOR', 'ADMIN'].includes(nivel.toUpperCase())) {
+    alert('⚠️ Nível inválido! Use: FISCAL, MONITOR, GESTOR ou ADMIN');;
         return;
     }
     
