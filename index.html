@@ -935,6 +935,25 @@
                 </table>
             </div>
         </div>
+        <!-- 🆕 CARD: Histórico de Aproveitamento -->
+<div class="card row-new" style="border-top-color:#e67e22; margin-bottom:20px;">
+    <h3>📈 Histórico de Aproveitamento por Fiscal 
+        <small style="font-size:10px; color:var(--slate);">% de assiduidade diária (últimos 30 dias)</small>
+    </h3>
+    <div style="display:flex; gap:8px; margin-bottom:10px; align-items:center;">
+        <select id="hist-fiscal" onchange="filtrarHistorico()" style="width:auto;min-width:200px;">
+            <option value="TODOS">TODOS FISCAIS</option>
+        </select>
+        <button onclick="carregarHistorico()" class="btn-action" style="background:var(--info);">🔄 Atualizar</button>
+        <span id="hist-status" style="font-size:9px; color:var(--slate);"></span>
+    </div>
+    <div class="scroll-area-sm" style="max-height:350px; overflow-x:auto;">
+        <table id="tbl-historico" style="table-layout:auto; min-width:800px; font-size:9px;">
+            <thead id="thead-historico"></thead>
+            <tbody id="tbody-historico"></tbody>
+        </table>
+    </div>
+</div>
 
     </section>
     <!-- ══════════════════════════════════════════════════════════
@@ -1869,6 +1888,97 @@ function carregarDadosAsync() {
         });
     });
 }
+     // ══════════════════════════════════════════════
+// HISTÓRICO DE APROVEITAMENTO
+// ══════════════════════════════════════════════
+const URL_HISTORICO = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-PWDRlSYT4cY9rOK7Dz1R2Fe0HzoXFbu4icqnPk5M6eGOBUngZFwkhI-9TXPpT9d-wvWCzXNVxteq/pub?gid=55462010&single=true&output=csv';
+
+let dadosHistorico = [];
+
+async function carregarHistorico() {
+    const status = document.getElementById('hist-status');
+    status.innerText = '⏳ Carregando...';
+    
+    try {
+        const response = await fetch(URL_HISTORICO + '&t=' + Date.now());
+        const csv = await response.text();
+        
+        Papa.parse(csv, {
+            header: true,
+            skipEmptyLines: true,
+            complete: (r) => {
+                dadosHistorico = r.data;
+                popularFiltroHistorico();
+                filtrarHistorico();
+                status.innerText = '✅ Atualizado';
+            },
+            error: () => {
+                status.innerText = '❌ Erro ao carregar';
+            }
+        });
+    } catch(e) {
+        status.innerText = '❌ Erro na conexão';
+    }
+}
+
+function popularFiltroHistorico() {
+    const sel = document.getElementById('hist-fiscal');
+    if (!sel || sel.options.length > 1) return;
+    
+    const fiscais = [...new Set(dadosHistorico.map(d => d.FISCAL))].filter(Boolean).sort();
+    fiscais.forEach(f => sel.add(new Option(f, f)));
+}
+
+function filtrarHistorico() {
+    const fiscalFiltro = document.getElementById('hist-fiscal')?.value || 'TODOS';
+    const thead = document.getElementById('thead-historico');
+    const tbody = document.getElementById('tbody-historico');
+    
+    if (!dadosHistorico.length) {
+        tbody.innerHTML = '<tr><td colspan="10">Sem dados. Clique em Atualizar.</td></tr>';
+        return;
+    }
+    
+    // Pega as datas do primeiro registro (colunas exceto FISCAL)
+    const datas = Object.keys(dadosHistorico[0]).filter(k => k !== 'FISCAL').sort();
+    
+    // Cabeçalho
+    thead.innerHTML = `<tr>
+        <th style="position:sticky; left:0; background:var(--card-bg); z-index:2;">Fiscal</th>
+        ${datas.map(d => {
+            const partes = d.split('-');
+            const label = partes.length === 3 ? `${partes[2]}/${partes[1]}` : d;
+            return `<th style="text-align:center;">${label}</th>`;
+        }).join('')}
+        <th style="text-align:center; color:var(--warning);">Média</th>
+    </tr>`;
+    
+    // Filtra fiscais
+    const filtrados = fiscalFiltro === 'TODOS' 
+        ? dadosHistorico 
+        : dadosHistorico.filter(d => d.FISCAL === fiscalFiltro);
+    
+    // Corpo
+    tbody.innerHTML = filtrados.map(fiscal => {
+        const valores = datas.map(d => {
+            const v = fiscal[d] || '0%';
+            return typeof v === 'string' ? parseFloat(v.replace('%', '').replace(',', '.')) || 0 : parseFloat(v) || 0;
+        });
+        const media = valores.length ? (valores.reduce((a, b) => a + b, 0) / valores.length).toFixed(1) : 0;
+        
+        return `<tr>
+            <td style="position:sticky; left:0; background:var(--card-bg); font-weight:bold; white-space:nowrap;">${fiscal.FISCAL || ''}</td>
+            ${valores.map(v => {
+                const cor = v >= 70 ? 'var(--success)' : v >= 50 ? 'var(--warning)' : 'var(--danger)';
+                return `<td style="text-align:center; color:${cor}; font-weight:bold;">${v.toFixed(1)}%</td>`;
+            }).join('')}
+            <td style="text-align:center; color:var(--warning); font-weight:bold;">${media}%</td>
+        </tr>`;
+    }).join('');
+}
+
+// Carrega ao iniciar
+setTimeout(carregarHistorico, 3000);
 
 // Simplifica a função carregar() para usar a versão assíncrona
 function carregar() {
