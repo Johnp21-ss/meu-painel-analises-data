@@ -3113,6 +3113,12 @@ function carregar() {
             const id = `mot-${idx}`;
             const acao = m.percFraude > 30 ? 'NOTIFICAR FISCAL' : m.percFraude > 15 ? 'ALERTA MOTORISTA' : 'MONITORAR';
             const badgeCor = m.percFraude > 30 ? 'badge-danger' : m.percFraude > 15 ? 'badge-warning' : 'badge-info';
+            
+            // 🔍 BUSCAR O FISCAL E O VEÍCULO REAIS DESTE MOTORISTA NOS DADOS BRUTOS
+            const dadosMotorista = bruto.filter(d => d.motorista === m.nome && d.gre === m.gre);
+            const fiscalReal = dadosMotorista.length > 0 ? (dadosMotorista[0].fiscal_responsavel || 'NÃO IDENTIFICADO') : 'NÃO IDENTIFICADO';
+            const veiculoReal = dadosMotorista.length > 0 ? (dadosMotorista[0].veiculo || 'NÃO IDENTIFICADO') : 'NÃO IDENTIFICADO';
+            
             motoristasHtml += `<tr class="pointer" onclick="toggleRow('${id}',this)">
     <td><span class="arrow">▶</span> ${m.nome.substring(0,25)}</td>
     <td>${m.gre}</td>
@@ -3125,9 +3131,9 @@ function carregar() {
     data: new Date().toISOString().split('T')[0],
     tipo: m.tipos.includes('TEMPORAL') ? 'TEMPORAL' : 'GEOGRAFICA',
     gre: m.gre,
-    fiscal: 'Fiscal responsável não identificado',   // ✅ Agora preenchido
+    fiscal: fiscalReal,
     motorista: m.nome,
-    veiculo: 'Verificar na escala',                    // ✅ Agora preenchido
+    veiculo: veiculoReal,
     rota: 'Múltiplas rotas',
     descricao: 'Motorista com ' + m.fraudes + ' fraudes em ' + m.total + ' rotas (' + m.percFraude.toFixed(1) + '%)',
     gravidade: m.percFraude > 30 ? 'CRITICO' : m.percFraude > 15 ? 'ALTO' : 'MEDIO'
