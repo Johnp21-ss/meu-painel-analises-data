@@ -753,7 +753,7 @@
                 <div style="font-size:40px;">📋</div>
                 <div style="font-size:14px; font-weight:bold; color:#fff; margin:8px 0;">Confirmar Registro</div>
             </div>
-            <div id="modalConfirmarConteudo" style="font-size:10px; color:var(--slate); max-height:200px; overflow-y:auto; margin-bottom:14px; line-height:1.6; white-space:pre-wrap;"></div>
+            <div id="modalConfirmarConteudo" style="font-size:10px; color:var(--slate); max-height:350px; overflow-y:auto; margin-bottom:14px; line-height:1.6; white-space:pre-wrap; word-break:break-word;"></div>
             <div style="display:flex; gap:8px; justify-content:center;">
                 <button onclick="fecharModalConfirmar()" style="padding:8px 20px; background:var(--border); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">❌ Cancelar</button>
                 <button id="btnConfirmarEnvio" style="padding:8px 20px; background:var(--success); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">✅ Confirmar Envio</button>
@@ -4042,15 +4042,44 @@ function gerarBotaoRegistro(dadosBotao, estiloExtra = '') {
     // Escapa os valores para evitar quebras no HTML
     const escapar = (str) => String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
     
+    function gerarBotaoRegistro(dadosBotao, estiloExtra = '') {
+    // Verifica se usuário tem permissão para registrar
+    if (!podeRegistrar()) {
+        const nivel = getNivelUsuario();
+        return `<button disabled 
+            style="margin-left:6px;padding:2px 8px;font-size:9px;background:#555;color:#999;border:none;border-radius:4px;cursor:not-allowed;${estiloExtra}"
+            title="Apenas ADMIN e GESTOR podem registrar ocorrências">
+            🔒 ${nivel}
+        </button>`;
+    }
+    
+    const chaveTeste = gerarChaveUnica(dadosBotao);
+    const jaRegistrado = !!registrosPersistidos[chaveTeste];
+    
+    if (jaRegistrado) {
+        return `<button disabled 
+            style="margin-left:6px;padding:2px 8px;font-size:9px;background:#27ae60;color:#fff;border:none;border-radius:4px;cursor:not-allowed;${estiloExtra}">
+            ✅ Salvo
+        </button>`;
+    }
+    
+    // 🆕 Limita tamanho dos campos para não quebrar a URL
+    const truncar = (str, max) => {
+        if (!str) return '';
+        return str.length > max ? str.substring(0, max) + '...' : str;
+    };
+    
+    const escapar = (str) => String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    
     return `<button onclick="abrirAlertaForms({
         data:'${escapar(dadosBotao.data || '')}',
         tipo:'${escapar(dadosBotao.tipo || '')}',
-        gre:'${escapar(dadosBotao.gre || '')}',
-        fiscal:'${escapar(dadosBotao.fiscal || '')}',
-        motorista:'${escapar(dadosBotao.motorista || '')}',
-        veiculo:'${escapar(dadosBotao.veiculo || '')}',
-        rota:'${escapar(dadosBotao.rota || '')}',
-        descricao:'${escapar(dadosBotao.descricao || '')}',
+        gre:'${escapar(truncar(dadosBotao.gre, 100))}',
+        fiscal:'${escapar(truncar(dadosBotao.fiscal, 80))}',
+        motorista:'${escapar(truncar(dadosBotao.motorista, 120))}',
+        veiculo:'${escapar(truncar(dadosBotao.veiculo, 40))}',
+        rota:'${escapar(truncar(dadosBotao.rota, 120))}',
+        descricao:'${escapar(truncar(dadosBotao.descricao, 200))}',
         gravidade:'${escapar(dadosBotao.gravidade || '')}'
     })" style="margin-left:6px;padding:2px 8px;font-size:9px;background:#2980b9;color:#fff;border:none;border-radius:4px;cursor:pointer;${estiloExtra}">
         📋 Registrar
