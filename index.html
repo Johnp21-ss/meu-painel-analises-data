@@ -1454,18 +1454,41 @@
 
         <!-- ── LINHA 5: Tabela de auditoria prioritária ── -->
         <div class="card row-new" style="border-top-color:#e74c3c; margin-bottom:20px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-                <div>
-                    <h3 style="margin:0;font-size:13px;">📋 Auditoria Prioritária — Rotas Críticas</h3>
-                    <div style="font-size:9px;color:var(--slate);margin-top:2px;">Somente rotas com comportamento de fraude temporal, geográfica ou gargalo. Ordenadas por gravidade.</div>
-                </div>
-                <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                    <select id="cpl-audit-tipo" onchange="renderCplAuditoria()" style="width:auto;min-width:140px;font-size:10px;padding:5px;">
-                        <option value="TODOS">Todos os alertas</option>
-                        <option value="TEMPORAL">Fraude Temporal (&lt;10min)</option>
-                        <option value="GEOGRAFICA">Fraude Geográfica</option>
-                        <option value="GARGALO">Gargalo (&gt;6h)</option>
-                    </select>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+        <div>
+            <h3 style="margin:0;font-size:13px;">📋 Auditoria Prioritária — Rotas Críticas</h3>
+            <div style="font-size:9px;color:var(--slate);margin-top:2px;">Somente rotas com comportamento de fraude temporal, geográfica ou gargalo. Ordenadas por gravidade.</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button onclick="exportarCplCSV()" style="padding:5px 12px;background:#27ae60;color:#fff;border:none;border-radius:6px;font-size:10px;font-weight:bold;cursor:pointer;">📥 Exportar CSV</button>
+        </div>
+    </div>
+    
+    <!-- 🆕 FILTROS -->
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; align-items:center;">
+        <select id="cpl-audit-fiscal" onchange="renderCplAuditoria()" style="width:auto;min-width:140px;font-size:10px;padding:5px;">
+            <option value="TODOS">👔 Todos Fiscais</option>
+        </select>
+        <select id="cpl-audit-gre" onchange="renderCplAuditoria()" style="width:auto;min-width:120px;font-size:10px;padding:5px;">
+            <option value="TODOS">🏢 Todas GREs</option>
+        </select>
+        <select id="cpl-audit-cidade" onchange="renderCplAuditoria()" style="width:auto;min-width:130px;font-size:10px;padding:5px;">
+            <option value="TODOS">🏙️ Todas Cidades</option>
+        </select>
+        <select id="cpl-audit-tipo" onchange="renderCplAuditoria()" style="width:auto;min-width:150px;font-size:10px;padding:5px;">
+            <option value="TODOS">⚠️ Todos os alertas</option>
+            <option value="TEMPORAL">⏱️ Fraude Temporal</option>
+            <option value="GEOGRAFICA">📍 Fraude Geográfica</option>
+            <option value="GARGALO">⏳ Gargalo (&gt;6h)</option>
+        </select>
+        <select id="cpl-audit-gravidade" onchange="renderCplAuditoria()" style="width:auto;min-width:130px;font-size:10px;padding:5px;">
+            <option value="TODOS">📊 Todas Gravidades</option>
+            <option value="CRITICO">🔴 Crítico</option>
+            <option value="ALTO">🟠 Alto</option>
+            <option value="MEDIO">🟡 Médio</option>
+            <option value="BAIXO">🟢 Baixo</option>
+        </select>
+        <span id="cpl-audit-count" style="font-size:10px;color:var(--info);margin-left:auto;"></span>
                     <button onclick="exportarCplCSV()" style="padding:5px 12px;background:#27ae60;color:#fff;border:none;border-radius:6px;font-size:10px;font-weight:bold;cursor:pointer;">📥 Exportar CSV</button>
                 </div>
             </div>
@@ -4022,53 +4045,92 @@ window._cplDadosCompliance = [...dados];
 
     // ── Tabela de auditoria prioritária ──────────────────────────────────────
     function renderCplAuditoria() {
-        const filtroTipo = document.getElementById('cpl-audit-tipo')?.value || 'TODOS';
-        const lista = cplDadosCriticos.filter(d => filtroTipo === 'TODOS' || d.tipoAlerta === filtroTipo).sort((a, b) => b.gravidade - a.gravidade);
-
-        const tbody = document.getElementById('cpl-tbody-auditoria');
-        const summary = document.getElementById('cpl-audit-summary');
-        if (!tbody) return;
-
-        tbody.innerHTML = lista.slice(0, 200).map(d => {
-            const durStr = d.durMin !== null ? d.durMin + ' min' : 'N/A';
-            const distStr = d.distKm !== null ? d.distKm.toFixed(2) + ' km' : 'N/A';
-            const alertaCls = d.tipoAlerta === 'TEMPORAL' ? 'cpl-alerta-temporal' : d.tipoAlerta === 'GEOGRAFICA' ? 'cpl-alerta-geografico' : 'cpl-alerta-gargalo';
-            const alertaTxt = d.tipoAlerta === 'TEMPORAL' ? '⏱ Fraude Temporal' : d.tipoAlerta === 'GEOGRAFICA' ? '📍 Fraude Geográfica' : '⏳ Gargalo +6h';
-            const gravCls = d.gravidade >= 9 ? 'cpl-risco-critico' : d.gravidade >= 7 ? 'cpl-risco-alto' : d.gravidade >= 5 ? 'cpl-risco-medio' : 'cpl-risco-baixo';
-            const gravTxt = d.gravidade >= 9 ? 'CRÍTICO' : d.gravidade >= 7 ? 'ALTO' : d.gravidade >= 5 ? 'MÉDIO' : 'BAIXO';
-            return `<tr class="${d.tipoAlerta === 'TEMPORAL' || d.tipoAlerta === 'GEOGRAFICA' ? 'alert-row-danger' : 'alert-row-warning'}">
-                <td>${d.data||''}</td>
-                <td style="font-size:9px;">${(d.fiscal_responsavel||'').substring(0,22)}</td>
-                <td style="font-size:9px;">${d.gre||''}</td>
-                <td style="font-size:9px;">${(d.motorista||'').substring(0,20)}</td>
-                <td style="font-weight:bold;">${d.veiculo||'S/P'}</td>
-                <td style="font-size:9px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(d.rota||'').substring(0,45)}</td>
-                <td>${d.inicio_execucao||'--'}</td>
-                <td>${d.fim_execucao||'--'}</td>
-                <td style="font-weight:bold;${d.durMin!==null&&d.durMin<10?'color:#e74c3c':''}">${durStr}</td>
-                <td>${distStr}</td>
-                <td><span class="cpl-score-pill ${alertaCls}" style="border:1px solid currentColor;">${alertaTxt}</span></td>
-                <td>
-                    <span class="cpl-score-pill ${gravCls}">${gravTxt}</span>
-                     ${gerarBotaoRegistro({
-    data: d.data || '',
-    tipo: d.tipoAlerta || '',
-    gre: d.gre || '',
-    fiscal: d.fiscal_responsavel || '',
-    motorista: d.motorista || '',
-    veiculo: d.veiculo || '',
-    rota: (d.rota || '').substring(0, 80),
-    descricao: d.tipoAlerta === 'TEMPORAL' ? `Duração de ${d.durMin || 0}min` : 
-               d.tipoAlerta === 'GEOGRAFICA' ? `Distância ${(d.distKm || 0).toFixed(2)}km` : 
-               'Rota aberta há mais de 6h',
-    gravidade: gravTxt
-})}
-</td>
-</tr>`;
-        }).join('') || `<tr><td colspan="12" style="color:var(--slate);text-align:center;padding:24px;">✅ Nenhuma rota crítica encontrada.</td></tr>`;
-
-        if (summary) summary.innerText = `Exibindo ${Math.min(lista.length, 200)} de ${lista.length} registros críticos`;
+    const filtroTipo = document.getElementById('cpl-audit-tipo')?.value || 'TODOS';
+    const filtroFiscal = document.getElementById('cpl-audit-fiscal')?.value || 'TODOS';
+    const filtroGre = document.getElementById('cpl-audit-gre')?.value || 'TODOS';
+    const filtroCidade = document.getElementById('cpl-audit-cidade')?.value || 'TODOS';
+    const filtroGravidade = document.getElementById('cpl-audit-gravidade')?.value || 'TODOS';
+    
+    // 🆕 Popular filtros na primeira execução
+    if (cplDadosCriticos.length > 0) {
+        const selFiscal = document.getElementById('cpl-audit-fiscal');
+        const selGre = document.getElementById('cpl-audit-gre');
+        const selCidade = document.getElementById('cpl-audit-cidade');
+        
+        if (selFiscal && selFiscal.options.length <= 1) {
+            [...new Set(cplDadosCriticos.map(d => d.fiscal_responsavel))].filter(Boolean).sort()
+                .forEach(v => selFiscal.add(new Option(v, v)));
+        }
+        if (selGre && selGre.options.length <= 1) {
+            [...new Set(cplDadosCriticos.map(d => d.gre))].filter(Boolean).sort()
+                .forEach(v => selGre.add(new Option(v, v)));
+        }
+        if (selCidade && selCidade.options.length <= 1) {
+            [...new Set(cplDadosCriticos.map(d => d.cidade))].filter(Boolean).sort()
+                .forEach(v => selCidade.add(new Option(v, v)));
+        }
     }
+    
+    // Aplica filtros
+    const lista = cplDadosCriticos.filter(d => {
+        if (filtroTipo !== 'TODOS' && d.tipoAlerta !== filtroTipo) return false;
+        if (filtroFiscal !== 'TODOS' && d.fiscal_responsavel !== filtroFiscal) return false;
+        if (filtroGre !== 'TODOS' && d.gre !== filtroGre) return false;
+        if (filtroCidade !== 'TODOS' && d.cidade !== filtroCidade) return false;
+        if (filtroGravidade !== 'TODOS') {
+            const gravTxt = d.gravidade >= 9 ? 'CRITICO' : d.gravidade >= 7 ? 'ALTO' : d.gravidade >= 5 ? 'MEDIO' : 'BAIXO';
+            if (gravTxt !== filtroGravidade) return false;
+        }
+        return true;
+    }).sort((a, b) => b.gravidade - a.gravidade);
+
+    const tbody = document.getElementById('cpl-tbody-auditoria');
+    const summary = document.getElementById('cpl-audit-summary');
+    const countEl = document.getElementById('cpl-audit-count');
+    
+    if (!tbody) return;
+
+    tbody.innerHTML = lista.slice(0, 200).map(d => {
+        const durStr = d.durMin !== null ? d.durMin + ' min' : 'N/A';
+        const distStr = d.distKm !== null ? d.distKm.toFixed(2) + ' km' : 'N/A';
+        const alertaCls = d.tipoAlerta === 'TEMPORAL' ? 'cpl-alerta-temporal' : d.tipoAlerta === 'GEOGRAFICA' ? 'cpl-alerta-geografico' : 'cpl-alerta-gargalo';
+        const alertaTxt = d.tipoAlerta === 'TEMPORAL' ? '⏱ Fraude Temporal' : d.tipoAlerta === 'GEOGRAFICA' ? '📍 Fraude Geográfica' : '⏳ Gargalo +6h';
+        const gravCls = d.gravidade >= 9 ? 'cpl-risco-critico' : d.gravidade >= 7 ? 'cpl-risco-alto' : d.gravidade >= 5 ? 'cpl-risco-medio' : 'cpl-risco-baixo';
+        const gravTxt = d.gravidade >= 9 ? 'CRÍTICO' : d.gravidade >= 7 ? 'ALTO' : d.gravidade >= 5 ? 'MÉDIO' : 'BAIXO';
+        return `<tr class="${d.tipoAlerta === 'TEMPORAL' || d.tipoAlerta === 'GEOGRAFICA' ? 'alert-row-danger' : 'alert-row-warning'}">
+            <td>${d.data||''}</td>
+            <td style="font-size:9px;">${(d.fiscal_responsavel||'').substring(0,22)}</td>
+            <td style="font-size:9px;">${d.gre||''}</td>
+            <td style="font-size:9px;">${(d.motorista||'').substring(0,20)}</td>
+            <td style="font-weight:bold;">${d.veiculo||'S/P'}</td>
+            <td style="font-size:9px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${(d.rota||'').substring(0,45)}</td>
+            <td>${d.inicio_execucao||'--'}</td>
+            <td>${d.fim_execucao||'--'}</td>
+            <td style="font-weight:bold;${d.durMin!==null&&d.durMin<10?'color:#e74c3c':''}">${durStr}</td>
+            <td>${distStr}</td>
+            <td><span class="cpl-score-pill ${alertaCls}" style="border:1px solid currentColor;">${alertaTxt}</span></td>
+            <td>
+                <span class="cpl-score-pill ${gravCls}">${gravTxt}</span>
+                ${gerarBotaoRegistro({
+                    data: d.data || '',
+                    tipo: d.tipoAlerta || '',
+                    gre: d.gre || '',
+                    fiscal: d.fiscal_responsavel || '',
+                    motorista: d.motorista || '',
+                    veiculo: d.veiculo || '',
+                    rota: (d.rota || '').substring(0, 80),
+                    descricao: d.tipoAlerta === 'TEMPORAL' ? `Duração de ${d.durMin || 0}min` : 
+                               d.tipoAlerta === 'GEOGRAFICA' ? `Distância ${(d.distKm || 0).toFixed(2)}km` : 
+                               'Rota aberta há mais de 6h',
+                    gravidade: gravTxt
+                })}
+            </td>
+        </tr>`;
+    }).join('') || `<tr><td colspan="12" style="color:var(--slate);text-align:center;padding:24px;">✅ Nenhuma rota crítica encontrada para os filtros selecionados.</td></tr>`;
+
+    if (summary) summary.innerText = `Exibindo ${Math.min(lista.length, 200)} de ${lista.length} registros críticos`;
+    if (countEl) countEl.innerText = `Mostrando ${Math.min(lista.length, 200)} de ${lista.length} registros`;
+}
 
     function renderCplOfensores() {
     const gre  = document.getElementById('cpl-ofens-gre')?.value  || 'TODOS';
