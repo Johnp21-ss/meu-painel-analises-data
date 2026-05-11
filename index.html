@@ -1464,31 +1464,32 @@
         </div>
     </div>
     
-    <!-- 🆕 FILTROS -->
-    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; align-items:center;">
-        <select id="cpl-audit-fiscal" onchange="renderCplAuditoria()" style="width:auto;min-width:140px;font-size:10px;padding:5px;">
-            <option value="TODOS">👔 Todos Fiscais</option>
+        <!-- 🆕 FILTROS COMPACTOS -->
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; align-items:center;">
+        <select id="cpl-audit-fiscal" onchange="renderCplAuditoria()" style="width:auto;min-width:120px;font-size:9px;padding:4px;">
+            <option value="TODOS">👔 Fiscais</option>
         </select>
-        <select id="cpl-audit-gre" onchange="renderCplAuditoria()" style="width:auto;min-width:120px;font-size:10px;padding:5px;">
-            <option value="TODOS">🏢 Todas GREs</option>
+        <select id="cpl-audit-gre" onchange="renderCplAuditoria()" style="width:auto;min-width:100px;font-size:9px;padding:4px;">
+            <option value="TODOS">🏢 GREs</option>
         </select>
-        <select id="cpl-audit-cidade" onchange="renderCplAuditoria()" style="width:auto;min-width:130px;font-size:10px;padding:5px;">
-            <option value="TODOS">🏙️ Todas Cidades</option>
+        <select id="cpl-audit-cidade" onchange="renderCplAuditoria()" style="width:auto;min-width:110px;font-size:9px;padding:4px;">
+            <option value="TODOS">🏙️ Cidades</option>
         </select>
-        <select id="cpl-audit-tipo" onchange="renderCplAuditoria()" style="width:auto;min-width:150px;font-size:10px;padding:5px;">
-            <option value="TODOS">⚠️ Todos os alertas</option>
-            <option value="TEMPORAL">⏱️ Fraude Temporal</option>
-            <option value="GEOGRAFICA">📍 Fraude Geográfica</option>
-            <option value="GARGALO">⏳ Gargalo (&gt;6h)</option>
+        <select id="cpl-audit-tipo" onchange="renderCplAuditoria()" style="width:auto;min-width:130px;font-size:9px;padding:4px;">
+            <option value="TODOS">⚠️ Todos</option>
+            <option value="TEMPORAL">⏱️ Temporal</option>
+            <option value="GEOGRAFICA">📍 Geográfica</option>
+            <option value="GARGALO">⏳ Gargalo</option>
         </select>
-        <select id="cpl-audit-gravidade" onchange="renderCplAuditoria()" style="width:auto;min-width:130px;font-size:10px;padding:5px;">
-            <option value="TODOS">📊 Todas Gravidades</option>
+        <select id="cpl-audit-gravidade" onchange="renderCplAuditoria()" style="width:auto;min-width:110px;font-size:9px;padding:4px;">
+            <option value="TODOS">📊 Gravidade</option>
             <option value="CRITICO">🔴 Crítico</option>
             <option value="ALTO">🟠 Alto</option>
             <option value="MEDIO">🟡 Médio</option>
             <option value="BAIXO">🟢 Baixo</option>
         </select>
-        <span id="cpl-audit-count" style="font-size:10px;color:var(--info);margin-left:auto;"></span>
+        <span id="cpl-audit-count" style="font-size:9px;color:var(--info);margin-left:auto;"></span>
+        <button onclick="exportarCplCSV()" style="padding:4px 10px;background:#27ae60;color:#fff;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">📥 CSV</button>
     </div>
             </div>
             <div style="overflow-x:auto; max-height:300px; overflow-y:auto;">
