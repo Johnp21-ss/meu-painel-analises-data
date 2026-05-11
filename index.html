@@ -1129,8 +1129,8 @@
         <div style="display:flex; align-items:center; gap:6px; font-size:10px; color:var(--slate);">
     <span>⏱️ Duração máx:</span>
     <input type="range" id="fIrregDuracao" min="1" max="30" value="10" step="1" 
-        oninput="document.getElementById('fIrregDuracaoValor').innerText = this.value + 'min'; filtrarIrregularidades();"
-        style="width:80px; accent-color:#e74c3c;">
+    oninput="atualizarComSlider()"
+    style="width:80px; accent-color:#e74c3c;">
     <span id="fIrregDuracaoValor" style="color:#e74c3c; font-weight:bold; min-width:35px;">10min</span>
 </div>
         <span id="irreg-count" style="font-size:10px;color:var(--info);margin-left:auto;"></span>
@@ -3052,11 +3052,14 @@ function carregar() {
 
             let tipoFraude = null, detalheFraude = '';
 
-            if (duracao !== null && duracao < 10) {
-                tipoFraude = 'TEMPORAL';
-                detalheFraude = `Duração de ${duracao} min (<10min)`;
-                fraudesTemporal++;
-            } else if (distPontosKm !== null && distPontosKm < 0.5 && kmPlanejado > 5 && norm(rota.origem) === 'RASTREADOR VEICULAR') {
+            // 🆕 Usa o valor do slider como limite (padrão 30 se não definido)
+const limiteDuracao = parseInt(document.getElementById('fIrregDuracao')?.value || 30);
+
+if (duracao !== null && duracao < limiteDuracao) {
+    tipoFraude = 'TEMPORAL';
+    detalheFraude = `Duração de ${duracao} min (<${limiteDuracao}min)`;
+    fraudesTemporal++;
+} else if (distPontosKm !== null && distPontosKm < 0.5 && kmPlanejado > 5 && norm(rota.origem) === 'RASTREADOR VEICULAR') {
                 tipoFraude = 'MESMO_LOCAL';
                 detalheFraude = `Início e fim no mesmo local (dist ${distPontosKm.toFixed(2)}km) com KM=${kmPlanejado}km`;
                 fraudesMesmoLocal++;
@@ -3285,7 +3288,7 @@ filtrarIrregularidades();
         if (ctxTipos) {
             charts.tiposFraude = new Chart(ctxTipos, {
                 type: 'pie',
-                data: { labels: ['Fraude Temporal (<10min)', 'Mesmo Local (início=fim)'],
+                data: { labels: [`Fraude Temporal (<${limiteDuracao}min)`, 'Mesmo Local (início=fim)'],
                     datasets: [{ data: [fraudesTemporal, fraudesMesmoLocal], backgroundColor: ['#e74c3c', '#f39c12'] }] },
                 options: { responsive: true, maintainAspectRatio: true,
                     plugins: { legend: { position: 'bottom', labels: { color: '#fff', font: { size: 9 } } } } }
@@ -4792,6 +4795,15 @@ function filtrarIrregularidades() {
     if (countEl) {
         countEl.innerText = `Mostrando ${Math.min(filtradas.length, 200)} de ${filtradas.length} irregularidades`;
     }
+}
+     // ══════════════════════════════════════════════
+// ATUALIZAR TUDO QUANDO O SLIDER MUDAR
+// ══════════════════════════════════════════════
+function atualizarComSlider() {
+    // Atualiza o valor mostrado
+    document.getElementById('fIrregDuracaoValor').innerText = document.getElementById('fIrregDuracao').value + 'min';
+    // Reprocessa os dados com o novo limite
+    processarAssiduidadeTemporal();
 }
     // ── Init ──────────────────────────────────────────────────────────────────
     carregar();
