@@ -3206,17 +3206,42 @@ function carregar() {
     const temFraude = f.percFraude > 10;
     return `<tr><td>${f.nome}</td><td>${f.total}</td><td class="val-fraude">${f.fraudes}</td><td>${f.percFraude.toFixed(1)}%</td><td>
         <span class="badge ${badgeCor}">${prov}</span>
-        ${temFraude ? gerarBotaoRegistro({
-            data: new Date().toISOString().split('T')[0],
-            tipo: 'BAIXA_ASSID',
-            gre: '',
-            fiscal: f.nome,
-            motorista: '',
-            veiculo: '',
-            rota: 'Fiscal com ' + f.percFraude.toFixed(1) + '% de fraudes',
-            descricao: 'Fiscal ' + f.nome + ' com ' + f.fraudes + ' fraudes em ' + f.total + ' rotas',
-            gravidade: f.percFraude > 20 ? 'CRITICO' : 'ALTO'
-        }) : ''}
+        ${temFraude ? (() => {
+    // 🔍 BUSCAR DADOS REAIS DESTE FISCAL
+    const dadosFiscal = bruto.filter(d => d.fiscal_responsavel === f.nome);
+    const motoristasDoFiscal = [...new Set(dadosFiscal.map(d => d.motorista).filter(Boolean))];
+    const gresDoFiscal = [...new Set(dadosFiscal.map(d => d.gre).filter(Boolean))];
+    const veiculosDoFiscal = [...new Set(dadosFiscal.map(d => d.veiculo).filter(v => v && v.trim() !== ''))];
+    const rotasComFraude = dadosFiscal.filter(d => {
+        const dur = calcDuracaoMinutos(d.inicio_execucao, d.fim_execucao);
+        const dist = calcularDistanciaKm(d.coordenadas_inicio, d.coordenadas_fim);
+        const kmPlan = parseFloat((d.km_planejado || '0').toString().replace(',', '.')) || 0;
+        return (dur !== null && dur < 10) || (dist !== null && dist < 0.5 && kmPlan > 5);
+    });
+    
+    const motoristasStr = motoristasDoFiscal.length > 0 
+        ? motoristasDoFiscal.slice(0, 10).join(', ') + (motoristasDoFiscal.length > 10 ? ' e mais ' + (motoristasDoFiscal.length - 10) + '...' : '')
+        : 'Verificar motoristas';
+    const gresStr = gresDoFiscal.length > 0 ? gresDoFiscal.join(', ') : 'N/I';
+    const veiculosStr = veiculosDoFiscal.length > 0 
+        ? veiculosDoFiscal.slice(0, 5).join(', ') + (veiculosDoFiscal.length > 5 ? ' e mais...' : '')
+        : 'N/I';
+    const rotasStr = rotasComFraude.length > 0 
+        ? rotasComFraude.slice(0, 5).map(r => r.rota).join(', ') + (rotasComFraude.length > 5 ? ' e mais ' + (rotasComFraude.length - 5) + ' rotas...' : '')
+        : 'Múltiplas rotas';
+    
+    return gerarBotaoRegistro({
+        data: new Date().toISOString().split('T')[0],
+        tipo: 'TEMPORAL',
+        gre: gresStr,
+        fiscal: f.nome,
+        motorista: motoristasStr,
+        veiculo: veiculosStr,
+        rota: rotasStr,
+        descricao: 'Fiscal ' + f.nome + ' com ' + f.fraudes + ' fraudes em ' + f.total + ' rotas (' + f.percFraude.toFixed(1) + '%) - ' + motoristasDoFiscal.length + ' motoristas envolvidos',
+        gravidade: f.percFraude > 20 ? 'CRITICO' : f.percFraude > 10 ? 'ALTO' : 'MEDIO'
+    });
+})() : ''}
     </td></tr>`;
 }).join('') || '<tr><td colspan="5" style="color:var(--slate)">Sem dados.</td></tr>';;
 
