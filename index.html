@@ -935,18 +935,25 @@
                 </table>
             </div>
         </div>
-        <!-- 🆕 CARD: Histórico de Aproveitamento -->
+        <!-- 🆕 CARD: Histórico de Aproveitamento - GRÁFICO -->
 <div class="card row-new" style="border-top-color:#e67e22; margin-bottom:20px;">
-    <h3>📈 Histórico de Aproveitamento por Fiscal 
-        <small style="font-size:10px; color:var(--slate);">% de assiduidade diária (últimos 30 dias)</small>
-    </h3>
-    <div style="display:flex; gap:8px; margin-bottom:10px; align-items:center;">
-        <select id="hist-fiscal" onchange="filtrarHistorico()" style="width:auto;min-width:200px;">
-            <option value="TODOS">TODOS FISCAIS</option>
-        </select>
-        <button onclick="carregarHistorico()" class="btn-action" style="background:var(--info);">🔄 Atualizar</button>
-        <span id="hist-status" style="font-size:9px; color:var(--slate);"></span>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
+        <h3 style="margin:0; font-size:13px;">📈 Histórico de Aproveitamento por Fiscal 
+            <small style="font-size:10px; color:var(--slate);">% de assiduidade diária (últimos 30 dias)</small>
+        </h3>
+        <div style="display:flex; gap:6px; align-items:center;">
+            <select id="hist-fiscal" onchange="filtrarHistorico()" style="width:auto;min-width:180px;font-size:10px;padding:4px;">
+                <option value="TODOS">TODOS FISCAIS</option>
+            </select>
+            <button onclick="carregarHistorico()" class="btn-action" style="background:var(--info);">🔄</button>
+        </div>
     </div>
+    <div style="position:relative; flex:1; min-height:300px;">
+        <canvas id="chartHistorico"></canvas>
+    </div>
+    <div id="legendaHistorico" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; padding-top:6px; border-top:1px solid var(--border); justify-content:center;"></div>
+    <span id="hist-status" style="font-size:9px; color:var(--slate); margin-top:4px;"></span>
+</div>
     <div class="scroll-area-sm" style="max-height:350px; overflow-x:auto;">
         <table id="tbl-historico" style="table-layout:auto; min-width:800px; font-size:9px;">
             <thead id="thead-historico"></thead>
@@ -1888,12 +1895,14 @@ function carregarDadosAsync() {
         });
     });
 }
-     // ══════════════════════════════════════════════
-// HISTÓRICO DE APROVEITAMENTO
+// ══════════════════════════════════════════════
+// HISTÓRICO DE APROVEITAMENTO - GRÁFICO
 // ══════════════════════════════════════════════
 const URL_HISTORICO = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-PWDRlSYT4cY9rOK7Dz1R2Fe0HzoXFbu4icqnPk5M6eGOBUngZFwkhI-9TXPpT9d-wvWCzXNVxteq/pub?gid=55462010&single=true&output=csv';
 
 let dadosHistorico = [];
+let chartHistorico = null;
+const HIST_COLORS = ['#2ecc71', '#3498db', '#f1c40f', '#9b59b6', '#e67e22', '#e74c3c', '#1abc9c', '#e84393', '#00b894', '#6c5ce7', '#fd79a8', '#a29bfe'];
 
 async function carregarHistorico() {
     const status = document.getElementById('hist-status');
@@ -1907,13 +1916,13 @@ async function carregarHistorico() {
             header: true,
             skipEmptyLines: true,
             complete: (r) => {
-                dadosHistorico = r.data;
+                dadosHistorico = r.data.filter(d => d.FISCAL && d.FISCAL.trim() !== '');
                 popularFiltroHistorico();
                 filtrarHistorico();
-                status.innerText = '✅ Atualizado';
+                status.innerText = '✅ Atualizado em ' + new Date().toLocaleTimeString();
             },
             error: () => {
-                status.innerText = '❌ Erro ao carregar';
+                status.innerText = '❌ Erro ao processar dados';
             }
         });
     } catch(e) {
@@ -1931,54 +1940,139 @@ function popularFiltroHistorico() {
 
 function filtrarHistorico() {
     const fiscalFiltro = document.getElementById('hist-fiscal')?.value || 'TODOS';
-    const thead = document.getElementById('thead-historico');
-    const tbody = document.getElementById('tbody-historico');
     
-    if (!dadosHistorico.length) {
-        tbody.innerHTML = '<tr><td colspan="10">Sem dados. Clique em Atualizar.</td></tr>';
-        return;
-    }
+    if (!dadosHistorico.length) return;
     
-    // Pega as datas do primeiro registro (colunas exceto FISCAL)
+    // Pega as datas (colunas exceto FISCAL)
     const datas = Object.keys(dadosHistorico[0]).filter(k => k !== 'FISCAL').sort();
     
-    // Cabeçalho
-    thead.innerHTML = `<tr>
-        <th style="position:sticky; left:0; background:var(--card-bg); z-index:2;">Fiscal</th>
-        ${datas.map(d => {
-            const partes = d.split('-');
-            const label = partes.length === 3 ? `${partes[2]}/${partes[1]}` : d;
-            return `<th style="text-align:center;">${label}</th>`;
-        }).join('')}
-        <th style="text-align:center; color:var(--warning);">Média</th>
-    </tr>`;
+    // Formata labels (ex: 04/27)
+    const labels = datas.map(d => {
+        const partes = d.split('-');
+        return partes.length === 3 ? `${partes[2]}/${partes[1]}` : d;
+    });
     
     // Filtra fiscais
-    const filtrados = fiscalFiltro === 'TODOS' 
+    let fiscais = fiscalFiltro === 'TODOS' 
         ? dadosHistorico 
         : dadosHistorico.filter(d => d.FISCAL === fiscalFiltro);
     
-    // Corpo
-    tbody.innerHTML = filtrados.map(fiscal => {
-        const valores = datas.map(d => {
-            const v = fiscal[d] || '0%';
+    // Limita a 10 fiscais para o gráfico não ficar poluído
+    if (fiscalFiltro === 'TODOS' && fiscais.length > 10) {
+        // Pega os 10 com maior média
+        fiscais = fiscais.map(f => {
+            const vals = datas.map(d => parseFloat(String(f[d] || '0').replace('%', '').replace(',', '.')) || 0);
+            const media = vals.reduce((a, b) => a + b, 0) / vals.length;
+            return { ...f, _media: media };
+        }).sort((a, b) => b._media - a._media).slice(0, 10);
+    }
+    
+    // Cria datasets
+    const datasets = fiscais.map((fiscal, idx) => {
+        const cor = HIST_COLORS[idx % HIST_COLORS.length];
+        const nome = (fiscal.FISCAL || '').split(' ').slice(0, 2).join(' ');
+        const data = datas.map(d => {
+            const v = fiscal[d] || '0';
             return typeof v === 'string' ? parseFloat(v.replace('%', '').replace(',', '.')) || 0 : parseFloat(v) || 0;
         });
-        const media = valores.length ? (valores.reduce((a, b) => a + b, 0) / valores.length).toFixed(1) : 0;
+        const media = data.length ? (data.reduce((a, b) => a + b, 0) / data.length) : 0;
         
-        return `<tr>
-            <td style="position:sticky; left:0; background:var(--card-bg); font-weight:bold; white-space:nowrap;">${fiscal.FISCAL || ''}</td>
-            ${valores.map(v => {
-                const cor = v >= 70 ? 'var(--success)' : v >= 50 ? 'var(--warning)' : 'var(--danger)';
-                return `<td style="text-align:center; color:${cor}; font-weight:bold;">${v.toFixed(1)}%</td>`;
-            }).join('')}
-            <td style="text-align:center; color:var(--warning); font-weight:bold;">${media}%</td>
-        </tr>`;
-    }).join('');
+        const r = parseInt(cor.slice(1, 3), 16);
+        const g = parseInt(cor.slice(3, 5), 16);
+        const b = parseInt(cor.slice(5, 7), 16);
+        
+        return {
+            label: nome,
+            labelFull: fiscal.FISCAL || '',
+            media: media.toFixed(1),
+            data: data,
+            borderColor: cor,
+            backgroundColor: `rgba(${r},${g},${b},0.08)`,
+            fill: false,
+            tension: 0.3,
+            pointRadius: 2,
+            pointHoverRadius: 5,
+            borderWidth: 2,
+            order: idx
+        };
+    });
+    
+    // Renderiza gráfico
+    if (chartHistorico) { chartHistorico.destroy(); chartHistorico = null; }
+    const ctx = document.getElementById('chartHistorico');
+    if (!ctx) return;
+    
+    chartHistorico = new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1a1f2e',
+                    borderColor: '#485460',
+                    borderWidth: 1,
+                    titleColor: '#a4b0be',
+                    bodyColor: '#f5f6fa',
+                    padding: 10,
+                    callbacks: {
+                        title: (items) => `📅 ${items[0].label}`,
+                        label: (item) => ` ${item.dataset.labelFull.substring(0, 25)} | ${item.raw.toFixed(1)}% | Média: ${item.dataset.media}%`
+                    }
+                }
+            },
+            scales: {
+                x: { 
+                    ticks: { color: '#a4b0be', font: { size: 8 }, maxRotation: 45 }, 
+                    grid: { color: 'rgba(255,255,255,0.04)' } 
+                },
+                y: { 
+                    beginAtZero: true, 
+                    max: 100, 
+                    ticks: { color: '#a4b0be', callback: v => v + '%', font: { size: 8 }, stepSize: 10 }, 
+                    grid: { color: 'rgba(255,255,255,0.05)' } 
+                }
+            }
+        }
+    });
+    
+    // Legenda interativa
+    const leg = document.getElementById('legendaHistorico');
+    if (leg) {
+        leg.innerHTML = datasets.map((ds, i) => `
+            <div style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:3px 8px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);font-size:9px;font-weight:bold;"
+                 onmouseover="destacarLinhaHistorico(${i})" onmouseout="resetLinhasHistorico()">
+                <span style="width:10px;height:10px;border-radius:50%;background:${ds.borderColor};flex-shrink:0;"></span>
+                <span style="color:${ds.borderColor};">${ds.label.toUpperCase()}</span>
+                <span style="color:var(--slate);font-size:8px;">${ds.media}%</span>
+            </div>
+        `).join('');
+    }
 }
 
-// Carrega ao iniciar
-setTimeout(carregarHistorico, 3000);
+function destacarLinhaHistorico(idx) {
+    if (!chartHistorico) return;
+    chartHistorico.data.datasets.forEach((ds, i) => {
+        ds.borderWidth = i === idx ? 4 : 1;
+        ds.pointRadius = i === idx ? 5 : 2;
+    });
+    chartHistorico.update();
+}
+
+function resetLinhasHistorico() {
+    if (!chartHistorico) return;
+    chartHistorico.data.datasets.forEach(ds => {
+        ds.borderWidth = 2;
+        ds.pointRadius = 2;
+    });
+    chartHistorico.update();
+}
+
+// Carrega ao iniciar (após os dados principais carregarem)
+setTimeout(carregarHistorico, 4000);
 
 // Simplifica a função carregar() para usar a versão assíncrona
 function carregar() {
