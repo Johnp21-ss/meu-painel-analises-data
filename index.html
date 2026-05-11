@@ -2268,27 +2268,94 @@ function carregar() {
     let _dadosPendentes = null;
 
     function abrirModalConfirmar(dados) {
-        _dadosPendentes = dados;
-        
-        const mensagensPadrao = {
-            TEMPORAL: `🚨 TIPO: Fraude Temporal\n👤 Motorista: ${dados.motorista || ''}\n🗺️ Rota: ${dados.rota || ''}\n🏢 GRE: ${dados.gre || ''}\n⏱️ Duração: ${dados.descricao || ''}\n\nPrezado(a) Fiscal ${dados.fiscal || ''},\n\nA rota apresentou duração inferior a 10 minutos. Verifique junto ao motorista e registre a justificativa.`,
-            GEOGRAFICA: `🚨 TIPO: Fraude Geográfica\n👤 Motorista: ${dados.motorista || ''}\n🗺️ Rota: ${dados.rota || ''}\n🏢 GRE: ${dados.gre || ''}\n📍 Distância: ${dados.descricao || ''}\n\nPrezado(a) Fiscal ${dados.fiscal || ''},\n\nRastreador registrou início e fim no mesmo local. Verifique o ocorrido.`,
-            GARGALO: `⏳ TIPO: Gargalo +6h\n👤 Motorista: ${dados.motorista || ''}\n🗺️ Rota: ${dados.rota || ''}\n🏢 GRE: ${dados.gre || ''}\n\nPrezado(a) Fiscal ${dados.fiscal || ''},\n\nRota aberta há mais de 6 horas. Contate o motorista IMEDIATAMENTE.`,
-            BAIXA_ASSID: `📉 TIPO: Baixa Assiduidade\n👤 Motorista: ${dados.motorista || ''}\n🗺️ Rota(s): ${dados.rota || ''}\n🏢 GRE: ${dados.gre || ''}\n\nPrezado(a) Fiscal ${dados.fiscal || ''},\n\nMotorista sem abertura de rota. Verifique o motivo.`
-        };
-        
-        const conteudo = mensagensPadrao[dados.tipo] || 
-            `📋 Registro de Ocorrência\nTipo: ${dados.tipo || ''}\nMotorista: ${dados.motorista || ''}\nRota: ${dados.rota || ''}\nGRE: ${dados.gre || ''}`;
-        
-        document.getElementById('modalConfirmarConteudo').innerText = conteudo;
-        document.getElementById('modalConfirmarRegistro').classList.add('open');
-        document.body.style.overflow = 'hidden';
-        
-        document.getElementById('btnConfirmarEnvio').onclick = function() {
-            fecharModalConfirmar();
-            enviarRegistro(_dadosPendentes);
-        };
-    }
+    _dadosPendentes = dados;
+
+    // ⚠️ ESTAS SÃO AS MENSAGENS QUE SERÃO ENVIADAS PARA O WHATSAPP
+    const mensagensCompletas = {
+        TEMPORAL: `🚨 *IRREGULARIDADE OPERACIONAL - FRAUDE TEMPORAL*\n\n` +
+            `👤 *Motorista:* ${dados.motorista || 'N/I'}\n` +
+            `🗺️ *Rota:* ${dados.rota || 'N/I'}\n` +
+            `🚛 *Veículo:* ${dados.veiculo || 'N/I'}\n` +
+            `🏢 *GRE:* ${dados.gre || 'N/I'}\n` +
+            `👔 *Fiscal Responsável:* ${dados.fiscal || 'N/I'}\n\n` +
+            `📊 *Detalhes da Irregularidade:*\n` +
+            `⏱️ Duração registrada: ${dados.descricao || 'N/I'}\n` +
+            `⚠️ A rota apresentou duração inferior a 10 minutos,\n` +
+            `o que indica possível não execução do trajeto planejado.\n\n` +
+            `✅ *PROVIDÊNCIA SOLICITADA:*\n` +
+            `Verificar junto ao motorista o ocorrido e registrar a justificativa.\n\n` +
+            `Atenciosamente,\n` +
+            `Setor de Monitoramento Logístico`,
+
+        GEOGRAFICA: `🚨 *IRREGULARIDADE OPERACIONAL - FRAUDE GEOGRÁFICA*\n\n` +
+            `👤 *Motorista:* ${dados.motorista || 'N/I'}\n` +
+            `🗺️ *Rota:* ${dados.rota || 'N/I'}\n` +
+            `🚛 *Veículo:* ${dados.veiculo || 'N/I'}\n` +
+            `🏢 *GRE:* ${dados.gre || 'N/I'}\n` +
+            `👔 *Fiscal Responsável:* ${dados.fiscal || 'N/I'}\n\n` +
+            `📊 *Detalhes da Irregularidade:*\n` +
+            `📍 Distância registrada: ${dados.descricao || 'N/I'}\n` +
+            `⚠️ O rastreador veicular registrou início e fim\n` +
+            `da rota no mesmo ponto (distância < 500m).\n\n` +
+            `✅ *PROVIDÊNCIA SOLICITADA:*\n` +
+            `Verificar junto ao motorista e ao rastreador o ocorrido.\n\n` +
+            `Atenciosamente,\n` +
+            `Setor de Monitoramento Logístico`,
+
+        GARGALO: `⏳ *ROTA EM GARGALO - MAIS DE 6 HORAS ABERTA*\n\n` +
+            `👤 *Motorista:* ${dados.motorista || 'N/I'}\n` +
+            `🗺️ *Rota:* ${dados.rota || 'N/I'}\n` +
+            `🚛 *Veículo:* ${dados.veiculo || 'N/I'}\n` +
+            `🏢 *GRE:* ${dados.gre || 'N/I'}\n` +
+            `👔 *Fiscal Responsável:* ${dados.fiscal || 'N/I'}\n\n` +
+            `📊 *Detalhes:*\n` +
+            `⏰ Rota em andamento há mais de 6 horas\n\n` +
+            `✅ *PROVIDÊNCIA SOLICITADA:*\n` +
+            `Entrar em contato IMEDIATAMENTE com o motorista.\n\n` +
+            `Atenciosamente,\n` +
+            `Setor de Monitoramento Logístico`,
+
+        BAIXA_ASSID: `📉 *BAIXA ASSIDUIDADE - MOTORISTA SEM ABERTURA DE ROTA*\n\n` +
+            `👤 *Motorista:* ${dados.motorista || 'N/I'}\n` +
+            `🗺️ *Rota(s):* ${dados.rota || 'N/I'}\n` +
+            `🚛 *Veículo:* ${dados.veiculo || 'N/I'}\n` +
+            `🏢 *GRE:* ${dados.gre || 'N/I'}\n` +
+            `👔 *Fiscal Responsável:* ${dados.fiscal || 'N/I'}\n\n` +
+            `📊 *Detalhes:*\n` +
+            `⚠️ Motorista não realizou a abertura da(s) rota(s) programada(s).\n\n` +
+            `✅ *PROVIDÊNCIA SOLICITADA:*\n` +
+            `Verificar o motivo da não execução e registrar a justificativa.\n\n` +
+            `Atenciosamente,\n` +
+            `Setor de Monitoramento Logístico`
+    };
+
+    // Pega a mensagem completa ou usa uma padrão
+    const conteudoCompleto = mensagensCompletas[dados.tipo] ||
+        `📋 *Registro de Ocorrência*\n\n` +
+        `Tipo: ${dados.tipo || 'N/I'}\n` +
+        `Motorista: ${dados.motorista || 'N/I'}\n` +
+        `Rota: ${dados.rota || 'N/I'}\n` +
+        `GRE: ${dados.gre || 'N/I'}`;
+
+    // Mostra o texto completo no modal
+    document.getElementById('modalConfirmarConteudo').innerText = conteudoCompleto;
+    document.getElementById('modalConfirmarRegistro').classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    // Configura o botão "Confirmar Envio" para abrir o WhatsApp com a mensagem completa
+    document.getElementById('btnConfirmarEnvio').onclick = function() {
+        fecharModalConfirmar();
+
+        // Codifica a mensagem para URL
+        const mensagemCodificada = encodeURIComponent(conteudoCompleto);
+
+        // Abre o WhatsApp Web com a mensagem pronta
+        window.open('https://web.whatsapp.com/send?text=' + mensagemCodificada, '_blank');
+
+        // Marca como registrado
+        marcarRegistrado(dados);
+    };
+}
 
     function fecharModalConfirmar(event) {
         if (event && event.target !== document.getElementById('modalConfirmarRegistro')) return;
@@ -4068,7 +4135,7 @@ function gerarBotaoRegistro(dadosBotao, estiloExtra = '') {
         return;
     }
     
-    // Abre modal de confirmação
+    // ✅ ABRE O MODAL DE CONFIRMAÇÃO (não abre WhatsApp ainda!)
     abrirModalConfirmar(dados);
 }
     function mostrarMotoristasMultiGRE(dados) {
