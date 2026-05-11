@@ -1440,45 +1440,38 @@
             <div id="cpl-audit-summary" style="font-size:9px;color:var(--slate);margin-top:8px;text-align:right;"></div>
         </div>
 
-     <!-- ── CARD OFENSORES ── -->
-        <div class="card row-new" style="border-top-color:#1abc9c; margin-bottom:20px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-                <div>
-                    <h3 style="margin:0;font-size:13px;">🚫 Ofensores — Motoristas Sem Abertura de Rota</h3>
-                    <div style="font-size:9px;color:var(--slate);margin-top:2px;">Motoristas com rotas regulares não iniciadas — acione o fiscal responsável.</div>
-                </div>
-                <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-                    <select id="cpl-ofens-gre" onchange="renderCplOfensores()" style="width:auto;min-width:120px;font-size:10px;padding:5px;">
-                        <option value="TODOS">Todas GREs</option>
-                    </select>
-                    <select id="cpl-ofens-fiscal" onchange="renderCplOfensores()" style="width:auto;min-width:150px;font-size:10px;padding:5px;">
-                        <option value="TODOS">Todos Fiscais</option>
-                    </select>
-                    <select id="cpl-ofens-cidade" onchange="renderCplOfensores()" style="width:auto;min-width:130px;font-size:10px;padding:5px;">
-                        <option value="TODOS">Todos Municípios</option>
-                    </select>
-                </div>
-            </div>
-            <div style="overflow-x:auto; max-height:300px; overflow-y:auto;">
-                <table id="cpl-tbl-ofensores" style="table-layout:auto;min-width:800px;">
-                    <thead>
-                        <tr>
-                            <th>Fiscal</th>
-                            <th>GRE</th>
-                            <th>Município</th>
-                            <th>Motorista</th>
-                            <th>Veículo</th>
-                            <th>Rota</th>
-                            <th>Turno</th>
-                            <th>Obs</th>
-                            <th>Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cpl-tbody-ofensores"></tbody>
-                </table>
-            </div>
-            <div id="cpl-ofens-summary" style="font-size:9px;color:var(--slate);margin-top:8px;text-align:right;"></div>
+     <!-- ── CARD OFENSORES HIERÁRQUICO ── -->
+<div class="card row-new" style="border-top-color:#e67e22; margin-bottom:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+        <div>
+            <h3 style="margin:0;font-size:13px;">🚫 Ofensores — Motoristas Sem Abertura de Rota</h3>
+            <div style="font-size:9px;color:var(--slate);margin-top:2px;">Clique para expandir: Fiscal → GRE → Cidade → Motorista</div>
         </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+            <select id="cpl-ofens-gre-hier" onchange="renderCplOfensoresHierarquico()" style="width:auto;min-width:130px;font-size:10px;padding:5px;">
+                <option value="TODOS">Todas GREs</option>
+            </select>
+            <select id="cpl-ofens-fiscal-hier" onchange="renderCplOfensoresHierarquico()" style="width:auto;min-width:150px;font-size:10px;padding:5px;">
+                <option value="TODOS">Todos Fiscais</option>
+            </select>
+        </div>
+    </div>
+    <div style="overflow-x:auto; max-height:500px; overflow-y:auto;">
+        <table id="cpl-tbl-ofensores-hier" style="table-layout:auto;min-width:700px;">
+            <thead>
+                <tr>
+                    <th style="width:40%;">Fiscal / GRE / Cidade / Motorista</th>
+                    <th style="width:12%;">Veículo</th>
+                    <th style="width:10%;">Turno</th>
+                    <th style="width:18%;">Rotas</th>
+                    <th style="width:20%;">Ação</th>
+                </tr>
+            </thead>
+            <tbody id="cpl-tbody-ofensores-hier"></tbody>
+        </table>
+    </div>
+    <div id="cpl-ofens-hier-summary" style="font-size:9px;color:var(--slate);margin-top:8px;text-align:right;"></div>
+</div>
     </section>
 
  <script>
@@ -1742,15 +1735,18 @@ if (areaNivel && nivelSalvo) {
 
     // ── Tabs ──────────────────────────────────────────────────────────────────
     function switchTab(e, tabId) {
-        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        e.currentTarget.classList.add('active');
-        if (tabId === 'aba-assiduidade') processarAssiduidadeTemporal();
-        if (tabId === 'aba-extras') processarExtras();
-        if (tabId === 'aba-compliance') processarCompliance();
-        if (tabId === 'aba-gestao') initGestaoAcessos();
+    document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    e.currentTarget.classList.add('active');
+    if (tabId === 'aba-assiduidade') processarAssiduidadeTemporal();
+    if (tabId === 'aba-extras') processarExtras();
+    if (tabId === 'aba-compliance') {
+        processarCompliance();
+        setTimeout(() => renderCplOfensoresHierarquico(), 500);
     }
+    if (tabId === 'aba-gestao') initGestaoAcessos();
+}
 
     // ── Carregar dados ────────────────────────────────────────────────────────
     async function sincronizarEAtualizar() {
@@ -3414,8 +3410,8 @@ ofensoresBrutos.forEach(d => {
     ofensoresMap[chave].totalNaoAbertas++;
 });
 
-// Converte para array (um por motorista)
-window._cplOfensores = Object.values(ofensoresMap);
+// Armazena dados completos para o card de ofensores por cidade
+window._cplDadosCompliance = [...dados];
         renderCplOfensores();
     }
 
@@ -4202,7 +4198,150 @@ function getDadosAcesso(username) {
         return { ultimoAcesso: 'Nunca', online: false };
     }
 }
+// ══════════════════════════════════════════════
+// OFENSORES HIERÁRQUICO - Fiscal > GRE > Cidade > Motorista
+// ══════════════════════════════════════════════
 
+function renderCplOfensoresHierarquico() {
+    const filtroGre = document.getElementById('cpl-ofens-gre-hier')?.value || 'TODOS';
+    const filtroFiscal = document.getElementById('cpl-ofens-fiscal-hier')?.value || 'TODOS';
+    
+    const ofensoresBrutos = (window._cplDadosCompliance || []).filter(d => {
+        const sn = norm(d.status);
+        return !sn.includes('CONCLUID') && 
+               !sn.includes('ANDAMENTO') && 
+               !sn.includes('EXECUTANDO') &&
+               !d.isExtra;
+    });
+    
+    // Popula filtros
+    const selGre = document.getElementById('cpl-ofens-gre-hier');
+    const selFiscal = document.getElementById('cpl-ofens-fiscal-hier');
+    
+    if (selGre && selGre.options.length <= 1) {
+        [...new Set(ofensoresBrutos.map(d => d.gre))].filter(Boolean).sort().forEach(g => selGre.add(new Option(g, g)));
+    }
+    if (selFiscal && selFiscal.options.length <= 1) {
+        [...new Set(ofensoresBrutos.map(d => d.fiscal_responsavel))].filter(Boolean).sort().forEach(f => selFiscal.add(new Option(f, f)));
+    }
+    
+    // Estrutura: fiscal -> gre -> cidade -> motoristas[]
+    const arvore = {};
+    let totalMotoristas = 0;
+    let totalCidades = 0;
+    
+    ofensoresBrutos.forEach(d => {
+        const fiscal = d.fiscal_responsavel || 'NÃO IDENTIFICADO';
+        const gre = d.gre || 'S/ GRE';
+        const cidade = d.cidade || 'S/ CIDADE';
+        const motorista = d.motorista || 'S/ NOME';
+        
+        if (filtroGre !== 'TODOS' && gre !== filtroGre) return;
+        if (filtroFiscal !== 'TODOS' && fiscal !== filtroFiscal) return;
+        
+        if (!arvore[fiscal]) arvore[fiscal] = { gres: {}, total: 0 };
+        if (!arvore[fiscal].gres[gre]) arvore[fiscal].gres[gre] = { cidades: {}, total: 0 };
+        if (!arvore[fiscal].gres[gre].cidades[cidade]) arvore[fiscal].gres[gre].cidades[cidade] = { motoristas: {}, total: 0 };
+        
+        if (!arvore[fiscal].gres[gre].cidades[cidade].motoristas[motorista]) {
+            arvore[fiscal].gres[gre].cidades[cidade].motoristas[motorista] = {
+                nome: motorista,
+                veiculo: d.veiculo || 'S/ VEICULO',
+                turno: d.turno || '',
+                rotas: []
+            };
+            arvore[fiscal].gres[gre].total++;
+            arvore[fiscal].total++;
+            totalMotoristas++;
+        }
+        
+        const rota = d.rota || 'S/ ROTA';
+        if (!arvore[fiscal].gres[gre].cidades[cidade].motoristas[motorista].rotas.includes(rota)) {
+            arvore[fiscal].gres[gre].cidades[cidade].motoristas[motorista].rotas.push(rota);
+        }
+    });
+    
+    // Conta cidades
+    Object.values(arvore).forEach(f => {
+        Object.values(f.gres).forEach(g => {
+            totalCidades += Object.keys(g.cidades).length;
+        });
+    });
+    
+    // Renderiza
+    const tbody = document.getElementById('cpl-tbody-ofensores-hier');
+    if (!tbody) return;
+    
+    let html = '';
+    let fIdx = 0;
+    
+    const fiscaisOrd = Object.entries(arvore).sort((a, b) => b[1].total - a[1].total);
+    
+    fiscaisOrd.forEach(([fiscal, fData]) => {
+        const fId = `of-f-${fIdx}`;
+        fIdx++;
+        const fiscMotStr = fData.total === 1 ? 'motorista' : 'motoristas';
+        const fiscGreStr = Object.keys(fData.gres).length === 1 ? 'GRE' : 'GREs';
+        
+        html += `<tr class="pointer" onclick="toggleRow('${fId}', this)" style="background:rgba(231,76,60,.1);">
+            <td><span class="arrow">▶</span> 👔 <b>${fiscal}</b></td>
+            <td colspan="3" style="color:var(--slate);">${Object.keys(fData.gres).length} ${fiscGreStr} · ${fData.total} ${fiscMotStr}</td>
+            <td>${gerarBotaoRegistro({data: new Date().toISOString().split('T')[0], tipo: 'BAIXA_ASSID', gre: Object.keys(fData.gres).join(', '), fiscal: fiscal, motorista: 'TODOS OS MOTORISTAS DO FISCAL', veiculo: '', rota: 'Múltiplas rotas', descricao: 'Fiscal ' + fiscal + ' - ' + fData.total + ' motoristas sem abertura', gravidade: 'ALTO'}, 'margin-left:0;')}</td>
+        </tr>`;
+        
+        const gresOrd = Object.entries(fData.gres).sort((a, b) => b[1].total - a[1].total);
+        let gIdx = 0;
+        
+        gresOrd.forEach(([gre, gData]) => {
+            const gId = `of-g-${fIdx}-${gIdx}`;
+            gIdx++;
+            const greMotStr = gData.total === 1 ? 'motorista' : 'motoristas';
+            const greCidStr = Object.keys(gData.cidades).length === 1 ? 'cidade' : 'cidades';
+            
+            html += `<tr class="nested-row ${fId} pointer" onclick="toggleRow('${gId}', this)" style="background:rgba(243,156,18,.1);">
+                <td><span style="margin-left:20px;" class="arrow">▶</span> 🏢 <b style="color:var(--warning);">${gre}</b></td>
+                <td colspan="3" style="color:var(--slate);">${Object.keys(gData.cidades).length} ${greCidStr} · ${gData.total} ${greMotStr}</td>
+                <td>${gerarBotaoRegistro({data: new Date().toISOString().split('T')[0], tipo: 'BAIXA_ASSID', gre: gre, fiscal: fiscal, motorista: 'TODOS DA GRE ' + gre, veiculo: '', rota: 'Múltiplas rotas', descricao: 'GRE ' + gre + ' - ' + gData.total + ' motoristas sem abertura', gravidade: 'ALTO'}, 'margin-left:0;')}</td>
+            </tr>`;
+            
+            const cidOrd = Object.entries(gData.cidades).sort((a, b) => Object.keys(b[1].motoristas).length - Object.keys(a[1].motoristas).length);
+            let cIdx = 0;
+            
+            cidOrd.forEach(([cidade, cData]) => {
+                const cId = `of-c-${fIdx}-${gIdx}-${cIdx}`;
+                cIdx++;
+                const cidMotCount = Object.keys(cData.motoristas).length;
+                const cidMotStr = cidMotCount === 1 ? 'motorista' : 'motoristas';
+                const nomesCidade = Object.values(cData.motoristas).map(m => m.nome).join(', ');
+                
+                html += `<tr class="nested-row ${gId} pointer" onclick="toggleRow('${cId}', this)" style="background:rgba(52,152,219,.08);">
+                    <td><span style="margin-left:40px;" class="arrow">▶</span> 🏙️ <b style="color:var(--info);">${cidade}</b></td>
+                    <td colspan="3" style="color:var(--slate);">${cidMotCount} ${cidMotStr}</td>
+                    <td>${gerarBotaoRegistro({data: new Date().toISOString().split('T')[0], tipo: 'BAIXA_ASSID', gre: gre, fiscal: fiscal, motorista: nomesCidade.substring(0, 100), veiculo: '', rota: 'Múltiplas rotas em ' + cidade, descricao: 'Cidade ' + cidade + ' (' + gre + ') - ' + cidMotCount + ' motoristas: ' + nomesCidade.substring(0, 150), gravidade: cidMotCount >= 3 ? 'ALTO' : 'MEDIO'}, 'margin-left:0;')}</td>
+                </tr>`;
+                
+                // Motoristas individuais
+                Object.values(cData.motoristas).forEach(mot => {
+                    const rotasStr = mot.rotas.join(', ');
+                    html += `<tr class="nested-row ${cId}" style="background:rgba(0,0,0,.15);">
+                        <td><span style="margin-left:60px;">👤 ${mot.nome}</span></td>
+                        <td style="font-size:9px;">${mot.veiculo}</td>
+                        <td style="font-size:9px;">${mot.turno}</td>
+                        <td style="font-size:9px;color:var(--slate);">${rotasStr.substring(0, 40)}${rotasStr.length > 40 ? '...' : ''}</td>
+                        <td>${gerarBotaoRegistro({data: new Date().toISOString().split('T')[0], tipo: 'BAIXA_ASSID', gre: gre, fiscal: fiscal, motorista: mot.nome, veiculo: mot.veiculo, rota: rotasStr.substring(0, 80), descricao: 'Motorista ' + mot.nome + ' - ' + mot.veiculo + ' - ' + rotasStr.substring(0, 100) + ' sem abertura em ' + cidade + ' (' + gre + ')', gravidade: 'MEDIO'}, 'margin-left:0;')}</td>
+                    </tr>`;
+                });
+            });
+        });
+    });
+    
+    tbody.innerHTML = html || '<tr><td colspan="5" style="color:var(--slate);text-align:center;padding:20px;">✅ Nenhum ofensor encontrado.</td></tr>';
+    
+    const summary = document.getElementById('cpl-ofens-hier-summary');
+    if (summary) {
+        summary.innerText = `${Object.keys(arvore).length} fiscal(is) · ${totalCidades} cidade(s) · ${totalMotoristas} motorista(s) sem abertura`;
+    }
+}
 // Inicializa a aba de gestão
 function initGestaoAcessos() {
     renderizarTabelaPermissoes();
