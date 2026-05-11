@@ -688,8 +688,11 @@
     </div>
     
     <!-- ── Display do Usuário Logado ── -->
-<div id="user-display" style="position: fixed; top: 12px; right: 20px; z-index: 10000; background: rgba(0,0,0,0.6); padding: 6px 14px; border-radius: 20px; font-size: 11px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); display: none;">
-    👤 Olá, <span id="nome-logado" style="color: #27ae60; font-weight: bold;">Visitante</span> 
+<div id="user-display">
+    👤 Olá, <span id="nome-logado" style="color: #27ae60; font-weight: bold;">Visitante</span>
+    <span id="nivel-badge" style="background: #3498db; color: white; padding: 1px 8px; border-radius: 10px; font-size: 8px; margin-left: 5px; font-weight: bold;">
+        <span id="nivel-logado">--</span>
+    </span>
     <span style="color: #485460; margin: 0 8px;">|</span>
     <a href="#" onclick="sessionStorage.clear(); location.reload();" style="color: #e74c3c; text-decoration: none; font-weight: bold;">🚪 Sair</a>
 </div>
@@ -1380,60 +1383,124 @@
     // 1. BASE DE DADOS DE ACESSO
     // ══════════════════════════════════════════════
     const ACESSO_PORTAL = {
-        "john_petter": "admin123",
-        "diretoria": "admin123"
-    };
+    "john_petter":  { senha: "admin123",  nivel: "ADMIN",  nome: "John Petter" },
+    "diretoria":    { senha: "admin123",  nivel: "ADMIN",  nome: "Diretoria" },
+    "gestor_pi":    { senha: "gestor123", nivel: "GESTOR", nome: "Gestor Piauí" },
+    "fiscal_maria": { senha: "fiscal123", nivel: "FISCAL", nome: "Maria Silva" },
+    "fiscal_joao":  { senha: "fiscal123", nivel: "FISCAL", nome: "João Santos" }
+};
 
     // ══════════════════════════════════════════════
     // 2. FUNÇÃO PRINCIPAL DE LOGIN
     // ══════════════════════════════════════════════
     function entrarSistema() {
-        console.log("Tentativa de acesso detectada...");
+    console.log("Tentativa de acesso detectada...");
+    
+    const campoUser = document.getElementById("user-name");
+    const campoPass = document.getElementById("user-pass");
+    const msgErro = document.getElementById("login-erro");
+
+    if (!campoUser || !campoPass) return;
+
+    const usuario = campoUser.value.trim();
+    const senha = campoPass.value.trim();
+
+    // Verifica se usuário existe e senha está correta
+    if (ACESSO_PORTAL[usuario] && ACESSO_PORTAL[usuario].senha === senha) {
+        console.log("Acesso concedido para:", usuario, "- Nível:", ACESSO_PORTAL[usuario].nivel);
         
-        const campoUser = document.getElementById("user-name");
-        const campoPass = document.getElementById("user-pass");
-        const msgErro = document.getElementById("login-erro");
-
-        if (!campoUser || !campoPass) return;
-
-        const usuario = campoUser.value.trim();
-        const senha = campoPass.value.trim();
-
-        // Verifica se usuário e senha estão corretos
-        if (ACESSO_PORTAL[usuario] && ACESSO_PORTAL[usuario] === senha) {
-            console.log("Acesso concedido para:", usuario);
-            sessionStorage.setItem("logado", "true");
-            sessionStorage.setItem("usuario", usuario);
-            
-            // Esconde o bloqueio e atualiza o nome
-            document.getElementById("login-overlay").style.display = "none";
-            document.getElementById("nome-logado").innerText = usuario.toUpperCase();
-            document.getElementById("user-display").style.display = "block";
-        } else {
-            console.warn("Dados de acesso inválidos.");
-            msgErro.style.display = "block";
-            campoPass.value = ""; // Limpa a senha para nova tentativa
-        }
+        // Salva dados da sessão
+        sessionStorage.setItem("logado", "true");
+        sessionStorage.setItem("usuario", usuario);
+        sessionStorage.setItem("nivel", ACESSO_PORTAL[usuario].nivel);
+        sessionStorage.setItem("nome_completo", ACESSO_PORTAL[usuario].nome);
+        
+        // Esconde o bloqueio de login
+        document.getElementById("login-overlay").style.display = "none";
+        
+        // Mostra nome e nível do usuário
+        const nomeExibicao = ACESSO_PORTAL[usuario].nome;
+        const nivelExibicao = ACESSO_PORTAL[usuario].nivel;
+        document.getElementById("nome-logado").innerText = nomeExibicao.toUpperCase();
+        document.getElementById("nivel-logado").innerText = nivelExibicao;
+        document.getElementById("user-display").style.display = "block";
+        
+        // Aplica restrições de acesso conforme o nível
+        aplicarNivelAcesso(nivelExibicao);
+        
+    } else {
+        console.warn("Dados de acesso inválidos.");
+        msgErro.style.display = "block";
+        campoPass.value = "";
     }
+}
+     function aplicarNivelAcesso(nivel) {
+    // Referências das abas
+    const abaEscala = document.querySelector('.tab-btn[onclick*="aba-escala"]');
+    const abaAssiduidade = document.querySelector('.tab-btn[onclick*="aba-assiduidade"]');
+    const abaExtras = document.querySelector('.tab-btn[onclick*="aba-extras"]');
+    const abaCompliance = document.querySelector('.tab-btn[onclick*="aba-compliance"]');
+    
+    // Por padrão, esconde todas as abas primeiro
+    if (abaAssiduidade) abaAssiduidade.style.display = 'none';
+    if (abaExtras) abaExtras.style.display = 'none';
+    if (abaCompliance) abaCompliance.style.display = 'none';
+    
+    // Mostra abas conforme o nível
+    switch(nivel) {
+        case 'ADMIN':
+            // Vê TUDO
+            if (abaAssiduidade) abaAssiduidade.style.display = '';
+            if (abaExtras) abaExtras.style.display = '';
+            if (abaCompliance) abaCompliance.style.display = '';
+            break;
+            
+        case 'GESTOR':
+            // Vê Escala + Compliance
+            if (abaCompliance) abaCompliance.style.display = '';
+            break;
+            
+        case 'FISCAL':
+            // Vê apenas Escala (já está visível por padrão)
+            break;
+    }
+    
+    // Garante que a aba Escala está sempre ativa ao logar
+    if (abaEscala) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        abaEscala.classList.add('active');
+        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+        document.getElementById('aba-escala').classList.add('active');
+    }
+}
 
     // ══════════════════════════════════════════════
     // 3. VERIFICAÇÃO AUTOMÁTICA AO CARREGAR A PÁGINA
     // ══════════════════════════════════════════════
     document.addEventListener('DOMContentLoaded', function() {
-        console.log("Sistema de Segurança: Ativo");
-        const estaLogado = sessionStorage.getItem("logado");
-        const nomeSalvo = sessionStorage.getItem("usuario");
+    console.log("Sistema de Segurança: Ativo");
+    const estaLogado = sessionStorage.getItem("logado");
+    const nomeSalvo = sessionStorage.getItem("usuario");
+    const nivelSalvo = sessionStorage.getItem("nivel");
+    const nomeCompleto = sessionStorage.getItem("nome_completo");
 
-        if (estaLogado === "true") {
-            const telaLogin = document.getElementById("login-overlay");
-            if (telaLogin) telaLogin.style.display = "none";
-            
-            const areaNome = document.getElementById("nome-logado");
-            if (areaNome && nomeSalvo) areaNome.innerText = nomeSalvo.toUpperCase();
-            const userDisplay = document.getElementById("user-display");
-            if (userDisplay) userDisplay.style.display = "block";
-        }
-    });
+    if (estaLogado === "true") {
+        const telaLogin = document.getElementById("login-overlay");
+        if (telaLogin) telaLogin.style.display = "none";
+        
+        const areaNome = document.getElementById("nome-logado");
+        if (areaNome && nomeCompleto) areaNome.innerText = nomeCompleto.toUpperCase();
+        
+        const areaNivel = document.getElementById("nivel-logado");
+        if (areaNivel && nivelSalvo) areaNivel.innerText = nivelSalvo;
+        
+        const userDisplay = document.getElementById("user-display");
+        if (userDisplay) userDisplay.style.display = "block";
+        
+        // Reaplica restrições ao recarregar a página
+        if (nivelSalvo) aplicarNivelAcesso(nivelSalvo);
+    }
+});
 
     // ══════════════════════════════════════════════
     // 4. CONTINUAÇÃO DO SEU CÓDIGO BI (JÁ EXISTENTE)
