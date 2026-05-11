@@ -3283,15 +3283,33 @@ irregularidadesCompletas = rotasSuspeitas.map(r => ({
 popularFiltrosIrregularidades();
 filtrarIrregularidades();
 
-        if (charts.tiposFraude) charts.tiposFraude.destroy();
+                if (charts.tiposFraude) charts.tiposFraude.destroy();
         const ctxTipos = document.getElementById('chartTiposFraude');
         if (ctxTipos) {
+            // 🆕 Pega o valor atual do slider para o label
+            const limiteAtual = parseInt(document.getElementById('fIrregDuracao')?.value || 10);
             charts.tiposFraude = new Chart(ctxTipos, {
                 type: 'pie',
-                data: { labels: [`Fraude Temporal (<${limiteDuracao}min)`, 'Mesmo Local (início=fim)'],
-                    datasets: [{ data: [fraudesTemporal, fraudesMesmoLocal], backgroundColor: ['#e74c3c', '#f39c12'] }] },
-                options: { responsive: true, maintainAspectRatio: true,
-                    plugins: { legend: { position: 'bottom', labels: { color: '#fff', font: { size: 9 } } } } }
+                data: { 
+                    labels: [`⏱️ Temporal (<${limiteAtual}min)`, '📍 Mesmo Local (início=fim)'],
+                    datasets: [{ 
+                        data: [fraudesTemporal, fraudesMesmoLocal], 
+                        backgroundColor: ['#e74c3c', '#f39c12'] 
+                    }] 
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: true,
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { 
+                                color: '#fff', 
+                                font: { size: 9 } 
+                            } 
+                        } 
+                    } 
+                }
             });
         }
     }
