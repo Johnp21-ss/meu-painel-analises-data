@@ -4239,9 +4239,13 @@ function renderCplOfensoresHierarquico() {
         if (filtroGre !== 'TODOS' && gre !== filtroGre) return;
         if (filtroFiscal !== 'TODOS' && fiscal !== filtroFiscal) return;
         
-        if (!arvore[fiscal]) arvore[fiscal] = { gres: {}, total: 0 };
-        if (!arvore[fiscal].gres[gre]) arvore[fiscal].gres[gre] = { cidades: {}, total: 0 };
-        if (!arvore[fiscal].gres[gre].cidades[cidade]) arvore[fiscal].gres[gre].cidades[cidade] = { motoristas: {}, total: 0 };
+        if (!arvore[fiscal]) arvore[fiscal] = { gres: {}, total: 0, todosMotoristas: new Set() };
+        if (!arvore[fiscal].gres[gre]) arvore[fiscal].gres[gre] = { cidades: {}, total: 0, todosMotoristas: new Set() };
+        if (!arvore[fiscal].gres[gre].cidades[cidade]) arvore[fiscal].gres[gre].cidades[cidade] = { motoristas: {}, total: 0, nomesMotoristas: new Set() };
+        
+        arvore[fiscal].todosMotoristas.add(motorista);
+        arvore[fiscal].gres[gre].todosMotoristas.add(motorista);
+        arvore[fiscal].gres[gre].cidades[cidade].nomesMotoristas.add(motorista);
         
         if (!arvore[fiscal].gres[gre].cidades[cidade].motoristas[motorista]) {
             arvore[fiscal].gres[gre].cidades[cidade].motoristas[motorista] = {
@@ -4283,10 +4287,13 @@ function renderCplOfensoresHierarquico() {
         const fiscMotStr = fData.total === 1 ? 'motorista' : 'motoristas';
         const fiscGreStr = Object.keys(fData.gres).length === 1 ? 'GRE' : 'GREs';
         
+        // Lista de TODOS os motoristas deste fiscal
+        const motoristasDoFiscal = [...fData.todosMotoristas].join(', ');
+        
         html += `<tr class="pointer" onclick="toggleRow('${fId}', this)" style="background:rgba(231,76,60,.1);">
             <td><span class="arrow">▶</span> 👔 <b>${fiscal}</b></td>
             <td colspan="3" style="color:var(--slate);">${Object.keys(fData.gres).length} ${fiscGreStr} · ${fData.total} ${fiscMotStr}</td>
-            <td>${gerarBotaoRegistro({data: new Date().toISOString().split('T')[0], tipo: 'BAIXA_ASSID', gre: Object.keys(fData.gres).join(', '), fiscal: fiscal, motorista: 'TODOS OS MOTORISTAS DO FISCAL', veiculo: '', rota: 'Múltiplas rotas', descricao: 'Fiscal ' + fiscal + ' - ' + fData.total + ' motoristas sem abertura', gravidade: 'ALTO'}, 'margin-left:0;')}</td>
+            <td>${gerarBotaoRegistro({data: new Date().toISOString().split('T')[0], tipo: 'BAIXA_ASSID', gre: Object.keys(fData.gres).join(', '), fiscal: fiscal, motorista: motoristasDoFiscal.substring(0, 200), veiculo: '', rota: 'Múltiplas rotas', descricao: 'Fiscal ' + fiscal + ' - Motoristas sem abertura: ' + motoristasDoFiscal.substring(0, 300), gravidade: 'ALTO'}, 'margin-left:0;')}</td>
         </tr>`;
         
         const gresOrd = Object.entries(fData.gres).sort((a, b) => b[1].total - a[1].total);
@@ -4298,10 +4305,13 @@ function renderCplOfensoresHierarquico() {
             const greMotStr = gData.total === 1 ? 'motorista' : 'motoristas';
             const greCidStr = Object.keys(gData.cidades).length === 1 ? 'cidade' : 'cidades';
             
+            // Lista de motoristas DESTA GRE
+            const motoristasDaGre = [...gData.todosMotoristas].join(', ');
+            
             html += `<tr class="nested-row ${fId} pointer" onclick="toggleRow('${gId}', this)" style="background:rgba(243,156,18,.1);">
                 <td><span style="margin-left:20px;" class="arrow">▶</span> 🏢 <b style="color:var(--warning);">${gre}</b></td>
                 <td colspan="3" style="color:var(--slate);">${Object.keys(gData.cidades).length} ${greCidStr} · ${gData.total} ${greMotStr}</td>
-                <td>${gerarBotaoRegistro({data: new Date().toISOString().split('T')[0], tipo: 'BAIXA_ASSID', gre: gre, fiscal: fiscal, motorista: 'TODOS DA GRE ' + gre, veiculo: '', rota: 'Múltiplas rotas', descricao: 'GRE ' + gre + ' - ' + gData.total + ' motoristas sem abertura', gravidade: 'ALTO'}, 'margin-left:0;')}</td>
+                <td>${gerarBotaoRegistro({data: new Date().toISOString().split('T')[0], tipo: 'BAIXA_ASSID', gre: gre, fiscal: fiscal, motorista: motoristasDaGre.substring(0, 200), veiculo: '', rota: 'Múltiplas rotas em ' + gre, descricao: 'GRE ' + gre + ' - Motoristas sem abertura: ' + motoristasDaGre.substring(0, 300), gravidade: 'ALTO'}, 'margin-left:0;')}</td>
             </tr>`;
             
             const cidOrd = Object.entries(gData.cidades).sort((a, b) => Object.keys(b[1].motoristas).length - Object.keys(a[1].motoristas).length);
@@ -4312,12 +4322,12 @@ function renderCplOfensoresHierarquico() {
                 cIdx++;
                 const cidMotCount = Object.keys(cData.motoristas).length;
                 const cidMotStr = cidMotCount === 1 ? 'motorista' : 'motoristas';
-                const nomesCidade = Object.values(cData.motoristas).map(m => m.nome).join(', ');
+                const nomesCidade = [...cData.nomesMotoristas].join(', ');
                 
                 html += `<tr class="nested-row ${gId} pointer" onclick="toggleRow('${cId}', this)" style="background:rgba(52,152,219,.08);">
                     <td><span style="margin-left:40px;" class="arrow">▶</span> 🏙️ <b style="color:var(--info);">${cidade}</b></td>
                     <td colspan="3" style="color:var(--slate);">${cidMotCount} ${cidMotStr}</td>
-                    <td>${gerarBotaoRegistro({data: new Date().toISOString().split('T')[0], tipo: 'BAIXA_ASSID', gre: gre, fiscal: fiscal, motorista: nomesCidade.substring(0, 100), veiculo: '', rota: 'Múltiplas rotas em ' + cidade, descricao: 'Cidade ' + cidade + ' (' + gre + ') - ' + cidMotCount + ' motoristas: ' + nomesCidade.substring(0, 150), gravidade: cidMotCount >= 3 ? 'ALTO' : 'MEDIO'}, 'margin-left:0;')}</td>
+                    <td>${gerarBotaoRegistro({data: new Date().toISOString().split('T')[0], tipo: 'BAIXA_ASSID', gre: gre, fiscal: fiscal, motorista: nomesCidade.substring(0, 200), veiculo: '', rota: 'Múltiplas rotas em ' + cidade, descricao: 'Cidade ' + cidade + ' (' + gre + ') - Motoristas sem abertura: ' + nomesCidade.substring(0, 300), gravidade: cidMotCount >= 3 ? 'ALTO' : 'MEDIO'}, 'margin-left:0;')}</td>
                 </tr>`;
                 
                 // Motoristas individuais
@@ -4328,7 +4338,7 @@ function renderCplOfensoresHierarquico() {
                         <td style="font-size:9px;">${mot.veiculo}</td>
                         <td style="font-size:9px;">${mot.turno}</td>
                         <td style="font-size:9px;color:var(--slate);">${rotasStr.substring(0, 40)}${rotasStr.length > 40 ? '...' : ''}</td>
-                        <td>${gerarBotaoRegistro({data: new Date().toISOString().split('T')[0], tipo: 'BAIXA_ASSID', gre: gre, fiscal: fiscal, motorista: mot.nome, veiculo: mot.veiculo, rota: rotasStr.substring(0, 80), descricao: 'Motorista ' + mot.nome + ' - ' + mot.veiculo + ' - ' + rotasStr.substring(0, 100) + ' sem abertura em ' + cidade + ' (' + gre + ')', gravidade: 'MEDIO'}, 'margin-left:0;')}</td>
+                        <td>${gerarBotaoRegistro({data: new Date().toISOString().split('T')[0], tipo: 'BAIXA_ASSID', gre: gre, fiscal: fiscal, motorista: mot.nome, veiculo: mot.veiculo, rota: rotasStr.substring(0, 200), descricao: 'Motorista ' + mot.nome + ' - Veículo: ' + mot.veiculo + ' - Rotas não executadas: ' + rotasStr.substring(0, 200) + ' (' + cidade + '/' + gre + ')', gravidade: 'MEDIO'}, 'margin-left:0;')}</td>
                     </tr>`;
                 });
             });
