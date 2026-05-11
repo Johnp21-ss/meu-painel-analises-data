@@ -695,6 +695,26 @@
     background: #3498db;
     color: white;
 }
+        .status-online {
+    color: #2ecc71;
+    font-weight: bold;
+}
+.status-offline {
+    color: #95a5a6;
+}
+.btn-deslogar {
+    padding: 3px 8px;
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 9px;
+    cursor: pointer;
+    margin-left: 4px;
+}
+.btn-deslogar:hover {
+    background: #c0392b;
+}
     </style> </head>
 <body>
     <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1a1a1a; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center;">
@@ -714,7 +734,7 @@
         <span id="nivel-logado">--</span>
     </span>
     <span style="color: #485460; margin: 0 8px;">|</span>
-    <a href="#" onclick="sessionStorage.clear(); location.reload();" style="color: #e74c3c; text-decoration: none; font-weight: bold;">🚪 Sair</a>
+    <a href="#" onclick="marcarOffline(sessionStorage.getItem('usuario')); sessionStorage.clear(); location.reload();" style="color: #e74c3c; text-decoration: none; font-weight: bold;">🚪 Sair</a>
 </div>
 
 <div class="wrapper">
@@ -1458,6 +1478,8 @@
     </section>
 
  <script>
+     // Verifica se houve logout forçado
+verificarLogoutForcado();
     // ══════════════════════════════════════════════
     // 1. BASE DE DADOS DE ACESSO
     // ══════════════════════════════════════════════
@@ -1493,6 +1515,12 @@
         sessionStorage.setItem("usuario", usuario);
         sessionStorage.setItem("nivel", ACESSO_PORTAL[usuario].nivel);
         sessionStorage.setItem("nome_completo", ACESSO_PORTAL[usuario].nome);
+        
+        // Registra data/hora do último acesso
+        const agora = new Date();
+        const dataHoraAcesso = agora.toLocaleString('pt-BR');
+        sessionStorage.setItem("ultimo_acesso", dataHoraAcesso);
+        registrarAcesso(usuario, dataHoraAcesso);
         
         // Esconde o bloqueio de login
         document.getElementById("login-overlay").style.display = "none";
@@ -3991,9 +4019,16 @@ function renderizarTabelaUsuarios() {
     const tbody = document.getElementById('tbody-usuarios');
     if (!tbody) return;
     
+    const usuarioAtual = sessionStorage.getItem("usuario");
+    
     tbody.innerHTML = Object.entries(usuarios).map(([username, dados]) => {
         const corNivel = dados.nivel === 'ADMIN' ? '#e74c3c' : dados.nivel === 'GESTOR' ? '#f39c12' : '#3498db';
         const isOriginal = ACESSO_PORTAL[username] ? true : false;
+        const acesso = getDadosAcesso(username);
+        const isOnline = acesso.online && username !== usuarioAtual;
+        const statusIcon = isOnline ? '🟢' : '⚫';
+        const ultimoAcesso = acesso.ultimoAcesso || 'Nunca';
+        const isProprio = username === usuarioAtual;
         
         return `<tr>
             <td><b>${username}</b>${isOriginal ? ' <span style="font-size:8px;color:var(--success);">(original)</span>' : ''}</td>
@@ -4001,7 +4036,10 @@ function renderizarTabelaUsuarios() {
             <td><span class="cpl-score-pill" style="background:${corNivel}22; color:${corNivel}; border:1px solid ${corNivel}44;">${dados.nivel}</span></td>
             <td><input type="text" value="${dados.senha || ''}" id="senha-${username}" 
                 style="background:var(--bg);color:white;border:1px solid var(--border);padding:4px 8px;border-radius:4px;width:100px;font-size:10px;"></td>
-            <td><span class="badge badge-success">ATIVO</span></td>
+            <td>
+                <span style="font-size:10px;">${statusIcon} ${isOnline ? 'Online' : (isProprio ? 'Você' : 'Offline')}</span>
+                <br><span style="font-size:8px;color:var(--slate);">Último: ${ultimoAcesso.substring(0, 16)}</span>
+            </td>
             <td style="white-space:nowrap;">
                 <select id="nivel-${username}" style="width:auto;min-width:90px;font-size:10px;padding:3px;">
                     <option value="FISCAL" ${dados.nivel === 'FISCAL' ? 'selected' : ''}>FISCAL</option>
@@ -4010,6 +4048,7 @@ function renderizarTabelaUsuarios() {
                 </select>
                 <button onclick="salvarAlteracoesUsuario('${username}')" 
                     style="margin-left:4px;padding:4px 10px;background:var(--info);color:#fff;border:none;border-radius:4px;font-size:9px;cursor:pointer;">💾</button>
+                ${isOnline ? `<button onclick="forcarLogout('${username}')" class="btn-deslogar">🚫 Forçar Saída</button>` : ''}
                 ${!isOriginal ? `<button onclick="excluirUsuario('${username}')" 
                     style="margin-left:2px;padding:4px 8px;background:var(--danger);color:#fff;border:none;border-radius:4px;font-size:9px;cursor:pointer;">🗑️</button>` : ''}
             </td>
@@ -4087,11 +4126,85 @@ function adicionarNovoUsuario() {
     alert(`✅ Usuário "${username}" adicionado com sucesso!`);
     renderizarTabelaUsuarios();
 }
+     // ══════════════════════════════════════════════
+// REGISTRO DE ACESSOS
+// ══════════════════════════════════════════════
+
+function registrarAcesso(username, dataHora) {
+    try {
+        const acessos = JSON.parse(localStorage.getItem('bi_acessos') || '{}');
+        acessos[username] = {
+            ultimoAcesso: dataHora,
+            online: true,
+            sessaoIniciada: dataHora
+        };
+        localStorage.setItem('bi_acessos', JSON.stringify(acessos));
+    } catch(e) {}
+}
+
+function marcarOffline(username) {
+    try {
+        const acessos = JSON.parse(localStorage.getItem('bi_acessos') || '{}');
+        if (acessos[username]) {
+            acessos[username].online = false;
+            localStorage.setItem('bi_acessos', JSON.stringify(acessos));
+        }
+    } catch(e) {}
+}
+
+function forcarLogout(username) {
+    if (confirm('Tem certeza que deseja forcar o logout de "' + username + '"?\n\nO usuario sera desconectado na proxima acao.')) {
+        try {
+            marcarOffline(username);
+            var sessoesAtivas = JSON.parse(localStorage.getItem('bi_sessoes_ativas') || '{}');
+            sessoesAtivas[username] = false;
+            localStorage.setItem('bi_sessoes_ativas', JSON.stringify(sessoesAtivas));
+            localStorage.setItem('bi_logout_forcado_' + username, Date.now().toString());
+            alert('Logout forcado para "' + username + '" realizado!');
+            renderizarTabelaUsuarios();
+        } catch(e) {
+            alert('Erro ao forcar logout.');
+        }
+    }
+}
+
+function verificarLogoutForcado() {
+    var usuario = sessionStorage.getItem("usuario");
+    if (!usuario) return;
+    
+    var foiForcado = localStorage.getItem('bi_logout_forcado_' + usuario);
+    if (foiForcado) {
+        localStorage.removeItem('bi_logout_forcado_' + usuario);
+        sessionStorage.clear();
+        alert('Sua sessao foi encerrada por um administrador.');
+        location.reload();
+    }
+}
+
+function getDadosAcesso(username) {
+    try {
+        var acessos = JSON.parse(localStorage.getItem('bi_acessos') || '{}');
+        return acessos[username] || { ultimoAcesso: 'Nunca', online: false };
+    } catch(e) {
+        return { ultimoAcesso: 'Nunca', online: false };
+    }
+}
 
 // Inicializa a aba de gestão
 function initGestaoAcessos() {
     renderizarTabelaPermissoes();
     renderizarTabelaUsuarios();
+    
+    // Atualiza a tabela a cada 30 segundos para mostrar status online/offline
+    if (window._gestaoInterval) clearInterval(window._gestaoInterval);
+    window._gestaoInterval = setInterval(() => {
+        const abaGestao = document.getElementById('aba-gestao');
+        if (abaGestao && abaGestao.classList.contains('active')) {
+            renderizarTabelaUsuarios();
+        } else {
+            clearInterval(window._gestaoInterval);
+        }
+    }, 30000);
 }
     // ── Init ──────────────────────────────────────────────────────────────────
     carregar();
