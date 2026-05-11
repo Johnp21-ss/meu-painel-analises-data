@@ -3154,17 +3154,46 @@ function carregar() {
             const badgeCor = g.percFraude > 20 ? 'badge-danger' : g.percFraude > 10 ? 'badge-warning' : 'badge-success';
             return `<tr><td><b>${g.nome}</b></td><td>${g.total}</td><td class="val-fraude">${g.temporal}</td><td class="val-alerta">${g.mesmoLocal}</td><td>${g.percFraude.toFixed(1)}%</td><td>
             <span class="badge ${badgeCor}">${acao}</span>
-            ${gerarBotaoRegistro({
-            data: new Date().toISOString().split('T')[0],
-            tipo: g.temporal > 0 ? 'TEMPORAL' : 'GEOGRAFICA',
-            gre: g.nome,
-            fiscal: '',
-            motorista: '',
-            veiculo: '',
-            rota: 'Múltiplas rotas na GRE',
-            descricao: 'GRE com ' + g.percFraude.toFixed(1) + '% de fraude - ' + g.totalFraudes + ' ocorrencias',
-            gravidade: g.percFraude > 20 ? 'CRITICO' : g.percFraude > 10 ? 'ALTO' : 'MEDIO'
-    })}
+            ${(() => {
+    // 🔍 BUSCAR MOTORISTAS E FISCAIS REAIS DESTA GRE
+    const motoristasDaGre = [...new Set(
+        bruto.filter(d => d.gre === g.nome)
+            .map(d => d.motorista)
+            .filter(Boolean)
+    )];
+    const fiscaisDaGre = [...new Set(
+        bruto.filter(d => d.gre === g.nome)
+            .map(d => d.fiscal_responsavel)
+            .filter(Boolean)
+    )];
+    const veiculosDaGre = [...new Set(
+        bruto.filter(d => d.gre === g.nome)
+            .map(d => d.veiculo)
+            .filter(v => v && v.trim() !== '')
+    )];
+    
+    const motoristasStr = motoristasDaGre.length > 0 
+        ? motoristasDaGre.slice(0, 10).join(', ') + (motoristasDaGre.length > 10 ? ' e mais ' + (motoristasDaGre.length - 10) + '...' : '')
+        : 'Verificar motoristas';
+    const fiscaisStr = fiscaisDaGre.length > 0 
+        ? fiscaisDaGre.slice(0, 5).join(', ') + (fiscaisDaGre.length > 5 ? ' e mais...' : '')
+        : 'NÃO IDENTIFICADO';
+    const veiculosStr = veiculosDaGre.length > 0 
+        ? veiculosDaGre.slice(0, 5).join(', ') + (veiculosDaGre.length > 5 ? ' e mais...' : '')
+        : 'NÃO IDENTIFICADO';
+    
+    return gerarBotaoRegistro({
+        data: new Date().toISOString().split('T')[0],
+        tipo: g.temporal > 0 ? 'TEMPORAL' : 'GEOGRAFICA',
+        gre: g.nome,
+        fiscal: fiscaisStr,
+        motorista: motoristasStr,
+        veiculo: veiculosStr,
+        rota: 'Múltiplas rotas na GRE ' + g.nome,
+        descricao: 'GRE com ' + g.percFraude.toFixed(1) + '% de fraude - ' + (g.temporal + g.mesmoLocal) + ' ocorrências (' + motoristasDaGre.length + ' motoristas envolvidos)',
+        gravidade: g.percFraude > 20 ? 'CRITICO' : g.percFraude > 10 ? 'ALTO' : 'MEDIO'
+    });
+})()}
 </td></tr>`;
         }).join('') || '<tr><td colspan="6" style="color:var(--slate)">Sem dados.</td></tr>';
 
