@@ -1496,17 +1496,6 @@ if (nivelExibicao === 'ADMIN') {
             // Vê apenas Escala (já está visível por padrão)
             break;
     }
-         // ══════════════════════════════════════════════
-// VERIFICA SE USUÁRIO PODE REGISTRAR OCORRÊNCIAS
-// ══════════════════════════════════════════════
-function podeRegistrar() {
-    const nivel = sessionStorage.getItem("nivel");
-    return nivel === "ADMIN" || nivel === "GESTOR";
-}
-
-function getNivelUsuario() {
-    return sessionStorage.getItem("nivel") || "FISCAL";
-}
     
     // Garante que a aba Escala está sempre ativa ao logar
     if (abaEscala) {
@@ -3759,24 +3748,6 @@ function gerarBotaoRegistro(dadosBotao, estiloExtra = '') {
             ✅ Salvo
         </button>`;
     }
-    
-    // Escapa os valores para evitar quebras no HTML
-    const escapar = (str) => String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
-    
-    return `<button onclick="abrirAlertaForms({
-        data:'${escapar(dadosBotao.data || '')}',
-        tipo:'${escapar(dadosBotao.tipo || '')}',
-        gre:'${escapar(dadosBotao.gre || '')}',
-        fiscal:'${escapar(dadosBotao.fiscal || '')}',
-        motorista:'${escapar(dadosBotao.motorista || '')}',
-        veiculo:'${escapar(dadosBotao.veiculo || '')}',
-        rota:'${escapar(dadosBotao.rota || '')}',
-        descricao:'${escapar(dadosBotao.descricao || '')}',
-        gravidade:'${escapar(dadosBotao.gravidade || '')}'
-    })" style="margin-left:6px;padding:2px 8px;font-size:9px;background:#2980b9;color:#fff;border:none;border-radius:4px;cursor:pointer;${estiloExtra}">
-        📋 Registrar
-    </button>`;
-}}
     
     // Escapa os valores para evitar quebras no HTML
     const escapar = (str) => String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
