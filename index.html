@@ -1076,13 +1076,21 @@
             </div>
         </div>
 
-        <div class="card row-new" style="margin-bottom:15px;">
-            <h3>👔 Fiscais (Responsáveis)</h3>
-            <div class="scroll-area-sm">
-                <table id="tFiscaisFraude">
-                    <thead><tr><th>Fiscal</th><th>Total Rotas</th><th>Fraudes</th><th>% Fraude</th><th>Providência</th></tr></thead>
-                    <tbody></tbody>
-                </table>
+        <div class="grid-2col">
+            <div class="card row-new">
+                <h3>📊 Distribuição dos Tipos de Fraude</h3>
+                <div class="chart-container-sm">
+                    <canvas id="chartTiposFraude"></canvas>
+                </div>
+            </div>
+            <div class="card row-new">
+                <h3>👔 Fiscais (Responsáveis)</h3>
+                <div class="scroll-area-sm">
+                    <table id="tFiscaisFraude">
+                        <thead><tr><th>Fiscal</th><th>Total Rotas</th><th>Fraudes</th><th>% Fraude</th><th>Providência</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -1135,15 +1143,6 @@
                     </thead>
                     <tbody></tbody>
                 </table>
-            </div>
-        </div>
-
-        <div class="grid-2col">
-            <div class="card row-new">
-                <h3>📊 Distribuição dos Tipos de Fraude</h3>
-                <div class="chart-container-sm">
-                    <canvas id="chartTiposFraude"></canvas>
-                </div>
             </div>
         </div>
     </section>
