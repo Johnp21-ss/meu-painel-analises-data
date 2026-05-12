@@ -1456,10 +1456,18 @@
         <div class="card row-new" style="border-top-color:#e74c3c; margin-bottom:20px; padding:12px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
         <div>
-            <h3 style="margin:0;font-size:13px;">📋 Auditoria Prioritária — Rotas Críticas</h3>
-            <div style="font-size:9px;color:var(--slate);margin-top:2px;">Somente rotas com comportamento de fraude temporal, geográfica ou gargalo. Ordenadas por gravidade.</div>
+            <h3 style="margin:0;font-size:13px;">📋 Auditoria Prioritária — Rotas Críticas 
+                <span style="font-size:10px;color:var(--slate);font-weight:normal;">· Somente rotas com fraude temporal, geográfica ou gargalo</span>
+            </h3>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <select id="cpl-audit-tipo" onchange="renderCplAuditoria()" style="width:auto;min-width:130px;font-size:10px;padding:5px;">
+                <option value="TODOS">Todos os alertas</option>
+                <option value="TEMPORAL">Fraude Temporal (&lt;10min)</option>
+                <option value="GEOGRAFICA">Fraude Geográfica</option>
+                <option value="GARGALO">Gargalo (&gt;6h)</option>
+            </select>
+            <button onclick="exportarCplCSV()" style="padding:5px 12px;background:#27ae60;color:#fff;border:none;border-radius:6px;font-size:10px;font-weight:bold;cursor:pointer;">📥 Exportar CSV</button>
         </div>
     </div>
     
