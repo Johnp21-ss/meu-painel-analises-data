@@ -1453,15 +1453,55 @@
         </div>
 
         <!-- ── LINHA 5: Tabela de auditoria prioritária ── -->
-        <div class="card row-new" style="border-top-color:#e74c3c; margin-bottom:20px; padding:12px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-        <div>
-            <h3 style="margin:0;font-size:13px;">📋 Auditoria Prioritária — Rotas Críticas</h3>
-            <div style="font-size:9px;color:var(--slate);margin-top:2px;">Somente rotas com comportamento de fraude temporal, geográfica ou gargalo. Ordenadas por gravidade.</div>
+<div class="card row-new" style="border-top: 3px solid #e74c3c; margin-bottom: 10px; padding: 8px 15px; background: #2c3e50; border-radius: 8px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 5px;">
+        <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <h3 style="margin: 0; font-size: 14px; color: #fff; font-weight: 700;">
+                    🛡️ Auditoria Prioritária — Rotas Críticas
+                </h3>
+                <span id="irreg-count-badge" style="background: #e74c3c; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold;">
+                    Verificando...
+                </span>
+            </div>
+            <div style="font-size: 10px; color: #a4b0be; margin-top: 2px; font-style: italic;">
+                Fraude temporal, geográfica ou gargalo operacional.
+            </div>
         </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+            <select id="cpl-audit-tipo" onchange="renderCplAuditoria()" style="width:auto;min-width:140px;font-size:10px;padding:4px 8px;background:var(--bg);color:white;border:1px solid var(--border);border-radius:4px;">
+                <option value="TODOS">Todos os alertas</option>
+                <option value="TEMPORAL">Fraude Temporal (&lt;10min)</option>
+                <option value="GEOGRAFICA">Fraude Geográfica</option>
+                <option value="GARGALO">Gargalo (&gt;6h)</option>
+            </select>
+            <button onclick="exportarCplCSV()" style="padding:4px 10px;background:#27ae60;color:#fff;border:none;border-radius:4px;font-size:10px;font-weight:bold;cursor:pointer;">📥 CSV</button>
         </div>
     </div>
+    <div style="overflow-x:auto; max-height:300px; overflow-y:auto; margin-top:8px;">
+        <table id="cpl-tbl-auditoria" style="table-layout:auto;min-width:900px;">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Fiscal</th>
+                    <th>GRE</th>
+                    <th>Motorista</th>
+                    <th>Veículo</th>
+                    <th>Rota</th>
+                    <th>Início</th>
+                    <th>Fim</th>
+                    <th>Duração</th>
+                    <th>Dist. Pontos</th>
+                    <th>Tipo de Alerta</th>
+                    <th>Gravidade</th>
+                </tr>
+            </thead>
+            <tbody id="cpl-tbody-auditoria"></tbody>
+        </table>
+    </div>
+    <div id="cpl-audit-summary" style="font-size:9px;color:var(--slate);margin-top:8px;text-align:right;"></div>
+</div>
     
         <!-- 🆕 FILTROS COMPACTOS -->
     <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:4px; align-items:center;">
