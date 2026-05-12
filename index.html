@@ -1467,38 +1467,54 @@
         </div>
     </div>
     
-    <!-- Filtros extras (Fiscais, GREs, etc.) -->
-    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:10px;color:var(--slate);padding:3px 0;">
-        <span>👔 Fiscais</span>
-        <span>🏢 GREs</span>
-        <span>🏙️ Cidades</span>
-        <span>⚠️ Todos</span>
-        <span>📊 Gravidade</span>
-    </div>
-    
-    <div style="overflow-x:auto; max-height:300px; overflow-y:auto;">
-        <table id="cpl-tbl-auditoria" style="table-layout:auto;min-width:900px;">
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Fiscal</th>
-                    <th>GRE</th>
-                    <th>Motorista</th>
-                    <th>Veículo</th>
-                    <th>Rota</th>
-                    <th>Início</th>
-                    <th>Fim</th>
-                    <th>Duração</th>
-                    <th>Dist. Pontos</th>
-                    <th>Tipo de Alerta</th>
-                    <th>Gravidade</th>
-                </tr>
-            </thead>
-            <tbody id="cpl-tbody-auditoria"></tbody>
-        </table>
-    </div>
-    <div id="cpl-audit-summary" style="font-size:9px;color:var(--slate);margin-top:2px;text-align:right;"></div>
+    <!-- 🆕 FILTROS COMPACTOS COM DROPDOWNS -->
+<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px;align-items:center;">
+    <select id="cpl-audit-fiscal" onchange="renderCplAuditoria()" style="width:auto;min-width:120px;font-size:9px;padding:4px;">
+        <option value="TODOS">👔 Fiscais</option>
+    </select>
+    <select id="cpl-audit-gre" onchange="renderCplAuditoria()" style="width:auto;min-width:100px;font-size:9px;padding:4px;">
+        <option value="TODOS">🏢 GREs</option>
+    </select>
+    <select id="cpl-audit-cidade" onchange="renderCplAuditoria()" style="width:auto;min-width:110px;font-size:9px;padding:4px;">
+        <option value="TODOS">🏙️ Cidades</option>
+    </select>
+    <select id="cpl-audit-tipo" onchange="renderCplAuditoria()" style="width:auto;min-width:120px;font-size:9px;padding:4px;">
+        <option value="TODOS">⚠️ Todos</option>
+        <option value="TEMPORAL">⏱️ Temporal</option>
+        <option value="GEOGRAFICA">📍 Geográfica</option>
+        <option value="GARGALO">⏳ Gargalo</option>
+    </select>
+    <select id="cpl-audit-gravidade" onchange="renderCplAuditoria()" style="width:auto;min-width:110px;font-size:9px;padding:4px;">
+        <option value="TODOS">📊 Gravidade</option>
+        <option value="CRITICO">🔴 Crítico</option>
+        <option value="ALTO">🟠 Alto</option>
+        <option value="MEDIO">🟡 Médio</option>
+        <option value="BAIXO">🟢 Baixo</option>
+    </select>
 </div>
+
+<div style="overflow-x:auto; max-height:300px; overflow-y:auto;">
+    <table id="cpl-tbl-auditoria" style="table-layout:auto;min-width:900px;">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Fiscal</th>
+                <th>GRE</th>
+                <th>Motorista</th>
+                <th>Veículo</th>
+                <th>Rota</th>
+                <th>Início</th>
+                <th>Fim</th>
+                <th>Duração</th>
+                <th>Dist. Pontos</th>
+                <th>Tipo de Alerta</th>
+                <th>Gravidade</th>
+            </tr>
+        </thead>
+        <tbody id="cpl-tbody-auditoria"></tbody>
+    </table>
+</div>
+<div id="cpl-audit-summary" style="font-size:9px;color:var(--slate);margin-top:2px;text-align:right;"></div>
 
      <!-- ── CARD OFENSORES HIERÁRQUICO ── -->
 <div class="card row-new" style="border-top-color:#e67e22; margin-bottom:20px;">
