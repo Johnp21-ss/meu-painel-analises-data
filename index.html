@@ -1453,75 +1453,52 @@
         </div>
 
         <!-- ── LINHA 5: Tabela de auditoria prioritária ── -->
-        <div class="card row-new" style="border-top-color:#e74c3c; margin-bottom:20px; padding:12px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-        <div>
-            <h3 style="margin:0;font-size:13px;">📋 Auditoria Prioritária — Rotas Críticas 
-                <span style="font-size:10px;color:var(--slate);font-weight:normal;">· Somente rotas com fraude temporal, geográfica ou gargalo</span>
-            </h3>
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <select id="cpl-audit-tipo" onchange="renderCplAuditoria()" style="width:auto;min-width:130px;font-size:10px;padding:5px;">
+<div class="card row-new" style="border-top-color:#e74c3c; margin-bottom:20px; padding:8px 12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;margin-bottom:2px;">
+        <h3 style="margin:0;font-size:13px;white-space:nowrap;">📋 Auditoria Prioritária — Rotas Críticas <span style="font-size:10px;color:var(--slate);font-weight:normal;">· Fraude temporal, geográfica ou gargalo</span></h3>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+            <select id="cpl-audit-tipo" onchange="renderCplAuditoria()" style="width:auto;min-width:130px;font-size:10px;padding:3px 5px;">
                 <option value="TODOS">Todos os alertas</option>
                 <option value="TEMPORAL">Fraude Temporal (&lt;10min)</option>
                 <option value="GEOGRAFICA">Fraude Geográfica</option>
                 <option value="GARGALO">Gargalo (&gt;6h)</option>
             </select>
-            <button onclick="exportarCplCSV()" style="padding:5px 12px;background:#27ae60;color:#fff;border:none;border-radius:6px;font-size:10px;font-weight:bold;cursor:pointer;">📥 Exportar CSV</button>
+            <button onclick="exportarCplCSV()" style="padding:3px 8px;background:#27ae60;color:#fff;border:none;border-radius:4px;font-size:10px;font-weight:bold;cursor:pointer;">📥 CSV</button>
         </div>
     </div>
     
-        <!-- 🆕 FILTROS COMPACTOS -->
-    <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:4px; align-items:center;">
-        <select id="cpl-audit-fiscal" onchange="renderCplAuditoria()" style="width:auto;min-width:120px;font-size:9px;padding:4px;">
-            <option value="TODOS">👔 Fiscais</option>
-        </select>
-        <select id="cpl-audit-gre" onchange="renderCplAuditoria()" style="width:auto;min-width:100px;font-size:9px;padding:4px;">
-            <option value="TODOS">🏢 GREs</option>
-        </select>
-        <select id="cpl-audit-cidade" onchange="renderCplAuditoria()" style="width:auto;min-width:110px;font-size:9px;padding:4px;">
-            <option value="TODOS">🏙️ Cidades</option>
-        </select>
-        <select id="cpl-audit-tipo" onchange="renderCplAuditoria()" style="width:auto;min-width:130px;font-size:9px;padding:4px;">
-            <option value="TODOS">⚠️ Todos</option>
-            <option value="TEMPORAL">⏱️ Temporal</option>
-            <option value="GEOGRAFICA">📍 Geográfica</option>
-            <option value="GARGALO">⏳ Gargalo</option>
-        </select>
-        <select id="cpl-audit-gravidade" onchange="renderCplAuditoria()" style="width:auto;min-width:110px;font-size:9px;padding:4px;">
-            <option value="TODOS">📊 Gravidade</option>
-            <option value="CRITICO">🔴 Crítico</option>
-            <option value="ALTO">🟠 Alto</option>
-            <option value="MEDIO">🟡 Médio</option>
-            <option value="BAIXO">🟢 Baixo</option>
-        </select>
-        <span id="cpl-audit-count" style="font-size:9px;color:var(--info);margin-left:auto;"></span>
-        <button onclick="exportarCplCSV()" style="padding:4px 10px;background:#27ae60;color:#fff;border:none;border-radius:4px;font-size:9px;font-weight:bold;cursor:pointer;">📥 CSV</button>
+    <!-- Filtros extras (Fiscais, GREs, etc.) -->
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:10px;color:var(--slate);padding:3px 0;">
+        <span>👔 Fiscais</span>
+        <span>🏢 GREs</span>
+        <span>🏙️ Cidades</span>
+        <span>⚠️ Todos</span>
+        <span>📊 Gravidade</span>
     </div>
-            </div>
-            <div style="overflow-x:auto; max-height:300px; overflow-y:auto;">
-                <table id="cpl-tbl-auditoria" style="table-layout:auto;min-width:900px;">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Fiscal</th>
-                            <th>GRE</th>
-                            <th>Motorista</th>
-                            <th>Veículo</th>
-                            <th>Rota</th>
-                            <th>Início</th>
-                            <th>Fim</th>
-                            <th>Duração</th>
-                            <th>Dist. Pontos</th>
-                            <th>Tipo de Alerta</th>
-                            <th>Gravidade</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cpl-tbody-auditoria"></tbody>
-                </table>
-            </div>
-            <div id="cpl-audit-summary" style="font-size:9px;color:var(--slate);margin-top:8px;text-align:right;"></div>
-        </div>
+    
+    <div style="overflow-x:auto; max-height:300px; overflow-y:auto;">
+        <table id="cpl-tbl-auditoria" style="table-layout:auto;min-width:900px;">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Fiscal</th>
+                    <th>GRE</th>
+                    <th>Motorista</th>
+                    <th>Veículo</th>
+                    <th>Rota</th>
+                    <th>Início</th>
+                    <th>Fim</th>
+                    <th>Duração</th>
+                    <th>Dist. Pontos</th>
+                    <th>Tipo de Alerta</th>
+                    <th>Gravidade</th>
+                </tr>
+            </thead>
+            <tbody id="cpl-tbody-auditoria"></tbody>
+        </table>
+    </div>
+    <div id="cpl-audit-summary" style="font-size:9px;color:var(--slate);margin-top:2px;text-align:right;"></div>
+</div>
 
      <!-- ── CARD OFENSORES HIERÁRQUICO ── -->
 <div class="card row-new" style="border-top-color:#e67e22; margin-bottom:20px;">
