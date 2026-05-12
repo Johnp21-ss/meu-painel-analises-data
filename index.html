@@ -1468,17 +1468,26 @@
                 Fraude temporal, geográfica ou gargalo operacional.
             </div>
         </div>
-        
-        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-            <select id="cpl-audit-tipo" onchange="renderCplAuditoria()" style="width:auto;min-width:140px;font-size:10px;padding:4px 8px;background:var(--bg);color:white;border:1px solid var(--border);border-radius:4px;">
-                <option value="TODOS">Todos os alertas</option>
-                <option value="TEMPORAL">Fraude Temporal (&lt;10min)</option>
-                <option value="GEOGRAFICA">Fraude Geográfica</option>
-                <option value="GARGALO">Gargalo (&gt;6h)</option>
-            </select>
-            <button onclick="exportarCplCSV()" style="padding:4px 10px;background:#27ae60;color:#fff;border:none;border-radius:4px;font-size:10px;font-weight:bold;cursor:pointer;">📥 CSV</button>
-        </div>
     </div>
+    
+    <!-- Filtros -->
+    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:8px; padding:6px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+        <span style="font-size:10px; color:var(--slate);">👔 Fiscais</span>
+        <span style="font-size:10px; color:var(--slate);">🏢 GREs</span>
+        <span style="font-size:10px; color:var(--slate);">🏙️ Cidades</span>
+        <span style="font-size:10px; color:var(--slate);">⚠️ Todos</span>
+        <span style="font-size:10px; color:var(--slate);">📊 Gravidade</span>
+        <div style="flex:1;"></div>
+        <select id="cpl-audit-tipo" onchange="renderCplAuditoria()" style="width:auto;min-width:140px;font-size:10px;padding:4px 8px;background:var(--bg);color:white;border:1px solid var(--border);border-radius:4px;">
+            <option value="TODOS">Todos os alertas</option>
+            <option value="TEMPORAL">Fraude Temporal (&lt;10min)</option>
+            <option value="GEOGRAFICA">Fraude Geográfica</option>
+            <option value="GARGALO">Gargalo (&gt;6h)</option>
+        </select>
+        <button onclick="exportarCplCSV()" style="padding:4px 10px;background:#27ae60;color:#fff;border:none;border-radius:4px;font-size:10px;font-weight:bold;cursor:pointer;">📥 CSV</button>
+    </div>
+    
+    <!-- Tabela -->
     <div style="overflow-x:auto; max-height:300px; overflow-y:auto; margin-top:8px;">
         <table id="cpl-tbl-auditoria" style="table-layout:auto;min-width:900px;">
             <thead>
