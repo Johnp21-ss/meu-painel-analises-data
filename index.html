@@ -1076,36 +1076,17 @@
             </div>
         </div>
 
-        <div class="grid-3col">
-            <div class="card row-new">
-                <h3>🚨 Top Motoristas Fraudulentos</h3>
-                <div class="scroll-area-sm">
-                    <table id="tMotoristasFraude">
-                        <thead><tr><th>Motorista</th><th>GRE</th><th>Rotas</th><th>Fraudes</th><th>Tipo</th><th>Ação</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-                <div style="font-size:9px; color:var(--slate); margin-top:8px;">👆 Clique no motorista para ver as rotas fraudulentas</div>
-            </div>
-            <div class="card row-new">
-                <h3>🏢 GREs com Mais Fraudes</h3>
-                <div class="scroll-area-sm">
-                    <table id="tGREsFraude">
-                        <thead><tr><th>GRE</th><th>Total</th><th>Temporal</th><th>Local</th><th>% Fraude</th><th>Ação</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="card row-new">
-                <h3>👔 Fiscais (Responsáveis)</h3>
-                <div class="scroll-area-sm">
-                    <table id="tFiscaisFraude">
-                        <thead><tr><th>Fiscal</th><th>Total Rotas</th><th>Fraudes</th><th>% Fraude</th><th>Providência</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
+        <div class="card row-new" style="margin-bottom:15px;">
+            <h3>👔 Fiscais (Responsáveis)</h3>
+            <div class="scroll-area-sm">
+                <table id="tFiscaisFraude">
+                    <thead><tr><th>Fiscal</th><th>Total Rotas</th><th>Fraudes</th><th>% Fraude</th><th>Providência</th></tr></thead>
+                    <tbody></tbody>
+                </table>
             </div>
         </div>
+
+
 
         <div class="card row-new" style="margin-bottom:15px;">
     <h3>📋 Rotas com Irregularidades (Horário + Pontos)</h3>
@@ -1424,6 +1405,31 @@
                         <tbody></tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+
+        <!-- ── LINHA: GREs com Mais Fraudes + Top Motoristas Fraudulentos ── -->
+        <div class="grid-2col">
+            <div class="card row-new" style="border-top-color:#f39c12;">
+                <h3 style="font-size:13px;">🏢 GREs com Mais Fraudes</h3>
+                <div style="font-size:9px;color:var(--slate);margin-top:-8px;margin-bottom:8px;">Regionais com maior concentração de irregularidades</div>
+                <div class="scroll-area-sm">
+                    <table id="tGREsFraude" style="table-layout:auto;">
+                        <thead><tr><th>GRE</th><th>Total</th><th>Temporal</th><th>Local</th><th>% Fraude</th><th>Ação</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card row-new" style="border-top-color:#e74c3c;">
+                <h3 style="font-size:13px;">🚨 Top Motoristas Fraudulentos</h3>
+                <div style="font-size:9px;color:var(--slate);margin-top:-8px;margin-bottom:8px;">Motoristas com maior número de fraudes detectadas</div>
+                <div class="scroll-area-sm">
+                    <table id="tMotoristasFraude" style="table-layout:auto;">
+                        <thead><tr><th>Motorista</th><th>GRE</th><th>Rotas</th><th>Fraudes</th><th>Tipo</th><th>Ação</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div style="font-size:9px;color:var(--slate);margin-top:8px;">👆 Clique no motorista para ver as rotas fraudulentas</div>
             </div>
         </div>
 
@@ -1819,6 +1825,7 @@ if (areaNivel && nivelSalvo) {
     if (tabId === 'aba-extras') processarExtras();
     if (tabId === 'aba-compliance') {
         processarCompliance();
+        processarAssiduidadeTemporal();
         setTimeout(() => renderCplOfensoresHierarquico(), 500);
     }
     if (tabId === 'aba-gestao') initGestaoAcessos();
