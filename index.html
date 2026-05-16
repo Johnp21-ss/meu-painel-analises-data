@@ -1595,7 +1595,7 @@ verificarLogoutForcado();
             document.getElementById("login-overlay").style.display = "none";
             document.getElementById("user-display").style.display = "block";
             document.getElementById("nome-logado").innerText = payload.usuario;
-            document.getElementById("nivel-logado").innerText = payload.nivel;
+            document.getElementById("nivel-logado").innerText = " (" + payload.nivel + ")";
             carregarDadosAsync();
             aplicarNivelAcesso(payload.nivel);
         } else {
