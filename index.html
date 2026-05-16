@@ -1593,6 +1593,7 @@ verificarLogoutForcado();
             sessionStorage.setItem("usuario", payload.usuario);
             sessionStorage.setItem("nivel", payload.nivel);
             document.getElementById("login-overlay").style.display = "none";
+            carregarDadosAsync();
             aplicarNivelAcesso(payload.nivel);
         } else {
             msgErro.style.display = "block";
@@ -1886,11 +1887,13 @@ function carregarDadosAsync() {
         })
         .then(res => res.text())
         .then(csv => {
+            console.log("CSV RECEBIDO:", csv);
 
             Papa.parse(csv, {
                 header: true,
                 skipEmptyLines: true,
                 complete: (r) => {
+                    console.log("DADOS PARSEADOS:", r.data);
 
                     bruto = r.data.filter(d => (d.rota || d.ROTA || "").trim() !== "").map(d => {
                         d.rota = (d.rota || d.ROTA || "").trim();
