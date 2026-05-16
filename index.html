@@ -1920,42 +1920,50 @@ function carregarDadosAsync() {
             Papa.parse(csv, {
                 header: true,
                 skipEmptyLines: true,
-            complete: (r) => {
-                bruto = r.data.filter(d => (d.rota || d.ROTA || "").trim() !== "").map(d => {
-                    d.rota = (d.rota || d.ROTA || "").trim();
-                    d.data = (d.data || d.DATA || "").trim();
-                    d.cidade = d.cidade || d.CIDADE || "";
-                    d.gre = d.gre || d.GRE || "";
-                    d.status = d.status || d.STATUS || "";
-                    d.veiculo = d.veiculo || d.VEICULO || d.PLACA || "";
-                    d.motorista = d.motorista || d.MOTORISTA || "S/ NOME";
-                    d.fiscal_responsavel = d.fiscal_responsavel || d.FISCAL || "NÃO IDENTIFICADO";
-                    d.observacao = d.observacao || d.OBS || "";
-                    d.turno = d.turno || d.TURNO || "";
-                    d.direcao = d.direcao || d.DIRECAO || "";
-                    d.tipo_fornecedor = d.tipo_fornecedor || d.TIPO_FORNECEDOR || "";
-                    d.fornecedor_motorista = d.fornecedor_motorista || d.FORNECEDOR || "";
-                    d.origem = d.origem || d.ORIGEM || "OUTROS";
-                    d.km_planejado = d.km_planejado || d.KM_PLANEJADO || "0";
-                    d.coordenadas_inicio = d.coordenadas_inicio || d.COORDENADAS_INICIO || "---";
-                    d.coordenadas_fim = d.coordenadas_fim || d.COORDENADAS_FIM || "---";
-                    d.inicio_execucao = d.inicio_execucao || d.INICIO_EXECUCAO || "--:--";
-                    d.fim_execucao = d.fim_execucao || d.FIM_EXECUCAO || "--:--";
-                    d.percentual_conclusao = d.percentual_conclusao || d.PERCENTUAL_CONCLUSAO || "0%";
-                    d.horario = d.horario || d.HORARIO || "";
-                    d.isExtra = norm(d.rota).includes("EXTRA");
-                    return d;
-                });
-                
-                popularFiltros();
-                popularFiltrosFraude();
-                popularFiltrosExtras();
-                processarDados();
-                
-                resolve();
-            },
-            error: () => resolve()
-        });
+                complete: (r) => {
+
+                    bruto = r.data
+                        .filter(d => (d.rota || d.ROTA || "").trim() !== "")
+                        .map(d => {
+
+                            d.rota = (d.rota || d.ROTA || "").trim();
+                            d.data = (d.data || d.DATA || "").trim();
+                            d.cidade = d.cidade || d.CIDADE || "";
+                            d.gre = d.gre || d.GRE || "";
+                            d.status = d.status || d.STATUS || "";
+                            d.veiculo = d.veiculo || d.VEICULO || d.PLACA || "";
+                            d.motorista = d.motorista || d.MOTORISTA || "S/ NOME";
+                            d.fiscal_responsavel = d.fiscal_responsavel || d.FISCAL || "NÃO IDENTIFICADO";
+                            d.observacao = d.observacao || d.OBS || "";
+                            d.turno = d.turno || d.TURNO || "";
+                            d.direcao = d.direcao || d.DIRECAO || "";
+                            d.tipo_fornecedor = d.tipo_fornecedor || d.TIPO_FORNECEDOR || "";
+                            d.fornecedor_motorista = d.fornecedor_motorista || d.FORNECEDOR || "";
+                            d.origem = d.origem || d.ORIGEM || "OUTROS";
+                            d.km_planejado = d.km_planejado || d.KM_PLANEJADO || "0";
+                            d.coordenadas_inicio = d.coordenadas_inicio || d.COORDENADAS_INICIO || "---";
+                            d.coordenadas_fim = d.coordenadas_fim || d.COORDENADAS_FIM || "---";
+                            d.inicio_execucao = d.inicio_execucao || d.INICIO_EXECUCAO || "--:--";
+                            d.fim_execucao = d.fim_execucao || d.FIM_EXECUCAO || "--:--";
+                            d.percentual_conclusao = d.percentual_conclusao || d.PERCENTUAL_CONCLUSAO || "0%";
+                            d.horario = d.horario || d.HORARIO || "";
+                            d.isExtra = norm(d.rota).includes("EXTRA");
+
+                            return d;
+                        });
+
+                    popularFiltros();
+                    popularFiltrosFraude();
+                    popularFiltrosExtras();
+                    processarDados();
+
+                    resolve();
+                },
+                error: () => resolve()
+            });
+
+        }) // ✅ FECHA O .then(csv => { ... })
+        .catch(() => resolve()); // opcional, mas recomendado
     });
 }
 // ══════════════════════════════════════════════
