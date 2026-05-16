@@ -1909,10 +1909,18 @@ if (areaNivel && nivelSalvo) {
 // Função assíncrona para carregar dados via PapaParse
 function carregarDadosAsync() {
     return new Promise((resolve) => {
-        Papa.parse(URL_PLANILHA + '&t=' + Date.now(), {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
+
+        fetch("/api/planilha", {
+            headers: {
+                "Authorization": "Bearer SEGREDO_123"
+            }
+        })
+        .then(res => res.text())
+        .then(csv => {
+
+            Papa.parse(csv, {
+                header: true,
+                skipEmptyLines: true,
             complete: (r) => {
                 bruto = r.data.filter(d => (d.rota || d.ROTA || "").trim() !== "").map(d => {
                     d.rota = (d.rota || d.ROTA || "").trim();
