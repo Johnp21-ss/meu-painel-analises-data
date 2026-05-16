@@ -1594,6 +1594,7 @@ verificarLogoutForcado();
             sessionStorage.setItem("nivel", payload.nivel);
             document.getElementById("login-overlay").style.display = "none";
             document.getElementById("user-display").style.display = "block";
+            document.getElementById("nome-logado").innerText = payload.usuario;
             carregarDadosAsync();
             aplicarNivelAcesso(payload.nivel);
         } else {
