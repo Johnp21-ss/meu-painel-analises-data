@@ -1574,65 +1574,33 @@ verificarLogoutForcado();
     // 2. FUNÇÃO PRINCIPAL DE LOGIN
     // ══════════════════════════════════════════════
     function entrarSistema() {
-    console.log("Tentativa de acesso detectada...");
-    
-    const campoUser = document.getElementById("user-name");
-    const campoPass = document.getElementById("user-pass");
+    const usuario = document.getElementById("user-name").value.trim();
+    const senha = document.getElementById("user-pass").value.trim();
     const msgErro = document.getElementById("login-erro");
 
-    if (!campoUser || !campoPass) return;
-
-    const usuario = campoUser.value.trim();
-    const senha = campoPass.value.trim();
-
-    // Verifica se usuário existe e senha está correta
-    if (ACESSO_PORTAL[usuario] && ACESSO_PORTAL[usuario].senha === senha) {
-        console.log("Acesso concedido para:", usuario, "- Nível:", ACESSO_PORTAL[usuario].nivel);
-        
-        // Salva dados da sessão
-        sessionStorage.setItem("logado", "true");
-        sessionStorage.setItem("usuario", usuario);
-        sessionStorage.setItem("nivel", ACESSO_PORTAL[usuario].nivel);
-        sessionStorage.setItem("nome_completo", ACESSO_PORTAL[usuario].nome);
-        
-        // Registra data/hora do último acesso
-        const agora = new Date();
-        const dataHoraAcesso = agora.toLocaleString('pt-BR');
-        sessionStorage.setItem("ultimo_acesso", dataHoraAcesso);
-        registrarAcesso(usuario, dataHoraAcesso);
-        
-        // Esconde o bloqueio de login
-        document.getElementById("login-overlay").style.display = "none";
-        
-        // Mostra nome e nível do usuário
-        const nomeExibicao = ACESSO_PORTAL[usuario].nome;
-        const nivelExibicao = ACESSO_PORTAL[usuario].nivel;
-        document.getElementById("nome-logado").innerText = nomeExibicao.toUpperCase();
-        const nivelBadge = document.getElementById("nivel-badge");
-        const nivelLogado = document.getElementById("nivel-logado");
-        nivelLogado.innerText = nivelExibicao;
-
-// Aplica cor conforme o nível
-nivelBadge.className = '';
-if (nivelExibicao === 'ADMIN') {
-    nivelBadge.classList.add('admin');
-} else if (nivelExibicao === 'GESTOR') {
-    nivelBadge.classList.add('gestor');
-} else if (nivelExibicao === 'MONITOR') {
-    nivelBadge.classList.add('monitor');
-} else {
-    nivelBadge.classList.add('fiscal');
-}
-        document.getElementById("user-display").style.display = "block";
-        
-        // Aplica restrições de acesso conforme o nível
-        aplicarNivelAcesso(nivelExibicao);
-        
-    } else {
-        console.warn("Dados de acesso inválidos.");
+    fetch("/api/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ usuario, senha })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.token) {
+            localStorage.setItem("token", data.token);
+            const payload = JSON.parse(atob(data.token.split('.')[1]));
+            sessionStorage.setItem("usuario", payload.usuario);
+            sessionStorage.setItem("nivel", payload.nivel);
+            document.getElementById("login-overlay").style.display = "none";
+            aplicarNivelAcesso(payload.nivel);
+        } else {
+            msgErro.style.display = "block";
+        }
+    })
+    .catch(() => {
         msgErro.style.display = "block";
-        campoPass.value = "";
-    }
+    });
 }
      function aplicarNivelAcesso(nivel) {
     const permissoes = carregarPermissoes();
