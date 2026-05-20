@@ -1828,10 +1828,9 @@ if (areaNivel && nivelSalvo) {
     if (tabId === 'aba-extras') processarExtras();
     if (tabId === 'aba-compliance') {
         processarCompliance();
-        processarAssiduidadeTemporal();
-        setTimeout(() => renderCplOfensoresHierarquico(), 500);
-        renderCplBaixaAssiduidade();
-    }
+    processarAssiduidadeTemporal();
+    setTimeout(() => renderCplAssiduidadeUnificada(), 500);
+}
     if (tabId === 'aba-gestao') initGestaoAcessos();
 }
 
@@ -4673,165 +4672,25 @@ function getDadosAcesso(username) {
 // OFENSORES HIERÁRQUICO - Fiscal > GRE > Cidade > Motorista
 // ══════════════════════════════════════════════
 
-function renderCplOfensoresHierarquico() {
-    const filtroGre = document.getElementById('cpl-ofens-gre-hier')?.value || 'TODOS';
-    const filtroFiscal = document.getElementById('cpl-ofens-fiscal-hier')?.value || 'TODOS';
-    
-    const ofensoresBrutos = (window._cplDadosCompliance || []).filter(d => {
-        const sn = norm(d.status);
-        return !sn.includes('CONCLUID') && 
-               !sn.includes('ANDAMENTO') && 
-               !sn.includes('EXECUTANDO') &&
-               !d.isExtra;
-    });
-    
-    // Popula filtros
-    const selGre = document.getElementById('cpl-ofens-gre-hier');
-    const selFiscal = document.getElementById('cpl-ofens-fiscal-hier');
-    
-    if (selGre && selGre.options.length <= 1) {
-        [...new Set(ofensoresBrutos.map(d => d.gre))].filter(Boolean).sort().forEach(g => selGre.add(new Option(g, g)));
-    }
-    if (selFiscal && selFiscal.options.length <= 1) {
-        [...new Set(ofensoresBrutos.map(d => d.fiscal_responsavel))].filter(Boolean).sort().forEach(f => selFiscal.add(new Option(f, f)));
-    }
-    
-    // Estrutura: fiscal -> gre -> cidade -> motoristas[]
-    const arvore = {};
-    let totalMotoristas = 0;
-    let totalCidades = 0;
-    
-    ofensoresBrutos.forEach(d => {
-        const fiscal = d.fiscal_responsavel || 'NÃO IDENTIFICADO';
-        const gre = d.gre || 'S/ GRE';
-        const cidade = d.cidade || 'S/ CIDADE';
-        const motorista = d.motorista || 'S/ NOME';
-        
-        if (filtroGre !== 'TODOS' && gre !== filtroGre) return;
-        if (filtroFiscal !== 'TODOS' && fiscal !== filtroFiscal) return;
-        
-        if (!arvore[fiscal]) arvore[fiscal] = { gres: {}, total: 0, todosMotoristas: new Set() };
-        if (!arvore[fiscal].gres[gre]) arvore[fiscal].gres[gre] = { cidades: {}, total: 0, todosMotoristas: new Set() };
-        if (!arvore[fiscal].gres[gre].cidades[cidade]) arvore[fiscal].gres[gre].cidades[cidade] = { motoristas: {}, total: 0, nomesMotoristas: new Set() };
-        
-        arvore[fiscal].todosMotoristas.add(motorista);
-        arvore[fiscal].gres[gre].todosMotoristas.add(motorista);
-        arvore[fiscal].gres[gre].cidades[cidade].nomesMotoristas.add(motorista);
-        
-        if (!arvore[fiscal].gres[gre].cidades[cidade].motoristas[motorista]) {
-            arvore[fiscal].gres[gre].cidades[cidade].motoristas[motorista] = {
-                nome: motorista,
-                veiculo: d.veiculo || 'S/ VEICULO',
-                turno: d.turno || '',
-                rotas: []
-            };
-            arvore[fiscal].gres[gre].total++;
-            arvore[fiscal].total++;
-            totalMotoristas++;
-        }
-        
-        const rota = d.rota || 'S/ ROTA';
-        if (!arvore[fiscal].gres[gre].cidades[cidade].motoristas[motorista].rotas.includes(rota)) {
-            arvore[fiscal].gres[gre].cidades[cidade].motoristas[motorista].rotas.push(rota);
-        }
-    });
-    
-    // Conta cidades
-    Object.values(arvore).forEach(f => {
-        Object.values(f.gres).forEach(g => {
-            totalCidades += Object.keys(g.cidades).length;
-        });
-    });
-    
-    // Renderiza
-    const tbody = document.getElementById('cpl-tbody-ofensores-hier');
-    if (!tbody) return;
-    
-    let html = '';
-    let fIdx = 0;
-    
-    const fiscaisOrd = Object.entries(arvore).sort((a, b) => b[1].total - a[1].total);
-    
-    fiscaisOrd.forEach(([fiscal, fData]) => {
-        const fId = `of-f-${fIdx}`;
-        fIdx++;
-        const fiscMotStr = fData.total === 1 ? 'motorista' : 'motoristas';
-        const fiscGreStr = Object.keys(fData.gres).length === 1 ? 'GRE' : 'GREs';
-        
-        // Lista de TODOS os motoristas deste fiscal
-        const motoristasDoFiscal = [...fData.todosMotoristas].join(', ');
-        
-        html += `<tr class="pointer" onclick="toggleRow('${fId}', this)" style="background:rgba(231,76,60,.1);">
-            <td><span class="arrow">▶</span> 👔 <b>${fiscal}</b></td>
-            <td colspan="3" style="color:var(--slate);">${Object.keys(fData.gres).length} ${fiscGreStr} · ${fData.total} ${fiscMotStr}</td>
-            <td>${gerarBotaoRegistro({data: new Date().toISOString().split('T')[0], tipo: 'BAIXA_ASSID', gre: Object.keys(fData.gres).join(', '), fiscal: fiscal, motorista: motoristasDoFiscal, veiculo: '', rota: 'Múltiplas rotas', descricao: 'Fiscal ' + fiscal + ' - Motoristas sem abertura: ' + motoristasDoFiscal.substring(0, 300), gravidade: 'ALTO'}, 'margin-left:0;')}</td>
-        </tr>`;
-        
-        const gresOrd = Object.entries(fData.gres).sort((a, b) => b[1].total - a[1].total);
-        let gIdx = 0;
-        
-        gresOrd.forEach(([gre, gData]) => {
-            const gId = `of-g-${fIdx}-${gIdx}`;
-            gIdx++;
-            const greMotStr = gData.total === 1 ? 'motorista' : 'motoristas';
-            const greCidStr = Object.keys(gData.cidades).length === 1 ? 'cidade' : 'cidades';
-            
-            // Lista de motoristas DESTA GRE
-            const motoristasDaGre = [...gData.todosMotoristas].join(', ');
-            
-            html += `<tr class="nested-row ${fId} pointer" onclick="toggleRow('${gId}', this)" style="background:rgba(243,156,18,.1);">
-                <td><span style="margin-left:20px;" class="arrow">▶</span> 🏢 <b style="color:var(--warning);">${gre}</b></td>
-                <td colspan="3" style="color:var(--slate);">${Object.keys(gData.cidades).length} ${greCidStr} · ${gData.total} ${greMotStr}</td>
-                <td>${gerarBotaoRegistro({data: new Date().toISOString().split('T')[0], tipo: 'BAIXA_ASSID', gre: gre, fiscal: fiscal, motorista: motoristasDaGre, veiculo: '', rota: 'Múltiplas rotas em ' + gre, descricao: 'GRE ' + gre + ' - Motoristas sem abertura: ' + motoristasDaGre.substring(0, 300), gravidade: 'ALTO'}, 'margin-left:0;')}</td>
-            </tr>`;
-            
-            const cidOrd = Object.entries(gData.cidades).sort((a, b) => Object.keys(b[1].motoristas).length - Object.keys(a[1].motoristas).length);
-            let cIdx = 0;
-            
-            cidOrd.forEach(([cidade, cData]) => {
-                const cId = `of-c-${fIdx}-${gIdx}-${cIdx}`;
-                cIdx++;
-                const cidMotCount = Object.keys(cData.motoristas).length;
-                const cidMotStr = cidMotCount === 1 ? 'motorista' : 'motoristas';
-                const nomesCidade = [...cData.nomesMotoristas].join(', ');
-                
-                html += `<tr class="nested-row ${gId} pointer" onclick="toggleRow('${cId}', this)" style="background:rgba(52,152,219,.08);">
-                    <td><span style="margin-left:40px;" class="arrow">▶</span> 🏙️ <b style="color:var(--info);">${cidade}</b></td>
-                    <td colspan="3" style="color:var(--slate);">${cidMotCount} ${cidMotStr}</td>
-                    <td>${gerarBotaoRegistro({data: new Date().toISOString().split('T')[0], tipo: 'BAIXA_ASSID', gre: gre, fiscal: fiscal, motorista: nomesCidade, veiculo: '', rota: 'Múltiplas rotas em ' + cidade, descricao: 'Cidade ' + cidade + ' (' + gre + ') - Motoristas sem abertura: ' + nomesCidade.substring(0, 300), gravidade: cidMotCount >= 3 ? 'ALTO' : 'MEDIO'}, 'margin-left:0;')}</td>
-                </tr>`;
-                
-                // Motoristas individuais
-                Object.values(cData.motoristas).forEach(mot => {
-                    const rotasStr = mot.rotas.join(', ');
-                    html += `<tr class="nested-row ${cId}" style="background:rgba(0,0,0,.15);">
-                        <td><span style="margin-left:60px;">👤 ${mot.nome}</span></td>
-                        <td style="font-size:9px;">${mot.veiculo}</td>
-                        <td style="font-size:9px;">${mot.turno}</td>
-                        <td style="font-size:9px;color:var(--slate);">${rotasStr.substring(0, 40)}${rotasStr.length > 40 ? '...' : ''}</td>
-                        <td>${gerarBotaoRegistro({data: new Date().toISOString().split('T')[0], tipo: 'BAIXA_ASSID', gre: gre, fiscal: fiscal, motorista: mot.nome, veiculo: mot.veiculo, rota: rotasStr.substring(0, 500), descricao: 'Motorista ' + mot.nome + ' - Veículo: ' + mot.veiculo + ' - Rotas não executadas: ' + rotasStr.substring(0, 500) + ' (' + cidade + '/' + gre + ')', gravidade: 'MEDIO'}, 'margin-left:0;')}</td>
-                    </tr>`;
-                });
-            });
-        });
-    });
-    
-    tbody.innerHTML = html || '<tr><td colspan="5" style="color:var(--slate);text-align:center;padding:20px;">✅ Nenhum ofensor encontrado.</td></tr>';
-    
-    const summary = document.getElementById('cpl-ofens-hier-summary');
-    if (summary) {
-        summary.innerText = `${Object.keys(arvore).length} fiscal(is) · ${totalCidades} cidade(s) · ${totalMotoristas} motorista(s) sem abertura`;
-    }
-}
-    // ══════════════════════════════════════════════
-// BAIXA ASSIDUIDADE - Motoristas com ≤30% de conclusão
+// ══════════════════════════════════════════════
+// ANÁLISE DE ASSIDUIDADE UNIFICADA (com slider %)
 // ══════════════════════════════════════════════
 
-function renderCplBaixaAssiduidade() {
-    const filtroGre = document.getElementById('cpl-baixa-gre-hier')?.value || 'TODOS';
-    const filtroFiscal = document.getElementById('cpl-baixa-fiscal-hier')?.value || 'TODOS';
+function atualizarAssiduidadeSlider() {
+    const slider = document.getElementById('cpl-assid-slider');
+    const valor = document.getElementById('cpl-assid-slider-valor');
+    if (slider && valor) {
+        valor.innerText = slider.value + '%';
+    }
+    renderCplAssiduidadeUnificada();
+}
+
+function renderCplAssiduidadeUnificada() {
+    const filtroGre = document.getElementById('cpl-assid-gre-hier')?.value || 'TODOS';
+    const filtroFiscal = document.getElementById('cpl-assid-fiscal-hier')?.value || 'TODOS';
+    const percentualMaximo = parseInt(document.getElementById('cpl-assid-slider')?.value || 50);
+    const incluirZero = document.getElementById('cpl-assid-incluir-zero')?.checked || true;
     
-    // Usa os dados de compliance já carregados
     const dadosBrutos = window._cplDadosCompliance || [];
     
     // Mapeia cada motorista para calcular sua taxa de conclusão
@@ -4876,28 +4735,32 @@ function renderCplBaixaAssiduidade() {
         }
     });
     
-    // ✅ PARA ESTE CARD ESPECÍFICO - Inclui TODOS com ≤50% (inclusive 0%)
-const baixaAssiduidade = Object.values(motoristaStats).filter(m => {
-    const perc = m.total > 0 ? (m.concluidos / m.total) * 100 : 0;
-    return perc <= 50 && m.total > 0;  // ← Sem o "&& perc > 0"
-});
+    // Filtra motoristas com percentual <= percentualMaximo
+    let filtrados = Object.values(motoristaStats).filter(m => {
+        const perc = m.total > 0 ? (m.concluidos / m.total) * 100 : 0;
+        if (incluirZero) {
+            return perc <= percentualMaximo && m.total > 0;
+        } else {
+            return perc <= percentualMaximo && perc > 0 && m.total > 0;
+        }
+    });
     
     // Aplica filtros de GRE e Fiscal
-    const filtrados = baixaAssiduidade.filter(m => {
+    filtrados = filtrados.filter(m => {
         if (filtroGre !== 'TODOS' && m.gre !== filtroGre) return false;
         if (filtroFiscal !== 'TODOS' && m.fiscal !== filtroFiscal) return false;
         return true;
     });
     
     // Popula os selects de filtro
-    const selGre = document.getElementById('cpl-baixa-gre-hier');
-    const selFiscal = document.getElementById('cpl-baixa-fiscal-hier');
+    const selGre = document.getElementById('cpl-assid-gre-hier');
+    const selFiscal = document.getElementById('cpl-assid-fiscal-hier');
     
     if (selGre && selGre.options.length <= 1) {
-        [...new Set(baixaAssiduidade.map(m => m.gre))].filter(Boolean).sort().forEach(g => selGre.add(new Option(g, g)));
+        [...new Set(Object.values(motoristaStats).map(m => m.gre))].filter(Boolean).sort().forEach(g => selGre.add(new Option(g, g)));
     }
     if (selFiscal && selFiscal.options.length <= 1) {
-        [...new Set(baixaAssiduidade.map(m => m.fiscal))].filter(Boolean).sort().forEach(f => selFiscal.add(new Option(f, f)));
+        [...new Set(Object.values(motoristaStats).map(m => m.fiscal))].filter(Boolean).sort().forEach(f => selFiscal.add(new Option(f, f)));
     }
     
     // Estrutura hierárquica: fiscal -> gre -> cidade -> motorista
@@ -4935,7 +4798,7 @@ const baixaAssiduidade = Object.values(motoristaStats).filter(m => {
     });
     
     // Renderiza
-    const tbody = document.getElementById('cpl-tbody-baixa-assid-hier');
+    const tbody = document.getElementById('cpl-tbody-assid-unificada');
     if (!tbody) return;
     
     let html = '';
@@ -4944,7 +4807,7 @@ const baixaAssiduidade = Object.values(motoristaStats).filter(m => {
     const fiscaisOrd = Object.entries(arvore).sort((a, b) => b[1].total - a[1].total);
     
     fiscaisOrd.forEach(([fiscal, fData]) => {
-        const fId = `baixa-f-${fIdx}`;
+        const fId = `assid-f-${fIdx}`;
         fIdx++;
         const fiscMotStr = fData.total === 1 ? 'motorista' : 'motoristas';
         const fiscGreStr = Object.keys(fData.gres).length === 1 ? 'GRE' : 'GREs';
@@ -4953,7 +4816,7 @@ const baixaAssiduidade = Object.values(motoristaStats).filter(m => {
         
         html += `<tr class="pointer" onclick="toggleRow('${fId}', this)" style="background:rgba(230,126,34,.12);">
             <td><span class="arrow">▶</span> 👔 <b>${fiscal}</b></td>
-            <td colspan="3" style="color:var(--slate);">${Object.keys(fData.gres).length} ${fiscGreStr} · ${fData.total} ${fiscMotStr} (≤30% conclusão)</td>
+            <td colspan="4" style="color:var(--slate);">${Object.keys(fData.gres).length} ${fiscGreStr} · ${fData.total} ${fiscMotStr} (≤${percentualMaximo}% conclusão)</td>
             <td>${gerarBotaoRegistro({
                 data: new Date().toISOString().split('T')[0],
                 tipo: 'BAIXA_ASSID',
@@ -4962,7 +4825,7 @@ const baixaAssiduidade = Object.values(motoristaStats).filter(m => {
                 motorista: motoristasDoFiscal,
                 veiculo: '',
                 rota: 'Múltiplas rotas',
-                descricao: `Fiscal ${fiscal} - ${fData.total} motorista(s) com baixa assiduidade (≤30%): ${motoristasDoFiscal.substring(0, 300)}`,
+                descricao: `Fiscal ${fiscal} - ${fData.total} motorista(s) com assiduidade ≤${percentualMaximo}%: ${motoristasDoFiscal.substring(0, 300)}`,
                 gravidade: fData.total >= 5 ? 'CRITICO' : fData.total >= 3 ? 'ALTO' : 'MEDIO'
             }, 'margin-left:0;')}</td>
         </tr>`;
@@ -4971,7 +4834,7 @@ const baixaAssiduidade = Object.values(motoristaStats).filter(m => {
         let gIdx = 0;
         
         gresOrd.forEach(([gre, gData]) => {
-            const gId = `baixa-g-${fIdx}-${gIdx}`;
+            const gId = `assid-g-${fIdx}-${gIdx}`;
             gIdx++;
             const greMotStr = gData.total === 1 ? 'motorista' : 'motoristas';
             const greCidStr = Object.keys(gData.cidades).length === 1 ? 'cidade' : 'cidades';
@@ -4980,7 +4843,7 @@ const baixaAssiduidade = Object.values(motoristaStats).filter(m => {
             
             html += `<tr class="nested-row ${fId} pointer" onclick="toggleRow('${gId}', this)" style="background:rgba(243,156,18,.08);">
                 <td><span style="margin-left:20px;" class="arrow">▶</span> 🏢 <b style="color:var(--warning);">${gre}</b></td>
-                <td colspan="3" style="color:var(--slate);">${Object.keys(gData.cidades).length} ${greCidStr} · ${gData.total} ${greMotStr}</td>
+                <td colspan="4" style="color:var(--slate);">${Object.keys(gData.cidades).length} ${greCidStr} · ${gData.total} ${greMotStr}</td>
                 <td>${gerarBotaoRegistro({
                     data: new Date().toISOString().split('T')[0],
                     tipo: 'BAIXA_ASSID',
@@ -4989,7 +4852,7 @@ const baixaAssiduidade = Object.values(motoristaStats).filter(m => {
                     motorista: motoristasDaGre,
                     veiculo: '',
                     rota: 'Múltiplas rotas em ' + gre,
-                    descricao: `GRE ${gre} - ${gData.total} motorista(s) com baixa assiduidade (≤30%): ${motoristasDaGre.substring(0, 300)}`,
+                    descricao: `GRE ${gre} - ${gData.total} motorista(s) com assiduidade ≤${percentualMaximo}%: ${motoristasDaGre.substring(0, 300)}`,
                     gravidade: gData.total >= 5 ? 'CRITICO' : gData.total >= 3 ? 'ALTO' : 'MEDIO'
                 }, 'margin-left:0;')}</td>
             </tr>`;
@@ -4998,7 +4861,7 @@ const baixaAssiduidade = Object.values(motoristaStats).filter(m => {
             let cIdx = 0;
             
             cidOrd.forEach(([cidade, cData]) => {
-                const cId = `baixa-c-${fIdx}-${gIdx}-${cIdx}`;
+                const cId = `assid-c-${fIdx}-${gIdx}-${cIdx}`;
                 cIdx++;
                 const cidMotCount = Object.keys(cData.motoristas).length;
                 const cidMotStr = cidMotCount === 1 ? 'motorista' : 'motoristas';
@@ -5006,7 +4869,7 @@ const baixaAssiduidade = Object.values(motoristaStats).filter(m => {
                 
                 html += `<tr class="nested-row ${gId} pointer" onclick="toggleRow('${cId}', this)" style="background:rgba(52,152,219,.06);">
                     <td><span style="margin-left:40px;" class="arrow">▶</span> 🏙️ <b style="color:var(--info);">${cidade}</b></td>
-                    <td colspan="3" style="color:var(--slate);">${cidMotCount} ${cidMotStr}</td>
+                    <td colspan="4" style="color:var(--slate);">${cidMotCount} ${cidMotStr}</td>
                     <td>${gerarBotaoRegistro({
                         data: new Date().toISOString().split('T')[0],
                         tipo: 'BAIXA_ASSID',
@@ -5015,7 +4878,7 @@ const baixaAssiduidade = Object.values(motoristaStats).filter(m => {
                         motorista: nomesCidade,
                         veiculo: '',
                         rota: 'Múltiplas rotas em ' + cidade,
-                        descricao: `Cidade ${cidade} (${gre}) - ${cidMotCount} motorista(s) com baixa assiduidade (≤30%): ${nomesCidade.substring(0, 300)}`,
+                        descricao: `Cidade ${cidade} (${gre}) - ${cidMotCount} motorista(s) com assiduidade ≤${percentualMaximo}%: ${nomesCidade.substring(0, 300)}`,
                         gravidade: cidMotCount >= 3 ? 'ALTO' : 'MEDIO'
                     }, 'margin-left:0;')}</td>
                 </tr>`;
@@ -5023,16 +4886,29 @@ const baixaAssiduidade = Object.values(motoristaStats).filter(m => {
                 // Motoristas individuais
                 Object.values(cData.motoristas).forEach(mot => {
                     const perc = mot.total > 0 ? ((mot.concluidos / mot.total) * 100).toFixed(1) : 0;
-                    const percCls = perc <= 15 ? '#e74c3c' : perc <= 25 ? '#f39c12' : '#f1c40f';
-                    const rotasStr = mot.rotasList.join(', ');
+                    let percCls = '#f1c40f';
+                    let percBg = 'rgba(241,196,15,.08)';
+                    if (perc <= 0) {
+                        percCls = '#e74c3c';
+                        percBg = 'rgba(231,76,60,.15)';
+                    } else if (perc <= 25) {
+                        percCls = '#f39c12';
+                        percBg = 'rgba(243,156,18,.1)';
+                    } else if (perc <= 50) {
+                        percCls = '#f1c40f';
+                        percBg = 'rgba(241,196,15,.08)';
+                    }
                     
-                    html += `<tr class="nested-row ${cId}" style="background:rgba(0,0,0,.15);">
-                        <td><span style="margin-left:60px;">👤 ${mot.motorista}</span></td>
+                    const rotasStr = mot.rotasList.join(', ');
+                    const zeroBadge = perc == 0 ? '<span class="badge badge-danger" style="margin-left:6px;">🚫 NENHUMA ROTA</span>' : '';
+                    
+                    html += `<tr class="nested-row ${cId}" style="background:${percBg};">
+                        <td><span style="margin-left:60px;">👤 ${mot.motorista} ${zeroBadge}</span></td>
                         <td style="font-size:9px;">${mot.veiculo}</td>
                         <td style="font-size:9px;">${mot.turno || '-'}</td>
+                        <td style="font-size:9px; font-weight:bold; color:${percCls};">${perc}%</td>
                         <td style="font-size:9px;">
-                            <span style="color:${percCls}; font-weight:bold;">${mot.concluidos}/${mot.total}</span>
-                            <span style="color:var(--slate);"> (${perc}%)</span>
+                            <span style="color:${percCls};">${mot.concluidos}/${mot.total}</span>
                             ${mot.extras > 0 ? `<br><span style="font-size:7px; color:var(--extra);">+${mot.extras} extra(s)</span>` : ''}
                         </td>
                         <td>${gerarBotaoRegistro({
@@ -5043,8 +4919,10 @@ const baixaAssiduidade = Object.values(motoristaStats).filter(m => {
                             motorista: mot.motorista,
                             veiculo: mot.veiculo,
                             rota: rotasStr.substring(0, 500),
-                            descricao: `Motorista ${mot.motorista} - Veículo: ${mot.veiculo} - Baixa assiduidade: ${mot.concluidos}/${mot.total} (${perc}%) concluídos - Rotas: ${rotasStr.substring(0, 300)} (${cidade}/${gre})`,
-                            gravidade: perc <= 15 ? 'CRITICO' : perc <= 25 ? 'ALTO' : 'MEDIO'
+                            descricao: perc == 0 
+                                ? `Motorista ${mot.motorista} - Veículo: ${mot.veiculo} - NENHUMA ROTA CONCLUÍDA! Total de ${mot.total} rotas não executadas. Rotas: ${rotasStr.substring(0, 300)} (${cidade}/${gre})`
+                                : `Motorista ${mot.motorista} - Veículo: ${mot.veiculo} - Baixa assiduidade: ${mot.concluidos}/${mot.total} (${perc}%) concluídos - Rotas: ${rotasStr.substring(0, 300)} (${cidade}/${gre})`,
+                            gravidade: perc == 0 ? 'CRITICO' : (perc <= 15 ? 'CRITICO' : perc <= 25 ? 'ALTO' : 'MEDIO')
                         }, 'margin-left:0;')}</td>
                     </tr>`;
                 });
@@ -5052,11 +4930,17 @@ const baixaAssiduidade = Object.values(motoristaStats).filter(m => {
         });
     });
     
-    tbody.innerHTML = html || '<tr><td colspan="5" style="color:var(--slate);text-align:center;padding:20px;">✅ Nenhum motorista com baixa assiduidade (≤30%) encontrado.</td></tr>';
+    tbody.innerHTML = html || '<tr><td colspan="6" style="color:var(--slate);text-align:center;padding:20px;">✅ Nenhum motorista encontrado para os filtros selecionados.</td></tr>';
     
-    const summary = document.getElementById('cpl-baixa-assid-summary');
+    const summary = document.getElementById('cpl-assid-summary');
     if (summary) {
-        summary.innerText = `${Object.keys(arvore).length} fiscal(is) · ${totalCidades} cidade(s) · ${totalMotoristas} motorista(s) com ≤50% de conclusão`;
+        const textoIncluir = incluirZero ? 'incluindo 0%' : 'excluindo 0%';
+        summary.innerText = `${Object.keys(arvore).length} fiscal(is) · ${totalCidades} cidade(s) · ${totalMotoristas} motorista(s) com ≤${percentualMaximo}% de conclusão (${textoIncluir})`;
+    }
+    
+    const countEl = document.getElementById('cpl-assid-count');
+    if (countEl) {
+        countEl.innerText = `📊 ${totalMotoristas} motoristas`;
     }
 } 
 // Inicializa a aba de gestão
