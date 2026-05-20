@@ -1558,9 +1558,8 @@
 <div class="card row-new" style="border-top-color:#e67e22; margin-bottom:20px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
         <div>
-            <h3 style="margin:0; font-size:13px;">📉 Baixa Assiduidade — Motoristas com ≤30% de Conclusão</h3>
-            <div style="font-size:9px; color:var(--slate); margin-top:2px;">Clique para expandir: Fiscal → GRE → Cidade → Motorista</div>
-        </div>
+            <h3 style="margin:0; font-size:13px;">📉 Baixa Assiduidade — Motoristas com ≤50% de Conclusão</h3>
+<div style="font-size:9px; color:var(--slate); margin-top:2px;">Clique para expandir: Fiscal → GRE → Cidade → Motorista</div>
         <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
             <select id="cpl-baixa-gre-hier" onchange="renderCplBaixaAssiduidade()" style="width:auto; min-width:130px; font-size:10px; padding:5px;">
                 <option value="TODOS">Todas GREs</option>
@@ -4876,11 +4875,11 @@ function renderCplBaixaAssiduidade() {
         }
     });
     
-    // Filtra apenas motoristas com taxa ≤ 30% (exclui os que não têm rotas)
+    // Filtra apenas motoristas com taxa ≤ 50% (exclui os que não têm rotas)
     const baixaAssiduidade = Object.values(motoristaStats).filter(m => {
         const perc = m.total > 0 ? (m.concluidos / m.total) * 100 : 0;
-        // Inclui motoristas com percentual entre 0% e 30%, mas exclui quem já está no card de ofensores (0%)
-        return perc <= 30 && perc > 0 && m.total > 0;
+        // Inclui motoristas com percentual entre 0% e 50%, mas exclui quem já está no card de ofensores (0%)
+        return perc <= 50 && perc > 0 && m.total > 0;
     });
     
     // Aplica filtros de GRE e Fiscal
@@ -5057,7 +5056,7 @@ function renderCplBaixaAssiduidade() {
     
     const summary = document.getElementById('cpl-baixa-assid-summary');
     if (summary) {
-        summary.innerText = `${Object.keys(arvore).length} fiscal(is) · ${totalCidades} cidade(s) · ${totalMotoristas} motorista(s) com ≤30% de conclusão`;
+        summary.innerText = `${Object.keys(arvore).length} fiscal(is) · ${totalCidades} cidade(s) · ${totalMotoristas} motorista(s) com ≤50% de conclusão`;
     }
 } 
 // Inicializa a aba de gestão
