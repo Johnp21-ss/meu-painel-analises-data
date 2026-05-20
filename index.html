@@ -1521,70 +1521,53 @@
 </div>
 <div id="cpl-audit-summary" style="font-size:9px;color:var(--slate);margin-top:2px;text-align:right;"></div>
 
-     <!-- ── CARD OFENSORES HIERÁRQUICO ── -->
-<div class="card row-new" style="border-top-color:#e67e22; margin-bottom:20px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-        <div>
-            <h3 style="margin:0;font-size:13px;">🚫 Ofensores — Motoristas Sem Abertura de Rota</h3>
-            <div style="font-size:9px;color:var(--slate);margin-top:2px;">Clique para expandir: Fiscal → GRE → Cidade → Motorista</div>
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-            <select id="cpl-ofens-gre-hier" onchange="renderCplOfensoresHierarquico()" style="width:auto;min-width:130px;font-size:10px;padding:5px;">
-                <option value="TODOS">Todas GREs</option>
-            </select>
-            <select id="cpl-ofens-fiscal-hier" onchange="renderCplOfensoresHierarquico()" style="width:auto;min-width:150px;font-size:10px;padding:5px;">
-                <option value="TODOS">Todos Fiscais</option>
-            </select>
-        </div>
-    </div>
-    <div style="overflow-x:auto; max-height:500px; overflow-y:auto;">
-        <table id="cpl-tbl-ofensores-hier" style="table-layout:auto;min-width:700px;">
-            <thead>
-                <tr>
-                    <th style="width:40%;">Fiscal / GRE / Cidade / Motorista</th>
-                    <th style="width:12%;">Veículo</th>
-                    <th style="width:10%;">Turno</th>
-                    <th style="width:18%;">Rotas</th>
-                    <th style="width:20%;">Ação</th>
-                </tr>
-            </thead>
-            <tbody id="cpl-tbody-ofensores-hier"></tbody>
-        </table>
-    </div>
-    <div id="cpl-ofens-hier-summary" style="font-size:9px;color:var(--slate);margin-top:8px;text-align:right;"></div>
-</div>
-    
-    <!-- ── CARD BAIXA ASSIDUIDADE (≤50%) ── -->
+     <!-- ── CARD ANÁLISE DE ASSIDUIDADE POR MOTORISTA (UNIFICADO COM SLIDER) ── -->
 <div class="card row-new" style="border-top-color:#e67e22; margin-bottom:20px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
         <div>
-            <h3 style="margin:0; font-size:13px;">📉 Baixa Assiduidade — Motoristas com ≤50% de Conclusão</h3>
+            <h3 style="margin:0; font-size:13px;">📋 Análise de Assiduidade por Motorista</h3>
             <div style="font-size:9px; color:var(--slate); margin-top:2px;">Clique para expandir: Fiscal → GRE → Cidade → Motorista</div>
         </div>
         <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
-            <select id="cpl-baixa-gre-hier" onchange="renderCplBaixaAssiduidade()" style="width:auto; min-width:130px; font-size:10px; padding:5px;">
+            <select id="cpl-assid-gre-hier" onchange="renderCplAssiduidadeUnificada()" style="width:auto; min-width:130px; font-size:10px; padding:5px;">
                 <option value="TODOS">Todas GREs</option>
             </select>
-            <select id="cpl-baixa-fiscal-hier" onchange="renderCplBaixaAssiduidade()" style="width:auto; min-width:150px; font-size:10px; padding:5px;">
+            <select id="cpl-assid-fiscal-hier" onchange="renderCplAssiduidadeUnificada()" style="width:auto; min-width:150px; font-size:10px; padding:5px;">
                 <option value="TODOS">Todos Fiscais</option>
             </select>
         </div>
     </div>
+    
+    <!-- SLIDER DE PERCENTUAL -->
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px; padding:6px 10px; background:rgba(0,0,0,0.2); border-radius:8px;">
+        <span style="font-size:10px; color:var(--slate);">📊 % MÁX. CONCLUSÃO:</span>
+        <input type="range" id="cpl-assid-slider" min="0" max="100" value="50" step="5" 
+            oninput="atualizarAssiduidadeSlider()"
+            style="width:180px; accent-color:#e67e22;">
+        <span id="cpl-assid-slider-valor" style="color:#e67e22; font-weight:bold; min-width:45px; font-size:11px;">50%</span>
+        <label style="display:flex; align-items:center; gap:5px; font-size:10px; margin-left:10px;">
+            <input type="checkbox" id="cpl-assid-incluir-zero" onchange="renderCplAssiduidadeUnificada()" checked> 
+            🔄 Incluir 0% (nenhuma rota)
+        </label>
+        <span id="cpl-assid-count" style="font-size:9px; color:var(--info); margin-left:auto;"></span>
+    </div>
+    
     <div style="overflow-x:auto; max-height:500px; overflow-y:auto;">
-        <table id="cpl-tbl-baixa-assid-hier" style="table-layout:auto; min-width:700px;">
+        <table id="cpl-tbl-assid-unificada" style="table-layout:auto; min-width:700px;">
             <thead>
                 <tr>
-                    <th style="width:40%;">Fiscal / GRE / Cidade / Motorista</th>
+                    <th style="width:38%;">Fiscal / GRE / Cidade / Motorista</th>
                     <th style="width:12%;">Veículo</th>
-                    <th style="width:10%;">Turno</th>
-                    <th style="width:18%;">Rotas (Concl/Total)</th>
-                    <th style="width:20%;">Ação</th>
+                    <th style="width:8%;">Turno</th>
+                    <th style="width:12%;">% Concl.</th>
+                    <th style="width:12%;">Concl/Total</th>
+                    <th style="width:18%;">Ação</th>
                 </tr>
             </thead>
-            <tbody id="cpl-tbody-baixa-assid-hier"></tbody>
+            <tbody id="cpl-tbody-assid-unificada"></tbody>
         </table>
     </div>
-    <div id="cpl-baixa-assid-summary" style="font-size:9px; color:var(--slate); margin-top:8px; text-align:right;"></div>
+    <div id="cpl-assid-summary" style="font-size:9px; color:var(--slate); margin-top:8px; text-align:right;"></div>
 </div>
     </section>
 
