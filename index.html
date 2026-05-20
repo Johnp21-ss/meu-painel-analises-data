@@ -4875,12 +4875,11 @@ function renderCplBaixaAssiduidade() {
         }
     });
     
-    // Filtra apenas motoristas com taxa ≤ 50% (exclui os que não têm rotas)
-    const baixaAssiduidade = Object.values(motoristaStats).filter(m => {
-        const perc = m.total > 0 ? (m.concluidos / m.total) * 100 : 0;
-        // Inclui motoristas com percentual entre 0% e 50%, mas exclui quem já está no card de ofensores (0%)
-        return perc <= 50 && perc > 0 && m.total > 0;
-    });
+    // ✅ PARA ESTE CARD ESPECÍFICO - Inclui TODOS com ≤50% (inclusive 0%)
+const baixaAssiduidade = Object.values(motoristaStats).filter(m => {
+    const perc = m.total > 0 ? (m.concluidos / m.total) * 100 : 0;
+    return perc <= 50 && m.total > 0;  // ← Sem o "&& perc > 0"
+});
     
     // Aplica filtros de GRE e Fiscal
     const filtrados = baixaAssiduidade.filter(m => {
