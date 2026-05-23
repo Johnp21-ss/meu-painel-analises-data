@@ -935,31 +935,44 @@
                 </table>
             </div>
         </div>
-        <!-- 🆕 CARD: Histórico de Aproveitamento - GRÁFICO -->
+        <!-- 🆕 CARD: Histórico de Aproveitamento - GRÁFICO COM FILTROS DE PERÍODO -->
 <div class="card row-new" style="border-top-color:#e67e22; margin-bottom:20px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
         <h3 style="margin:0; font-size:13px;">📈 Histórico de Aproveitamento por Fiscal 
-            <small style="font-size:10px; color:var(--slate);"> % de assiduidade diária (últimos 30 dias)</small>
+            <small style="font-size:10px; color:var(--slate);"> % de assiduidade diária</small>
         </h3>
-        <div style="display:flex; gap:6px; align-items:center;">
+        <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
             <select id="hist-fiscal" onchange="filtrarHistorico()" style="width:auto;min-width:180px;font-size:10px;padding:4px;">
                 <option value="TODOS">TODOS FISCAIS</option>
             </select>
             <button onclick="carregarHistorico()" class="btn-action" style="background:var(--info);">🔄</button>
         </div>
     </div>
+    
+    <!-- 🆕 FILTROS DE PERÍODO -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; gap:3px;">
+            <button class="hist-period-btn active" id="hpBtn7"  onclick="setHistPeriodo(7,this)">7d</button>
+            <button class="hist-period-btn"        id="hpBtn15" onclick="setHistPeriodo(15,this)">15d</button>
+            <button class="hist-period-btn"        id="hpBtn30" onclick="setHistPeriodo(30,this)">30d</button>
+            <button class="hist-period-btn"        id="hpBtnAll"onclick="setHistPeriodo(0,this)">Tudo</button>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <label style="font-size:9px;display:flex;align-items:center;gap:4px;cursor:pointer;">
+                <input type="checkbox" id="hpSabDom" onchange="filtrarHistorico()" style="cursor:pointer;"> Ocultar Sáb/Dom
+            </label>
+            <label style="font-size:9px;display:flex;align-items:center;gap:4px;cursor:pointer;">
+                <input type="checkbox" id="hpFeriados" onchange="filtrarHistorico()" style="cursor:pointer;"> Ocultar Feriados
+            </label>
+        </div>
+    </div>
+    
     <div style="position:relative; flex:1; min-height:300px;">
         <canvas id="chartHistorico"></canvas>
     </div>
     <div id="legendaHistorico" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; padding-top:6px; border-top:1px solid var(--border); justify-content:center;"></div>
     <span id="hist-status" style="font-size:9px; color:var(--slate); margin-top:4px;"></span>
 </div>
-    <div class="scroll-area-sm" style="max-height:350px; overflow-x:auto;">
-        <table id="tbl-historico" style="table-layout:auto; min-width:800px; font-size:9px;">
-            <thead id="thead-historico"></thead>
-            <tbody id="tbody-historico"></tbody>
-        </table>
-    </div>
 </div>
 
     </section>
@@ -1998,18 +2011,88 @@ function popularFiltroHistorico() {
     fiscais.forEach(f => sel.add(new Option(f, f)));
 }
 
+let _histPeriodo = 7; // padrão: últimos 7 dias
+
+function setHistPeriodo(dias, btn) {
+    _histPeriodo = dias;
+    document.querySelectorAll('.hist-period-btn').forEach(b => b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    filtrarHistorico();
+}
+
 function filtrarHistorico() {
     const fiscalFiltro = document.getElementById('hist-fiscal')?.value || 'TODOS';
+    const ocultarSabDom = document.getElementById('hpSabDom')?.checked || false;
+    const ocultarFeriados = document.getElementById('hpFeriados')?.checked || false;
     
     if (!dadosHistorico.length) return;
     
     // Pega as datas (colunas exceto FISCAL)
-    const datas = Object.keys(dadosHistorico[0]).filter(k => k !== 'FISCAL').sort();
+    let datas = Object.keys(dadosHistorico[0]).filter(k => k !== 'FISCAL').sort();
     
-    // Formata labels (ex: 04/27)
+    // 🆕 Filtra por período (últimos N dias)
+    if (_histPeriodo > 0 && datas.length > _histPeriodo) {
+        datas = datas.slice(-_histPeriodo);
+    }
+    
+    // 🆕 Função para converter string de data em objeto Date
+    function parseData(dataStr) {
+        if (!dataStr) return null;
+        // Formato esperado: YYYY-MM-DD (vindo da planilha)
+        const parts = dataStr.split('-');
+        if (parts.length === 3) {
+            return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        }
+        return null;
+    }
+    
+    // 🆕 Função para verificar se é fim de semana
+    function isWeekend(dataStr) {
+        const date = parseData(dataStr);
+        if (!date) return false;
+        const dow = date.getDay();
+        return dow === 0 || dow === 6;
+    }
+    
+    // 🆕 Função para verificar se é feriado (simplificada)
+    function isHoliday(dataStr) {
+        const date = parseData(dataStr);
+        if (!date) return false;
+        const mes = (date.getMonth() + 1).toString().padStart(2, '0');
+        const dia = date.getDate().toString().padStart(2, '0');
+        const chave = `${mes}-${dia}`;
+        
+        const FERIADOS = new Set([
+            '01-01', '04-21', '05-01', '09-07', '10-12', '11-02', '11-15', '12-25'
+        ]);
+        return FERIADOS.has(chave);
+    }
+    
+    // 🆕 Aplica filtros de fim de semana e feriados
+    if (ocultarSabDom) {
+        datas = datas.filter(d => !isWeekend(d));
+    }
+    if (ocultarFeriados) {
+        datas = datas.filter(d => !isHoliday(d));
+    }
+    
+    if (!datas.length) {
+        const ctx = document.getElementById('chartHistorico');
+        if (ctx) {
+            const canvas = ctx.getContext('2d');
+            canvas.clearRect(0, 0, ctx.width, ctx.height);
+            canvas.fillStyle = '#7d8590';
+            canvas.font = '12px sans-serif';
+            canvas.textAlign = 'center';
+            canvas.fillText('Sem dados para o período selecionado', ctx.width/2, ctx.height/2);
+        }
+        return;
+    }
+    
+    // Formata labels para exibição
     const labels = datas.map(d => {
-        const partes = d.split('-');
-        return partes.length === 3 ? `${partes[2]}/${partes[1]}` : d;
+        const parts = d.split('-');
+        return parts.length === 3 ? `${parts[2]}/${parts[1]}` : d;
     });
     
     // Filtra fiscais
@@ -2019,7 +2102,6 @@ function filtrarHistorico() {
     
     // Limita a 10 fiscais para o gráfico não ficar poluído
     if (fiscalFiltro === 'TODOS' && fiscais.length > 10) {
-        // Pega os 10 com maior média
         fiscais = fiscais.map(f => {
             const vals = datas.map(d => parseFloat(String(f[d] || '0').replace('%', '').replace(',', '.')) || 0);
             const media = vals.reduce((a, b) => a + b, 0) / vals.length;
@@ -2028,6 +2110,7 @@ function filtrarHistorico() {
     }
     
     // Cria datasets
+    const HIST_COLORS = ['#2ecc71', '#3498db', '#f1c40f', '#9b59b6', '#e67e22', '#e74c3c', '#1abc9c', '#e84393', '#00b894', '#6c5ce7'];
     const datasets = fiscais.map((fiscal, idx) => {
         const cor = HIST_COLORS[idx % HIST_COLORS.length];
         const nome = (fiscal.FISCAL || '').split(' ').slice(0, 2).join(' ');
@@ -2110,6 +2193,12 @@ function filtrarHistorico() {
                 <span style="color:var(--slate);font-size:8px;">${ds.media}%</span>
             </div>
         `).join('');
+    }
+    
+    // Atualiza status
+    const statusEl = document.getElementById('hist-status');
+    if (statusEl) {
+        statusEl.innerText = `Mostrando ${datas.length} dias · ${datasets.length} fiscais`;
     }
 }
 
