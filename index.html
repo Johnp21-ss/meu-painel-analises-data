@@ -942,28 +942,43 @@
             <small style="font-size:10px; color:var(--slate);"> % de assiduidade diária</small>
         </h3>
         <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-            <!-- 🆕 MULTISELECT: segure Ctrl ou Cmd para selecionar vários -->
-            <select id="hist-fiscal" onchange="filtrarHistorico()" style="width:auto;min-width:200px;font-size:10px;padding:4px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;">
-    <option value="TODOS">TODOS FISCAIS</option>
-</select>
-            <button onclick="limparFiltroFiscal()" style="font-size:8px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:3px 8px;cursor:pointer;">Limpar</button>
-            <button onclick="carregarHistorico()" class="btn-action" style="background:var(--info);">🔄</button>
+            <!-- 🆕 MULTISELECT: segure Ctrl (ou Cmd no Mac) para selecionar vários -->
+            <select id="hist-fiscal" multiple size="3" 
+                style="width:auto;min-width:220px;font-size:10px;padding:4px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;"
+                onchange="filtrarHistorico()">
+                <option value="TODOS" selected>TODOS FISCAIS</option>
+            </select>
+            <button onclick="limparFiltroFiscal()" 
+                style="font-size:8px;background:transparent;border:1px solid var(--border);color:var(--slate);border-radius:5px;padding:3px 8px;cursor:pointer;transition:all 0.2s;"
+                onmouseover="this.style.background='rgba(255,255,255,0.05)'"
+                onmouseout="this.style.background='transparent'">❌ Limpar</button>
+            <button onclick="carregarHistorico()" class="btn-action" style="background:var(--info);padding:3px 10px;">🔄</button>
         </div>
     </div>
     
     <!-- Botões de período -->
     <div style="display:flex; gap:3px; margin-bottom:12px;">
-        <button class="hist-period-btn active" id="hpBtn7"  onclick="setHistPeriodo(7,this)">7d</button>
-        <button class="hist-period-btn"        id="hpBtn15" onclick="setHistPeriodo(15,this)">15d</button>
-        <button class="hist-period-btn"        id="hpBtn30" onclick="setHistPeriodo(30,this)">30d</button>
+        <button class="hist-period-btn active" id="hpBtn7"  onclick="setHistPeriodo(7,this)" 
+            style="padding:4px 12px;background:var(--bg);border:1px solid var(--border);border-radius:15px;color:var(--slate);cursor:pointer;font-size:9px;transition:all 0.2s;">📅 7d</button>
+        <button class="hist-period-btn" id="hpBtn15" onclick="setHistPeriodo(15,this)" 
+            style="padding:4px 12px;background:var(--bg);border:1px solid var(--border);border-radius:15px;color:var(--slate);cursor:pointer;font-size:9px;transition:all 0.2s;">📅 15d</button>
+        <button class="hist-period-btn" id="hpBtn30" onclick="setHistPeriodo(30,this)" 
+            style="padding:4px 12px;background:var(--bg);border:1px solid var(--border);border-radius:15px;color:var(--slate);cursor:pointer;font-size:9px;transition:all 0.2s;">📅 30d</button>
     </div>
     
-    <div style="position:relative; flex:1; min-height:300px;">
+    <!-- Container do gráfico -->
+    <div style="position:relative; flex:1; min-height:320px;">
         <canvas id="chartHistorico"></canvas>
     </div>
-    <div id="legendaHistorico" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; padding-top:6px; border-top:1px solid var(--border); justify-content:center;"></div>
-    <span id="hist-status" style="font-size:9px; color:var(--slate); margin-top:4px;"></span>
-</div>
+    
+    <!-- Legenda interativa com mostrar/esconder e tendência -->
+    <div id="legendaHistorico" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; padding-top:8px; border-top:1px solid var(--border); justify-content:center;"></div>
+    
+    <!-- Status e contador -->
+    <div style="display:flex; justify-content:space-between; margin-top:8px;">
+        <span id="hist-status" style="font-size:9px; color:var(--slate);"></span>
+        <span id="hist-contador" style="font-size:9px; color:var(--info);"></span>
+    </div>
 </div>
 
     </section>
@@ -1962,15 +1977,22 @@ function carregarDadosAsync() {
 // ══════════════════════════════════════════════
 // HISTÓRICO DE APROVEITAMENTO - GRÁFICO
 // ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// HISTÓRICO DE APROVEITAMENTO - GRÁFICO COM MULTISELECT E TENDÊNCIA
+// ══════════════════════════════════════════════
+
 const URL_HISTORICO = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-PWDRlSYT4cY9rOK7Dz1R2Fe0HzoXFbu4icqnPk5M6eGOBUngZFwkhI-9TXPpT9d-wvWCzXNVxteq/pub?gid=55462010&single=true&output=csv';
 
 let dadosHistorico = [];
 let chartHistorico = null;
+let _histPeriodo = 7;
+let _datasetsVisiveis = {}; // controla quais fiscais estão visíveis
+
 const HIST_COLORS = ['#2ecc71', '#3498db', '#f1c40f', '#9b59b6', '#e67e22', '#e74c3c', '#1abc9c', '#e84393', '#00b894', '#6c5ce7', '#fd79a8', '#a29bfe'];
 
 async function carregarHistorico() {
     const status = document.getElementById('hist-status');
-    status.innerText = '⏳ Carregando...';
+    if (status) status.innerText = '⏳ Carregando dados...';
     
     try {
         const response = await fetch(URL_HISTORICO + '&t=' + Date.now());
@@ -1983,14 +2005,14 @@ async function carregarHistorico() {
                 dadosHistorico = r.data.filter(d => d.FISCAL && d.FISCAL.trim() !== '');
                 popularFiltroHistorico();
                 filtrarHistorico();
-                status.innerText = '✅ Atualizado em ' + new Date().toLocaleTimeString();
+                if (status) status.innerText = '✅ Atualizado em ' + new Date().toLocaleTimeString();
             },
             error: () => {
-                status.innerText = '❌ Erro ao processar dados';
+                if (status) status.innerText = '❌ Erro ao processar dados';
             }
         });
     } catch(e) {
-        status.innerText = '❌ Erro na conexão';
+        if (status) status.innerText = '❌ Erro na conexão';
     }
 }
 
@@ -1998,7 +2020,7 @@ function popularFiltroHistorico() {
     const sel = document.getElementById('hist-fiscal');
     if (!sel) return;
     
-    // Limpa as opções existentes (mantém apenas a primeira se for TODOS)
+    // Limpa opções existentes (mantém apenas "TODOS")
     while (sel.options.length > 1) {
         sel.remove(1);
     }
@@ -2010,19 +2032,43 @@ function popularFiltroHistorico() {
     });
 }
 
-let _histPeriodo = 7; // padrão: últimos 7 dias
-
 function setHistPeriodo(dias, btn) {
     _histPeriodo = dias;
-    document.querySelectorAll('.hist-period-btn').forEach(b => b.classList.remove('active'));
-    if(btn) btn.classList.add('active');
+    
+    // Estiliza os botões
+    document.querySelectorAll('.hist-period-btn').forEach(b => {
+        b.style.background = 'var(--bg)';
+        b.style.color = 'var(--slate)';
+        b.style.border = '1px solid var(--border)';
+    });
+    if (btn) {
+        btn.style.background = 'var(--info)';
+        btn.style.color = '#fff';
+        btn.style.border = '1px solid var(--info)';
+    }
+    
+    filtrarHistorico();
+}
+
+function limparFiltroFiscal() {
+    const sel = document.getElementById('hist-fiscal');
+    if (!sel) return;
+    
+    // Desmarca todas as opções selecionadas
+    for (let i = 0; i < sel.options.length; i++) {
+        sel.options[i].selected = false;
+    }
+    // Seleciona "TODOS"
+    sel.value = 'TODOS';
     filtrarHistorico();
 }
 
 function filtrarHistorico() {
-    const fiscalFiltro = document.getElementById('hist-fiscal')?.value || 'TODOS';
-    
     if (!dadosHistorico.length) return;
+    
+    const sel = document.getElementById('hist-fiscal');
+    const valoresSelecionados = sel ? Array.from(sel.selectedOptions).map(opt => opt.value) : ['TODOS'];
+    const fiscalFiltro = valoresSelecionados.includes('TODOS') ? 'TODOS' : valoresSelecionados;
     
     // Pega as datas (colunas exceto FISCAL)
     let datas = Object.keys(dadosHistorico[0]).filter(k => k !== 'FISCAL').sort();
@@ -2032,23 +2078,26 @@ function filtrarHistorico() {
         datas = datas.slice(-_histPeriodo);
     }
     
-    // Filtra fiscais (select simples)
-    let fiscais = fiscalFiltro === 'TODOS' 
-        ? dadosHistorico 
-        : dadosHistorico.filter(d => d.FISCAL === fiscalFiltro);
-    
     if (!datas.length) {
-        const ctx = document.getElementById('chartHistorico');
-        if (ctx) {
-            const canvas = ctx.getContext('2d');
-            canvas.clearRect(0, 0, ctx.width, ctx.height);
-            canvas.fillStyle = '#7d8590';
-            canvas.font = '12px sans-serif';
-            canvas.textAlign = 'center';
-            canvas.fillText('Sem dados para o período selecionado', ctx.width/2, ctx.height/2);
-        }
+        limparGrafico();
         return;
     }
+    
+    // Filtra os fiscais a serem exibidos
+    let fiscais;
+    if (fiscalFiltro === 'TODOS') {
+        fiscais = dadosHistorico;
+    } else {
+        fiscais = dadosHistorico.filter(d => fiscalFiltro.includes(d.FISCAL));
+    }
+    
+    // Inicializa visibilidade de todos os datasets
+    fiscais.forEach((f) => {
+        const nome = f.FISCAL;
+        if (_datasetsVisiveis[nome] === undefined) {
+            _datasetsVisiveis[nome] = true;
+        }
+    });
     
     // Formata labels para exibição
     const labels = datas.map(d => {
@@ -2056,41 +2105,63 @@ function filtrarHistorico() {
         return parts.length === 3 ? `${parts[2]}/${parts[1]}` : d;
     });
     
-    // Cria datasets (agora pode mostrar mais de um fiscal se necessário)
-    const HIST_COLORS = ['#2ecc71', '#3498db', '#f1c40f', '#9b59b6', '#e67e22', '#e74c3c', '#1abc9c', '#e84393', '#00b894', '#6c5ce7'];
+    // Cria datasets
     const datasets = fiscais.map((fiscal, idx) => {
         const cor = HIST_COLORS[idx % HIST_COLORS.length];
-        const nome = (fiscal.FISCAL || '').split(' ').slice(0, 2).join(' ');
+        const nome = fiscal.FISCAL || '';
+        const nomeAbreviado = nome.split(' ').slice(0, 2).join(' ');
+        
         const data = datas.map(d => {
             const v = fiscal[d] || '0';
             return typeof v === 'string' ? parseFloat(v.replace('%', '').replace(',', '.')) || 0 : parseFloat(v) || 0;
         });
+        
         const media = data.length ? (data.reduce((a, b) => a + b, 0) / data.length) : 0;
+        const ultimoValor = data.length ? data[data.length - 1] : 0;
+        const tendencia = data.length >= 2 ? (data[data.length - 1] - data[data.length - 2]) : 0;
         
         const r = parseInt(cor.slice(1, 3), 16);
         const g = parseInt(cor.slice(3, 5), 16);
         const b = parseInt(cor.slice(5, 7), 16);
         
         return {
-            label: nome,
-            labelFull: fiscal.FISCAL || '',
+            label: nomeAbreviado,
+            labelFull: nome,
             media: media.toFixed(1),
+            ultimoValor: ultimoValor,
+            tendencia: tendencia,
             data: data,
             borderColor: cor,
             backgroundColor: `rgba(${r},${g},${b},0.08)`,
             fill: false,
             tension: 0.3,
-            pointRadius: 2,
-            pointHoverRadius: 5,
+            pointRadius: 3,
+            pointHoverRadius: 6,
             borderWidth: 2,
+            hidden: !_datasetsVisiveis[nome],
             order: idx
         };
     });
     
-    // Renderiza gráfico
-    if (chartHistorico) { chartHistorico.destroy(); chartHistorico = null; }
+    renderizarGrafico(labels, datasets);
+    renderizarLegenda(datasets);
+    
+    // Atualiza contador
+    const contadorEl = document.getElementById('hist-contador');
+    if (contadorEl) {
+        const visiveis = datasets.filter(d => !d.hidden).length;
+        contadorEl.innerText = `📊 Exibindo ${visiveis} de ${datasets.length} fiscais`;
+    }
+}
+
+function renderizarGrafico(labels, datasets) {
     const ctx = document.getElementById('chartHistorico');
     if (!ctx) return;
+    
+    if (chartHistorico) {
+        chartHistorico.destroy();
+        chartHistorico = null;
+    }
     
     chartHistorico = new Chart(ctx, {
         type: 'line',
@@ -2110,78 +2181,123 @@ function filtrarHistorico() {
                     padding: 10,
                     callbacks: {
                         title: (items) => `📅 ${items[0].label}`,
-                        label: (item) => ` ${item.dataset.labelFull.substring(0, 25)} | ${item.raw.toFixed(1)}% | Média: ${item.dataset.media}%`
+                        label: (item) => {
+                            const dataset = item.dataset;
+                            const valor = item.raw.toFixed(1);
+                            const tendencia = dataset.tendencia;
+                            const seta = tendencia > 0 ? '▲' : tendencia < 0 ? '▼' : '►';
+                            const corTend = tendencia > 0 ? '#2ecc71' : tendencia < 0 ? '#e74c3c' : '#95a5a6';
+                            return [
+                                ` ${dataset.labelFull.substring(0, 30)}: ${valor}%`,
+                                ` ${seta} Variação: ${tendencia > 0 ? '+' : ''}${tendencia.toFixed(1)}%`,
+                                ` 📊 Média: ${dataset.media}%`
+                            ];
+                        }
                     }
                 }
             },
             scales: {
                 x: { 
-                    ticks: { color: '#a4b0be', font: { size: 8 }, maxRotation: 45 }, 
+                    ticks: { color: '#a4b0be', font: { size: 9 }, maxRotation: 45 }, 
                     grid: { color: 'rgba(255,255,255,0.04)' } 
                 },
                 y: { 
                     beginAtZero: true, 
                     max: 100, 
-                    ticks: { color: '#a4b0be', callback: v => v + '%', font: { size: 8 }, stepSize: 10 }, 
+                    ticks: { color: '#a4b0be', callback: v => v + '%', font: { size: 9 }, stepSize: 10 }, 
                     grid: { color: 'rgba(255,255,255,0.05)' } 
                 }
             }
         }
     });
-    
-    // Legenda interativa
+}
+
+function renderizarLegenda(datasets) {
     const leg = document.getElementById('legendaHistorico');
-    if (leg) {
-        leg.innerHTML = datasets.map((ds, i) => `
-            <div style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:3px 8px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);font-size:9px;font-weight:bold;"
-                 onmouseover="destacarLinhaHistorico(${i})" onmouseout="resetLinhasHistorico()">
+    if (!leg) return;
+    
+    leg.innerHTML = datasets.map((ds, i) => {
+        const visivel = !ds.hidden;
+        const estiloOpacidade = visivel ? '1' : '0.5';
+        const estiloTexto = visivel ? ds.borderColor : '#666';
+        
+        // Define seta da tendência
+        let seta = '►';
+        let corSeta = '#95a5a6';
+        if (ds.tendencia > 0) {
+            seta = '▲';
+            corSeta = '#2ecc71';
+        } else if (ds.tendencia < 0) {
+            seta = '▼';
+            corSeta = '#e74c3c';
+        }
+        
+        return `
+            <div style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:3px 10px;border-radius:16px;border:1px solid rgba(255,255,255,0.1);font-size:9px;font-weight:bold;background:${visivel ? 'rgba(255,255,255,0.05)' : 'transparent'};opacity:${estiloOpacidade};transition:all 0.2s;"
+                 onclick="toggleDatasetVisibilidade('${ds.labelFull.replace(/'/g, "\\'")}')"
+                 onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='scale(1.02)';"
+                 onmouseout="this.style.background='${visivel ? 'rgba(255,255,255,0.05)' : 'transparent'}'; this.style.transform='scale(1)';">
                 <span style="width:10px;height:10px;border-radius:50%;background:${ds.borderColor};flex-shrink:0;"></span>
-                <span style="color:${ds.borderColor};">${ds.label.toUpperCase()}</span>
-                <span style="color:var(--slate);font-size:8px;">${ds.media}%</span>
+                <span style="color:${estiloTexto};">${ds.labelFull.substring(0, 22)}</span>
+                <span style="color:${ds.ultimoValor >= 80 ? '#2ecc71' : ds.ultimoValor >= 60 ? '#f39c12' : '#e74c3c'};font-size:8px;font-weight:bold;">${ds.ultimoValor}%</span>
+                <span style="color:${corSeta};font-size:10px;margin-left:2px;">${seta}</span>
             </div>
-        `).join('');
+        `;
+    }).join('');
+}
+
+function toggleDatasetVisibilidade(nomeFiscal) {
+    if (!chartHistorico) return;
+    
+    // Alterna a visibilidade
+    _datasetsVisiveis[nomeFiscal] = !_datasetsVisiveis[nomeFiscal];
+    
+    // Atualiza todos os datasets
+    chartHistorico.data.datasets.forEach(ds => {
+        if (ds.labelFull === nomeFiscal) {
+            ds.hidden = !_datasetsVisiveis[nomeFiscal];
+        }
+    });
+    
+    chartHistorico.update();
+    
+    // Re-renderiza legenda para atualizar estilo
+    // Recria os datasets atuais para a legenda
+    const datasetsAtuais = chartHistorico.data.datasets.map(ds => ({
+        labelFull: ds.labelFull,
+        borderColor: ds.borderColor,
+        ultimoValor: ds.ultimoValor,
+        tendencia: ds.tendencia,
+        hidden: ds.hidden
+    }));
+    renderizarLegenda(datasetsAtuais);
+    
+    // Atualiza contador
+    const visiveis = chartHistorico.data.datasets.filter(d => !d.hidden).length;
+    const total = chartHistorico.data.datasets.length;
+    const contadorEl = document.getElementById('hist-contador');
+    if (contadorEl) {
+        contadorEl.innerText = `📊 Exibindo ${visiveis} de ${total} fiscais`;
+    }
+}
+
+function limparGrafico() {
+    const ctx = document.getElementById('chartHistorico');
+    if (ctx && ctx.getContext) {
+        const canvas = ctx.getContext('2d');
+        canvas.clearRect(0, 0, ctx.width, ctx.height);
+        canvas.fillStyle = '#7d8590';
+        canvas.font = '12px sans-serif';
+        canvas.textAlign = 'center';
+        canvas.fillText('Sem dados para o período selecionado', ctx.width/2, ctx.height/2);
     }
     
-    // Atualiza status
-    const statusEl = document.getElementById('hist-status');
-    if (statusEl) {
-        statusEl.innerText = `Mostrando ${datas.length} dias · ${datasets.length} fiscais`;
-    }
+    const legenda = document.getElementById('legendaHistorico');
+    if (legenda) legenda.innerHTML = '';
+    
+    const contador = document.getElementById('hist-contador');
+    if (contador) contador.innerText = '';
 }
-
-function destacarLinhaHistorico(idx) {
-    if (!chartHistorico) return;
-    chartHistorico.data.datasets.forEach((ds, i) => {
-        ds.borderWidth = i === idx ? 4 : 1;
-        ds.pointRadius = i === idx ? 5 : 2;
-    });
-    chartHistorico.update();
-}
-
-function resetLinhasHistorico() {
-    if (!chartHistorico) return;
-    chartHistorico.data.datasets.forEach(ds => {
-        ds.borderWidth = 2;
-        ds.pointRadius = 2;
-    });
-    chartHistorico.update();
-}
-
-// Carrega ao iniciar (após os dados principais carregarem)
-setTimeout(carregarHistorico, 4000);
-     function limparFiltroFiscal() {
-    const sel = document.getElementById('hist-fiscal');
-    if (sel) {
-        // Remove todas as seleções
-        for(let i = 0; i < sel.options.length; i++) {
-            sel.options[i].selected = false;
-        }
-        // Seleciona a opção "TODOS"
-        sel.value = 'TODOS';
-    }
-    filtrarHistorico();
-}
-
 // Simplifica a função carregar() para usar a versão assíncrona
 function carregar() {
     carregarDadosAsync();
