@@ -943,11 +943,9 @@
         </h3>
         <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
             <!-- 🆕 MULTISELECT: segure Ctrl ou Cmd para selecionar vários -->
-            <select id="hist-fiscal" multiple size="3" 
-                onchange="filtrarHistorico()" 
-                style="width:auto;min-width:200px;font-size:10px;padding:4px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;">
-                <option value="TODOS" selected>TODOS FISCAIS</option>
-            </select>
+            <select id="hist-fiscal" onchange="filtrarHistorico()" style="width:auto;min-width:200px;font-size:10px;padding:4px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;">
+    <option value="TODOS">TODOS FISCAIS</option>
+</select>
             <button onclick="limparFiltroFiscal()" style="font-size:8px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:3px 8px;cursor:pointer;">Limpar</button>
             <button onclick="carregarHistorico()" class="btn-action" style="background:var(--info);">🔄</button>
         </div>
@@ -2023,59 +2021,21 @@ function setHistPeriodo(dias, btn) {
 
 function filtrarHistorico() {
     const fiscalFiltro = document.getElementById('hist-fiscal')?.value || 'TODOS';
-    const ocultarSabDom = document.getElementById('hpSabDom')?.checked || false;
-    const ocultarFeriados = document.getElementById('hpFeriados')?.checked || false;
     
     if (!dadosHistorico.length) return;
     
     // Pega as datas (colunas exceto FISCAL)
     let datas = Object.keys(dadosHistorico[0]).filter(k => k !== 'FISCAL').sort();
     
-    // 🆕 Filtra por período (últimos N dias)
+    // Filtra por período (últimos N dias)
     if (_histPeriodo > 0 && datas.length > _histPeriodo) {
         datas = datas.slice(-_histPeriodo);
     }
     
-    // 🆕 Função para converter string de data em objeto Date
-    function parseData(dataStr) {
-        if (!dataStr) return null;
-        // Formato esperado: YYYY-MM-DD (vindo da planilha)
-        const parts = dataStr.split('-');
-        if (parts.length === 3) {
-            return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-        }
-        return null;
-    }
-    
-    // 🆕 Função para verificar se é fim de semana
-    function isWeekend(dataStr) {
-        const date = parseData(dataStr);
-        if (!date) return false;
-        const dow = date.getDay();
-        return dow === 0 || dow === 6;
-    }
-    
-    // 🆕 Função para verificar se é feriado (simplificada)
-    function isHoliday(dataStr) {
-        const date = parseData(dataStr);
-        if (!date) return false;
-        const mes = (date.getMonth() + 1).toString().padStart(2, '0');
-        const dia = date.getDate().toString().padStart(2, '0');
-        const chave = `${mes}-${dia}`;
-        
-        const FERIADOS = new Set([
-            '01-01', '04-21', '05-01', '09-07', '10-12', '11-02', '11-15', '12-25'
-        ]);
-        return FERIADOS.has(chave);
-    }
-    
-    // 🆕 Aplica filtros de fim de semana e feriados
-    if (ocultarSabDom) {
-        datas = datas.filter(d => !isWeekend(d));
-    }
-    if (ocultarFeriados) {
-        datas = datas.filter(d => !isHoliday(d));
-    }
+    // Filtra fiscais (select simples)
+    let fiscais = fiscalFiltro === 'TODOS' 
+        ? dadosHistorico 
+        : dadosHistorico.filter(d => d.FISCAL === fiscalFiltro);
     
     if (!datas.length) {
         const ctx = document.getElementById('chartHistorico');
@@ -2096,21 +2056,7 @@ function filtrarHistorico() {
         return parts.length === 3 ? `${parts[2]}/${parts[1]}` : d;
     });
     
-    // Filtra fiscais
-    let fiscais = fiscalFiltro === 'TODOS' 
-        ? dadosHistorico 
-        : dadosHistorico.filter(d => d.FISCAL === fiscalFiltro);
-    
-    // Limita a 10 fiscais para o gráfico não ficar poluído
-    if (fiscalFiltro === 'TODOS' && fiscais.length > 10) {
-        fiscais = fiscais.map(f => {
-            const vals = datas.map(d => parseFloat(String(f[d] || '0').replace('%', '').replace(',', '.')) || 0);
-            const media = vals.reduce((a, b) => a + b, 0) / vals.length;
-            return { ...f, _media: media };
-        }).sort((a, b) => b._media - a._media).slice(0, 10);
-    }
-    
-    // Cria datasets
+    // Cria datasets (agora pode mostrar mais de um fiscal se necessário)
     const HIST_COLORS = ['#2ecc71', '#3498db', '#f1c40f', '#9b59b6', '#e67e22', '#e74c3c', '#1abc9c', '#e84393', '#00b894', '#6c5ce7'];
     const datasets = fiscais.map((fiscal, idx) => {
         const cor = HIST_COLORS[idx % HIST_COLORS.length];
