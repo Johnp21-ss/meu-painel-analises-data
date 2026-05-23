@@ -935,36 +935,29 @@
                 </table>
             </div>
         </div>
-        <!-- 🆕 CARD: Histórico de Aproveitamento - GRÁFICO COM FILTROS DE PERÍODO -->
+        <!-- 🆕 CARD: Histórico de Aproveitamento - GRÁFICO COM MULTISELECT -->
 <div class="card row-new" style="border-top-color:#e67e22; margin-bottom:20px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
         <h3 style="margin:0; font-size:13px;">📈 Histórico de Aproveitamento por Fiscal 
             <small style="font-size:10px; color:var(--slate);"> % de assiduidade diária</small>
         </h3>
         <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-            <select id="hist-fiscal" onchange="filtrarHistorico()" style="width:auto;min-width:180px;font-size:10px;padding:4px;">
-                <option value="TODOS">TODOS FISCAIS</option>
+            <!-- 🆕 MULTISELECT: segure Ctrl ou Cmd para selecionar vários -->
+            <select id="hist-fiscal" multiple size="3" 
+                onchange="filtrarHistorico()" 
+                style="width:auto;min-width:200px;font-size:10px;padding:4px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;">
+                <option value="TODOS" selected>TODOS FISCAIS</option>
             </select>
+            <button onclick="limparFiltroFiscal()" style="font-size:8px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:3px 8px;cursor:pointer;">Limpar</button>
             <button onclick="carregarHistorico()" class="btn-action" style="background:var(--info);">🔄</button>
         </div>
     </div>
     
-    <!-- 🆕 FILTROS DE PERÍODO -->
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-        <div style="display:flex; gap:3px;">
-            <button class="hist-period-btn active" id="hpBtn7"  onclick="setHistPeriodo(7,this)">7d</button>
-            <button class="hist-period-btn"        id="hpBtn15" onclick="setHistPeriodo(15,this)">15d</button>
-            <button class="hist-period-btn"        id="hpBtn30" onclick="setHistPeriodo(30,this)">30d</button>
-            <button class="hist-period-btn"        id="hpBtnAll"onclick="setHistPeriodo(0,this)">Tudo</button>
-        </div>
-        <div style="display:flex; gap:10px; align-items:center;">
-            <label style="font-size:9px;display:flex;align-items:center;gap:4px;cursor:pointer;">
-                <input type="checkbox" id="hpSabDom" onchange="filtrarHistorico()" style="cursor:pointer;"> Ocultar Sáb/Dom
-            </label>
-            <label style="font-size:9px;display:flex;align-items:center;gap:4px;cursor:pointer;">
-                <input type="checkbox" id="hpFeriados" onchange="filtrarHistorico()" style="cursor:pointer;"> Ocultar Feriados
-            </label>
-        </div>
+    <!-- Botões de período -->
+    <div style="display:flex; gap:3px; margin-bottom:12px;">
+        <button class="hist-period-btn active" id="hpBtn7"  onclick="setHistPeriodo(7,this)">7d</button>
+        <button class="hist-period-btn"        id="hpBtn15" onclick="setHistPeriodo(15,this)">15d</button>
+        <button class="hist-period-btn"        id="hpBtn30" onclick="setHistPeriodo(30,this)">30d</button>
     </div>
     
     <div style="position:relative; flex:1; min-height:300px;">
@@ -2005,10 +1998,18 @@ async function carregarHistorico() {
 
 function popularFiltroHistorico() {
     const sel = document.getElementById('hist-fiscal');
-    if (!sel || sel.options.length > 1) return;
+    if (!sel) return;
+    
+    // Limpa as opções existentes (mantém apenas a primeira se for TODOS)
+    while (sel.options.length > 1) {
+        sel.remove(1);
+    }
     
     const fiscais = [...new Set(dadosHistorico.map(d => d.FISCAL))].filter(Boolean).sort();
-    fiscais.forEach(f => sel.add(new Option(f, f)));
+    fiscais.forEach(f => {
+        const option = new Option(f, f);
+        sel.add(option);
+    });
 }
 
 let _histPeriodo = 7; // padrão: últimos 7 dias
@@ -2222,6 +2223,18 @@ function resetLinhasHistorico() {
 
 // Carrega ao iniciar (após os dados principais carregarem)
 setTimeout(carregarHistorico, 4000);
+     function limparFiltroFiscal() {
+    const sel = document.getElementById('hist-fiscal');
+    if (sel) {
+        // Remove todas as seleções
+        for(let i = 0; i < sel.options.length; i++) {
+            sel.options[i].selected = false;
+        }
+        // Seleciona a opção "TODOS"
+        sel.value = 'TODOS';
+    }
+    filtrarHistorico();
+}
 
 // Simplifica a função carregar() para usar a versão assíncrona
 function carregar() {
@@ -2240,6 +2253,20 @@ function carregar() {
         preencher('fGre', 'gre');
         aoMudarGre();
     }
+     // 🔥 ADICIONE A FUNÇÃO ABAIXO 🔥
+function limparFiltroFiscal() {
+    const sel = document.getElementById('hist-fiscal');
+    if (sel) {
+        for(let i = 0; i < sel.options.length; i++) {
+            sel.options[i].selected = false;
+        }
+        sel.value = 'TODOS';
+    }
+    filtrarHistorico();
+    let fiscais = fiscalFiltro === 'TODOS' 
+    ? dadosHistorico 
+    : dadosHistorico.filter(d => d.FISCAL === fiscalFiltro);
+}
 
     function aoMudarGre() {
         const greSel = document.getElementById('fGre').value;
