@@ -298,6 +298,56 @@
 
         .filter-bar select { width: auto; min-width: 150px; }
 
+        /* ── Filtro Fornecedor (dropdown multi-select) ── */
+        .forn-wrapper { position: relative; display: inline-block; }
+        .forn-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 12px; background: var(--card-bg);
+            border: 1px solid var(--border); border-radius: 8px;
+            color: var(--text); font-size: 11px; font-weight: bold;
+            cursor: pointer; white-space: nowrap; min-width: 170px;
+            transition: border-color .2s;
+        }
+        .forn-btn:hover { border-color: var(--info); }
+        .forn-btn .forn-arrow { margin-left: auto; font-size: 9px; transition: transform .2s; }
+        .forn-btn.open .forn-arrow { transform: rotate(180deg); }
+        .forn-dropdown {
+            display: none; position: absolute; top: calc(100% + 4px); left: 0;
+            min-width: 240px; background: #1a2030; border: 1px solid var(--border);
+            border-radius: 10px; z-index: 9999; padding: 6px 0;
+            box-shadow: 0 8px 24px rgba(0,0,0,.5);
+        }
+        .forn-dropdown.open { display: block; }
+        .forn-search {
+            width: calc(100% - 16px); margin: 6px 8px; padding: 6px 10px;
+            background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+            color: var(--text); font-size: 11px;
+        }
+        .forn-search:focus { outline: none; border-color: var(--info); }
+        .forn-items { max-height: 220px; overflow-y: auto; }
+        .forn-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 14px; cursor: pointer; font-size: 11px;
+            transition: background .15s;
+        }
+        .forn-item:hover { background: rgba(52,152,219,.15); }
+        .forn-item input[type=checkbox] { accent-color: var(--info); cursor: pointer; width: 13px; height: 13px; }
+        .forn-item.item-todos { border-bottom: 1px solid var(--border); margin-bottom: 4px; font-weight: bold; color: var(--info); }
+        .forn-badge {
+            display: inline-block; background: var(--info); color: #fff;
+            border-radius: 10px; padding: 0 6px; font-size: 9px; font-weight: bold;
+        }
+
+        /* ── Filtro Região (botões toggle) ── */
+        .regiao-btns { display: flex; gap: 4px; align-items: center; }
+        .regiao-btn {
+            padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
+            background: transparent; color: var(--slate); font-size: 11px; font-weight: bold;
+            cursor: pointer; transition: all .2s; white-space: nowrap;
+        }
+        .regiao-btn.active { background: var(--info); color: #fff; border-color: var(--info); box-shadow: 0 2px 8px rgba(52,152,219,.3); }
+        .regiao-label { font-size: 10px; color: var(--slate); font-weight: bold; text-transform: uppercase; letter-spacing: .5px; }
+
         /* ── Charts ── */
         .chart-container { height: 500px; width: 100%; position: relative; }
         .chart-container-sm { height: 250px; width: 100%; position: relative; }
@@ -815,6 +865,26 @@
             <select id="fGre" onchange="aoMudarGre()"><option value="TODOS">GRE: TODAS</option></select>
             <select id="fCidade" onchange="processarDados()"><option value="TODOS">CIDADE: TODAS</option></select>
             <select id="fFiscal" onchange="processarDados()"><option value="TODOS">FISCAL: TODOS</option></select>
+            <!-- Filtro Região -->
+            <div style="display:flex; align-items:center; gap:6px;">
+                <span class="regiao-label">REGIÃO:</span>
+                <div class="regiao-btns">
+                    <button class="regiao-btn active" id="rBtn-todas" onclick="setRegiao('TODAS')">Todas</button>
+                    <button class="regiao-btn" id="rBtn-interior" onclick="setRegiao('INTERIOR')">Interior</button>
+                    <button class="regiao-btn" id="rBtn-capital" onclick="setRegiao('CAPITAL')">Capital</button>
+                </div>
+            </div>
+            <!-- Filtro Fornecedor -->
+            <div class="forn-wrapper" id="fornWrapper">
+                <button class="forn-btn" id="fornBtn" onclick="toggleFornDropdown()">
+                    🏢 <span id="fornLabel">Todos os fornecedores</span>
+                    <span class="forn-arrow">▼</span>
+                </button>
+                <div class="forn-dropdown" id="fornDropdown">
+                    <input type="text" class="forn-search" id="fornSearch" placeholder="🔍 Buscar fornecedor..." oninput="filtrarItensFornecedor()">
+                    <div class="forn-items" id="fornItems"></div>
+                </div>
+            </div>
         </div>
 
         <div class="kpi-grid">
@@ -1294,6 +1364,10 @@
                 <select id="cpl-filtro-cidade" onchange="processarCompliance()" style="width:auto;min-width:150px;font-size:10px;padding:6px;">
                     <option value="TODOS">Todas Cidades</option>
                 </select>
+                <!-- Filtro Fornecedor Compliance -->
+                <select id="cpl-filtro-fornecedor" onchange="processarCompliance()" style="width:auto;min-width:170px;font-size:10px;padding:6px;">
+                    <option value="TODOS">Todos Fornecedores</option>
+                </select>
                 <button onclick="processarCompliance()" style="padding:6px 14px;background:var(--info);color:#fff;border:none;border-radius:6px;font-size:10px;font-weight:bold;cursor:pointer;">🔄 Atualizar</button>
             </div>
         </div>
@@ -1748,6 +1822,32 @@ if (areaNivel && nivelSalvo) {
     let bruto = [];
     let charts = {};
     let dtExtras = null;
+    let fornecedoresSelecionados = new Set(['__TODOS__']); // '__TODOS__' = sem filtro
+    let regiaoAtiva = 'TODAS'; // 'TODAS' | 'CAPITAL' | 'INTERIOR'
+
+    // GREs por região (identificadas pelo número no nome)
+    const GRES_CAPITAL = [4, 19, 20, 21];
+    const GRES_INTERIOR = [5, 7, 12, 16, 18];
+
+    function greEhCapital(gre) {
+        if (!gre) return false;
+        return GRES_CAPITAL.some(n => new RegExp('\\b0?' + n + '\\b').test(gre));
+    }
+    function greEhInterior(gre) {
+        if (!gre) return false;
+        return GRES_INTERIOR.some(n => new RegExp('\\b0?' + n + '\\b').test(gre));
+    }
+    function rotaPassaFiltroRegiao(d) {
+        if (regiaoAtiva === 'TODAS') return true;
+        if (regiaoAtiva === 'CAPITAL') return greEhCapital(d.gre);
+        if (regiaoAtiva === 'INTERIOR') return greEhInterior(d.gre);
+        return true;
+    }
+    function rotaPassaFiltroFornecedor(d) {
+        if (fornecedoresSelecionados.has('__TODOS__')) return true;
+        const fn = (d.fornecedor_motorista || 'OUTROS').trim();
+        return fornecedoresSelecionados.has(fn);
+    }
 
     const norm = (t) => t ? t.toString().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
 
@@ -2397,6 +2497,106 @@ function carregar() {
         preencher('fDirecao', 'direcao');
         preencher('fGre', 'gre');
         aoMudarGre();
+        popularFornecedorDropdown();
+    }
+
+    // ── Filtro Fornecedor (dropdown multi-select) ──────────────────
+    function popularFornecedorDropdown() {
+        const fornecedores = [...new Set(bruto.map(d => (d.fornecedor_motorista || 'OUTROS').trim()))].filter(Boolean).sort();
+        const container = document.getElementById('fornItems');
+        if (!container) return;
+        // Monta opções
+        _renderFornItems(fornecedores, '');
+    }
+
+    function _renderFornItems(lista, busca) {
+        const container = document.getElementById('fornItems');
+        if (!container) return;
+        const fornecedores = lista.length ? lista :
+            [...new Set(bruto.map(d => (d.fornecedor_motorista || 'OUTROS').trim()))].filter(Boolean).sort();
+        const filtrados = busca ? fornecedores.filter(f => norm(f).includes(norm(busca))) : fornecedores;
+
+        let html = `<div class="forn-item item-todos">
+            <input type="checkbox" id="forn-todos" onchange="toggleTodosFornecedor(this.checked)" ${fornecedoresSelecionados.has('__TODOS__') ? 'checked' : ''}>
+            <label for="forn-todos" style="cursor:pointer;">✅ Todos</label>
+        </div>`;
+        filtrados.forEach((f, i) => {
+            const chk = !fornecedoresSelecionados.has('__TODOS__') && fornecedoresSelecionados.has(f);
+            html += `<div class="forn-item">
+                <input type="checkbox" id="forn-${i}" value="${f}" onchange="toggleFornecedor('${f.replace(/'/g,"\\'")}', this.checked)" ${chk ? 'checked' : ''}>
+                <label for="forn-${i}" style="cursor:pointer;">${f}</label>
+            </div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    function filtrarItensFornecedor() {
+        const busca = document.getElementById('fornSearch')?.value || '';
+        _renderFornItems([], busca);
+    }
+
+    function toggleFornDropdown() {
+        const btn = document.getElementById('fornBtn');
+        const drop = document.getElementById('fornDropdown');
+        const isOpen = drop.classList.toggle('open');
+        btn.classList.toggle('open', isOpen);
+        if (isOpen) document.getElementById('fornSearch')?.focus();
+    }
+
+    function toggleTodosFornecedor(checked) {
+        fornecedoresSelecionados = checked ? new Set(['__TODOS__']) : new Set();
+        _renderFornItems([], document.getElementById('fornSearch')?.value || '');
+        _atualizarLabelFornecedor();
+        processarDados();
+    }
+
+    function toggleFornecedor(nome, checked) {
+        fornecedoresSelecionados.delete('__TODOS__');
+        document.getElementById('forn-todos') && (document.getElementById('forn-todos').checked = false);
+        if (checked) fornecedoresSelecionados.add(nome);
+        else fornecedoresSelecionados.delete(nome);
+        if (fornecedoresSelecionados.size === 0) {
+            fornecedoresSelecionados.add('__TODOS__');
+            _renderFornItems([], document.getElementById('fornSearch')?.value || '');
+        }
+        _atualizarLabelFornecedor();
+        processarDados();
+    }
+
+    function _atualizarLabelFornecedor() {
+        const label = document.getElementById('fornLabel');
+        const badge = document.getElementById('fornBadge');
+        if (!label) return;
+        if (fornecedoresSelecionados.has('__TODOS__')) {
+            label.textContent = 'Todos os fornecedores';
+            if (badge) badge.style.display = 'none';
+        } else {
+            const n = fornecedoresSelecionados.size;
+            label.textContent = n === 1 ? [...fornecedoresSelecionados][0].substring(0, 20) : `${n} fornecedores`;
+            if (badge) { badge.textContent = n; badge.style.display = 'inline-block'; }
+        }
+    }
+
+    // Fechar dropdown ao clicar fora
+    document.addEventListener('click', function(e) {
+        const wrapper = document.getElementById('fornWrapper');
+        if (wrapper && !wrapper.contains(e.target)) {
+            document.getElementById('fornDropdown')?.classList.remove('open');
+            document.getElementById('fornBtn')?.classList.remove('open');
+        }
+    });
+
+    // ── Filtro Região ─────────────────────────────────────────────
+    function setRegiao(regiao) {
+        regiaoAtiva = regiao;
+        ['todas','interior','capital'].forEach(r => {
+            const btn = document.getElementById('rBtn-' + r);
+            if (btn) btn.classList.toggle('active', r.toUpperCase() === regiao || (regiao === 'TODAS' && r === 'todas'));
+        });
+        // Ao mudar região, resetar filtro de GRE para não conflitar
+        const fGre = document.getElementById('fGre');
+        if (fGre) fGre.value = 'TODOS';
+        aoMudarGre();
     }
      // 🔥 ADICIONE A FUNÇÃO ABAIXO 🔥
 function limparFiltroFiscal() {
@@ -2415,7 +2615,9 @@ function limparFiltroFiscal() {
 
     function aoMudarGre() {
         const greSel = document.getElementById('fGre').value;
-        const filtrados = greSel === 'TODOS' ? bruto : bruto.filter(d => d.gre === greSel);
+        // Aplica filtro de região ao pool de dados
+        const pool = bruto.filter(d => rotaPassaFiltroRegiao(d));
+        const filtrados = greSel === 'TODOS' ? pool : pool.filter(d => d.gre === greSel);
         const atualizar = (id, campo, label) => {
             const el = document.getElementById(id);
             if (!el) return;
@@ -2423,6 +2625,14 @@ function limparFiltroFiscal() {
             [...new Set(filtrados.map(d => d[campo]))].filter(v => v && v.trim() !== "").sort().forEach(v =>
                 el.add(new Option(v, v)));
         };
+        // Repopula GRE com base na região
+        const elGre = document.getElementById('fGre');
+        if (elGre) {
+            const curVal = elGre.value;
+            elGre.innerHTML = '<option value="TODOS">GRE: TODAS</option>';
+            [...new Set(pool.map(d => d.gre))].filter(v => v && v.trim()).sort().forEach(v => elGre.add(new Option(v, v)));
+            elGre.value = curVal && [...pool.map(d => d.gre)].includes(curVal) ? curVal : 'TODOS';
+        }
         atualizar('fCidade', 'cidade', 'CIDADE: TODAS');
         atualizar('fFiscal', 'fiscal_responsavel', 'FISCAL: TODOS');
         processarDados();
@@ -2809,7 +3019,9 @@ function limparFiltroFiscal() {
             (f.direcao === 'TODOS' || d.direcao === f.direcao) &&
             (f.gre === 'TODOS' || d.gre === f.gre) &&
             (f.cidade === 'TODOS' || d.cidade === f.cidade) &&
-            (f.fiscal === 'TODOS' || d.fiscal_responsavel === f.fiscal)
+            (f.fiscal === 'TODOS' || d.fiscal_responsavel === f.fiscal) &&
+            rotaPassaFiltroRegiao(d) &&
+            rotaPassaFiltroFornecedor(d)
         );
 
         let concl = 0, pend = 0, extras = 0;
@@ -3849,15 +4061,22 @@ filtrarIrregularidades();
     if (elCidade && elCidade.options.length === 1) {
         [...new Set(bruto.map(d => d.cidade))].filter(Boolean).sort().forEach(v => elCidade.add(new Option(v, v)));
     }
+        const elFornecedor = document.getElementById('cpl-filtro-fornecedor');
+        if (elFornecedor && elFornecedor.options.length === 1) {
+            [...new Set(bruto.map(d => (d.fornecedor_motorista || 'OUTROS').trim()))].filter(Boolean).sort()
+                .forEach(v => elFornecedor.add(new Option(v, v)));
+        }
 
             const filtroGre = elGre?.value || 'TODOS';
             const filtroFiscal = elFiscal?.value || 'TODOS';
             const filtroCidade = elCidade?.value || 'TODOS';
+        const filtroFornecedorCpl = elFornecedor?.value || 'TODOS';
 
         const dados = bruto.filter(d =>
         (filtroGre === 'TODOS' || d.gre === filtroGre) &&
         (filtroFiscal === 'TODOS' || d.fiscal_responsavel === filtroFiscal) &&
-        (filtroCidade === 'TODOS' || d.cidade === filtroCidade)
+        (filtroCidade === 'TODOS' || d.cidade === filtroCidade) &&
+        (filtroFornecedorCpl === 'TODOS' || (d.fornecedor_motorista || 'OUTROS').trim() === filtroFornecedorCpl)
     );
         const agora = new Date();
         cplDadosCriticos = [];
