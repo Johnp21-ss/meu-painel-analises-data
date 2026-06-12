@@ -4650,13 +4650,22 @@ window._cplDadosCompliance = [...dados];
             return;
         }
 
+        const pct = (n, total) => total > 0 ? `<span style="opacity:.7;font-size:8px;margin-left:2px;">${((n/total)*100).toFixed(0)}%</span>` : '';
+
         let html = '';
         entradas.forEach((r, fIdx) => {
-            // Contagens de tipos para pills
+            // Contagens de tipos para pills (separa extras)
             const todasObs = Object.values(r.gres).flat();
-            const nManual = todasObs.filter(o => /\[FISCAL MANUAL\]/i.test(o.observacao)).length;
-            const nNaoExec = todasObs.filter(o => /\[NÃO EXECUTADA/i.test(o.observacao)).length;
-            const nOutro = todasObs.length - nManual - nNaoExec;
+            const total = todasObs.length;
+            const nManual   = todasObs.filter(o => /\[FISCAL MANUAL\]/i.test(o.observacao)).length;
+            const nNaoExec  = todasObs.filter(o => /\[NÃO EXECUTADA/i.test(o.observacao)).length;
+            const nExtra    = todasObs.filter(o => o.isExtra).length;
+            // "Outro" = nem manual, nem não-executada, nem extra
+            const nOutro    = todasObs.filter(o =>
+                !(/\[FISCAL MANUAL\]/i.test(o.observacao)) &&
+                !(/\[NÃO EXECUTADA/i.test(o.observacao)) &&
+                !o.isExtra
+            ).length;
             const gresStr = Object.keys(r.gres).sort().join(' · ');
 
             const fId = `cpl-obs-f-${fIdx}`;
@@ -4668,21 +4677,26 @@ window._cplDadosCompliance = [...dados];
                         <span style="font-size:9px;color:var(--info);">${gresStr}</span>
                     </div>
                     <div class="cpl-obs-fiscal-meta">
-                        <span class="cpl-obs-pill cpl-obs-pill-total">📋 ${r.total} obs.</span>
-                        ${nManual > 0 ? `<span class="cpl-obs-pill cpl-obs-pill-manual">✏️ ${nManual} manual</span>` : ''}
-                        ${nNaoExec > 0 ? `<span class="cpl-obs-pill cpl-obs-pill-naoexec">🚫 ${nNaoExec} não exec.</span>` : ''}
-                        ${nOutro > 0 ? `<span class="cpl-obs-pill cpl-obs-pill-outro">📝 ${nOutro} outr.</span>` : ''}
+                        <span class="cpl-obs-pill cpl-obs-pill-total">📋 ${total} obs.</span>
+                        ${nManual  > 0 ? `<span class="cpl-obs-pill cpl-obs-pill-manual">✏️ ${nManual}${pct(nManual,total)} manual</span>` : ''}
+                        ${nNaoExec > 0 ? `<span class="cpl-obs-pill cpl-obs-pill-naoexec">🚫 ${nNaoExec}${pct(nNaoExec,total)} não exec.</span>` : ''}
+                        ${nExtra   > 0 ? `<span class="cpl-obs-pill" style="background:rgba(155,89,182,.18);color:#a29bfe;">🔀 ${nExtra}${pct(nExtra,total)} extra</span>` : ''}
+                        ${nOutro   > 0 ? `<span class="cpl-obs-pill cpl-obs-pill-outro">📝 ${nOutro}${pct(nOutro,total)} outr.</span>` : ''}
                     </div>
                 </div>
                 <div id="${fId}" style="display:none;">`;
 
             // Para cada GRE do fiscal
             Object.entries(r.gres).sort().forEach(([gre, itens]) => {
-                html += `<div class="cpl-obs-gre-separator">🏢 ${gre} — ${itens.length} ocorrência${itens.length !== 1 ? 's' : ''}</div>`;
+                // Separa extras das regulares
+                const itensRegulares = itens.filter(o => !o.isExtra);
+                const itensExtras    = itens.filter(o => o.isExtra);
 
-                // Agrupa por tipo de observação → motivo
+                html += `<div class="cpl-obs-gre-separator">🏢 ${gre} — ${itens.length} ocorrência${itens.length !== 1 ? 's' : ''}${itensExtras.length > 0 ? ` <span style="color:#a29bfe;font-size:8px;">(${itensExtras.length} extras)</span>` : ''}</div>`;
+
+                // ── Ocorrências regulares agrupadas por motivo ──
                 const motivoMap = {};
-                itens.forEach(o => {
+                itensRegulares.forEach(o => {
                     const p = _parseTipoObservacao(o.observacao);
                     const chave = `${p.tipo}||${p.motivo}`;
                     if (!motivoMap[chave]) motivoMap[chave] = { ...p, itens: [] };
@@ -4691,13 +4705,14 @@ window._cplDadosCompliance = [...dados];
 
                 Object.entries(motivoMap).forEach(([chave, m], mIdx) => {
                     const mId = `${fId}-g${gre.replace(/\W/g, '')}-m${mIdx}`;
+                    const percStr = itensRegulares.length > 0 ? `<span style="opacity:.65;font-size:8px;margin-left:4px;">${((m.itens.length/itens.length)*100).toFixed(0)}%</span>` : '';
                     html += `<div class="cpl-obs-motivo-row" onclick="cplToggleObs('${mId}')">
                         <div style="display:flex;align-items:center;gap:6px;min-width:0;">
                             <span id="${mId}-arrow" style="font-size:8px;color:var(--slate);transition:transform .2s;display:inline-block;">▶</span>
                             <span class="cpl-obs-motivo-tag ${m.cls}">${m.icone} ${m.tipo}</span>
-                            ${m.motivo && m.motivo !== 'Lançamento manual pelo fiscal' ? `<span style="color:var(--text);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:340px;" title="${m.motivo}">${m.motivo}</span>` : ''}
+                            ${m.motivo && m.motivo !== 'Lançamento manual pelo fiscal' ? `<span style="color:var(--text);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:320px;" title="${m.motivo}">${m.motivo}</span>` : ''}
                         </div>
-                        <span class="cpl-obs-motivo-count">${m.itens.length}×</span>
+                        <span class="cpl-obs-motivo-count">${m.itens.length}×${percStr}</span>
                     </div>
                     <div id="${mId}" style="display:none;">`;
 
@@ -4711,9 +4726,58 @@ window._cplDadosCompliance = [...dados];
                             ${o.veiculo && o.veiculo.length > 2 ? `<span style="color:var(--slate);margin-left:8px;font-size:9px;">🚌 ${o.veiculo}</span>` : ''}
                         </div>`;
                     });
-
                     html += `</div>`; // fecha mId
                 });
+
+                // ── Bloco colapsável de Rotas Extras ──
+                if (itensExtras.length > 0) {
+                    const exId = `${fId}-g${gre.replace(/\W/g, '')}-extras`;
+                    const percExtra = ((itensExtras.length / itens.length) * 100).toFixed(0);
+                    html += `<div class="cpl-obs-motivo-row" onclick="cplToggleObs('${exId}')" style="background:rgba(155,89,182,.07);border-left:2px solid rgba(162,155,254,.3);">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span id="${exId}-arrow" style="font-size:8px;color:#a29bfe;transition:transform .2s;display:inline-block;">▶</span>
+                            <span style="color:#a29bfe;font-size:10px;font-weight:bold;">🔀 ROTAS EXTRAS</span>
+                            <span style="color:var(--slate);font-size:9px;">IDs de rotas extracurriculares</span>
+                        </div>
+                        <span class="cpl-obs-motivo-count" style="background:rgba(162,155,254,.2);color:#a29bfe;">${itensExtras.length}× <span style="opacity:.7;font-size:8px;">${percExtra}%</span></span>
+                    </div>
+                    <div id="${exId}" style="display:none;">`;
+
+                    // Agrupa extras por motivo também
+                    const extraMotivoMap = {};
+                    itensExtras.forEach(o => {
+                        const p = _parseTipoObservacao(o.observacao);
+                        const chave = `${p.tipo}||${p.motivo}`;
+                        if (!extraMotivoMap[chave]) extraMotivoMap[chave] = { ...p, itens: [] };
+                        extraMotivoMap[chave].itens.push(o);
+                    });
+
+                    Object.entries(extraMotivoMap).forEach(([chave, m], emIdx) => {
+                        const emId = `${exId}-em${emIdx}`;
+                        html += `<div class="cpl-obs-motivo-row" style="padding-left:44px;background:rgba(162,155,254,.04);" onclick="cplToggleObs('${emId}')">
+                            <div style="display:flex;align-items:center;gap:6px;min-width:0;">
+                                <span id="${emId}-arrow" style="font-size:8px;color:var(--slate);transition:transform .2s;display:inline-block;">▶</span>
+                                <span class="cpl-obs-motivo-tag ${m.cls}">${m.icone} ${m.tipo}</span>
+                                ${m.motivo && m.motivo !== 'Lançamento manual pelo fiscal' ? `<span style="color:var(--text);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:280px;" title="${m.motivo}">${m.motivo}</span>` : ''}
+                            </div>
+                            <span class="cpl-obs-motivo-count">${m.itens.length}×</span>
+                        </div>
+                        <div id="${emId}" style="display:none;">`;
+
+                        m.itens.forEach(o => {
+                            const rota = (o.rota || '').substring(0, 55);
+                            const mot = o.motorista || 'S/ NOME';
+                            html += `<div class="cpl-obs-item-row" style="padding-left:58px;">
+                                <span class="cpl-obs-item-rota" style="background:#5f27cd;" title="${o.rota || ''}">${rota}</span>
+                                <span class="cpl-obs-item-mot">${mot}</span>
+                                ${o.data ? `<span style="color:var(--slate);margin-left:8px;font-size:9px;">📅 ${o.data}</span>` : ''}
+                            </div>`;
+                        });
+                        html += `</div>`;
+                    });
+
+                    html += `</div>`; // fecha exId
+                }
             });
 
             html += `</div></div>`; // fecha fId e fiscal wrapper
