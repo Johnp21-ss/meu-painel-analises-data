@@ -2668,19 +2668,6 @@ function toggleFornecedor(nome, checked) {
     processarDados();
 }
 
-    function toggleFornecedor(nome, checked) {
-        fornecedoresSelecionados.delete('__TODOS__');
-        document.getElementById('forn-todos') && (document.getElementById('forn-todos').checked = false);
-        if (checked) fornecedoresSelecionados.add(nome);
-        else fornecedoresSelecionados.delete(nome);
-        if (fornecedoresSelecionados.size === 0) {
-            fornecedoresSelecionados.add('__TODOS__');
-            _renderFornItems([], document.getElementById('fornSearch')?.value || '');
-        }
-        _atualizarLabelFornecedor();
-        processarDados();
-    }
-
     function _atualizarLabelFornecedor() {
         const label = document.getElementById('fornLabel');
         const badge = document.getElementById('fornBadge');
