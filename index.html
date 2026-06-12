@@ -2185,11 +2185,27 @@ function isWeekend(dateStr) {
     return day === 0 || day === 6; // 0 = Domingo, 6 = Sábado
 }
 
-// Função para verificar feriados (lista fixa ou você pode expandir)
+// Calcula a data da Páscoa pelo algoritmo de Butcher/Oudin
+function calcPascoa(ano) {
+    const a = ano % 19, b = Math.floor(ano / 100), c = ano % 100;
+    const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4), k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const mes = Math.floor((h + l - 7 * m + 114) / 31); // 1-based
+    const dia = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(ano, mes - 1, dia);
+}
+
 function isHoliday(dateStr) {
     if (!dateStr) return false;
-    // Lista de feriados nacionais (formato MM-DD)
-    const holidays = [
+    const d = new Date(dateStr + 'T12:00:00');
+    const ano = d.getFullYear();
+    const mmdd = dateStr.substring(5);
+
+    // Feriados nacionais fixos
+    const fixos = [
         '01-01', // Confraternização Universal
         '04-21', // Tiradentes
         '05-01', // Dia do Trabalho
@@ -2197,10 +2213,33 @@ function isHoliday(dateStr) {
         '10-12', // Nossa Senhora Aparecida
         '11-02', // Finados
         '11-15', // Proclamação da República
-        '12-25'  // Natal
+        '12-25', // Natal
     ];
-    const mmdd = dateStr.substring(5); // pega MM-DD
-    return holidays.includes(mmdd);
+    if (fixos.includes(mmdd)) return true;
+
+    // Feriados estaduais do Piauí (fixos)
+    const fixosPiaui = [
+        '03-13', // Dia do Piauí
+        '10-19', // Dia de São Pedro de Alcântara (padroeiro do estado)
+    ];
+    if (fixosPiaui.includes(mmdd)) return true;
+
+    // Feriados móveis baseados na Páscoa
+    const pascoa = calcPascoa(ano);
+    const addDias = (base, n) => { const r = new Date(base); r.setDate(r.getDate() + n); return r; };
+    const fmt = dt => `${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+
+    const moveveis = {
+        'Carnaval Seg':    fmt(addDias(pascoa, -48)),
+        'Carnaval Ter':    fmt(addDias(pascoa, -47)),
+        'Quarta Cinzas':   fmt(addDias(pascoa, -46)),
+        'Sexta Santa':     fmt(addDias(pascoa, -2)),
+        'Páscoa':          fmt(pascoa),
+        'Corpus Christi':  fmt(addDias(pascoa, 60)),
+    };
+    if (Object.values(moveveis).includes(mmdd)) return true;
+
+    return false;
 }
 
 async function carregarHistorico() {
@@ -2620,13 +2659,14 @@ function carregar() {
 
     function toggleFornecedor(nome, checked) {
         fornecedoresSelecionados.delete('__TODOS__');
-        document.getElementById('forn-todos') && (document.getElementById('forn-todos').checked = false);
         if (checked) fornecedoresSelecionados.add(nome);
         else fornecedoresSelecionados.delete(nome);
+        // Se ficou vazio, volta para TODOS
         if (fornecedoresSelecionados.size === 0) {
             fornecedoresSelecionados.add('__TODOS__');
-            _renderFornItems([], document.getElementById('fornSearch')?.value || '');
         }
+        // Re-renderiza itens para sincronizar checkboxes (incluindo o "Todos")
+        _renderFornItems([], document.getElementById('fornSearch')?.value || '');
         _atualizarLabelFornecedor();
         processarDados();
     }
@@ -3604,14 +3644,22 @@ function limparFiltroFiscal() {
         const filtroCidade = document.getElementById('fCidadeFraude')?.value || 'TODOS';
         const filtroTurno = document.getElementById('fTurnoFraude')?.value || 'TODOS';
         const filtroRota = document.getElementById('fRotaFraude')?.value || 'TODOS';
-
-        
-        const dados = bruto.filter(d =>
+        const apenasFraudes = document.getElementById('chkApenasFraudes')?.checked || false;
+        const _dadosBase = bruto.filter(d =>
             (filtroGre === 'TODOS' || d.gre === filtroGre) &&
             (filtroCidade === 'TODOS' || d.cidade === filtroCidade) &&
             (filtroTurno === 'TODOS' || d.turno === filtroTurno) &&
             (filtroRota === 'TODOS' || d.rota === filtroRota)
         );
+        // Se flag ativo, pré-filtra apenas rotas com indício de fraude (origem rastreador + duração curta ou coord iguais)
+        const limitePreFiltro = parseInt(document.getElementById('fIrregDuracao')?.value || 30);
+        const dados = apenasFraudes ? _dadosBase.filter(d => {
+            const dur = calcDuracaoMinutos(d.inicio_execucao, d.fim_execucao);
+            const dist = calcularDistanciaKm(d.coordenadas_inicio, d.coordenadas_fim);
+            const km = parseFloat((d.km_planejado || '0').toString().replace(',', '.')) || 0;
+            return (dur !== null && dur < limitePreFiltro) ||
+                   (dist !== null && dist < 0.5 && km > 5 && norm(d.origem) === 'RASTREADOR VEICULAR');
+        }) : _dadosBase;
 
         let totalRotas = 0, fraudesTemporal = 0, fraudesMesmoLocal = 0;
         const motoristasMap = new Map(), greMap = new Map(), fiscalMap = new Map();
@@ -3906,6 +3954,28 @@ filtrarIrregularidades();
             (fCidade === 'TODOS' || d.cidade === fCidade)
         );
         if (fStatus !== 'TODOS') extras = extras.filter(d => norm(d.status).includes(norm(fStatus)));
+
+        // Flag "apenas alertas": restringe todo o painel a rotas curtas ou em andamento prolongado
+        if (apenasAlertas) {
+            const agora2 = new Date();
+            extras = extras.filter(d => {
+                const sn = norm(d.status);
+                const dur = calcDuracaoMinutos(d.inicio_execucao, d.fim_execucao);
+                const isConcl = sn.includes("CONCLUID");
+                const isAndam = sn.includes("ANDAMENTO") || sn.includes("EXECUTANDO");
+                if (isConcl && dur !== null && dur < 15) return true;
+                if (isAndam) {
+                    const inicioMin = horaParaMinutos(d.inicio_execucao);
+                    if (inicioMin !== null) {
+                        const agoraMin = agora2.getHours() * 60 + agora2.getMinutes();
+                        let diff = agoraMin - inicioMin;
+                        if (diff < 0) diff += 1440;
+                        if (diff > 360) return true;
+                    }
+                }
+                return false;
+            });
+        }
 
         let totalConcl = 0, totalAndam = 0, somaTempos = 0, countTempos = 0;
         let alertaCurta = [], alertaAbandono = [];
@@ -4686,13 +4756,28 @@ window._cplDadosCompliance = [...dados];
                 </div>
                 <div id="${fId}" style="display:none;">`;
 
-            // Para cada GRE do fiscal
+            // ── Nível 2: GRE (accordion) ──
             Object.entries(r.gres).sort().forEach(([gre, itens]) => {
-                // Separa extras das regulares
+                const greId = `${fId}-gre-${gre.replace(/\W/g, '')}`;
                 const itensRegulares = itens.filter(o => !o.isExtra);
                 const itensExtras    = itens.filter(o => o.isExtra);
+                const nGManual  = itens.filter(o => /\[FISCAL MANUAL\]/i.test(o.observacao)).length;
+                const nGNaoExec = itens.filter(o => /\[NÃO EXECUTADA/i.test(o.observacao)).length;
 
-                html += `<div class="cpl-obs-gre-separator">🏢 ${gre} — ${itens.length} ocorrência${itens.length !== 1 ? 's' : ''}${itensExtras.length > 0 ? ` <span style="color:#a29bfe;font-size:8px;">(${itensExtras.length} extras)</span>` : ''}</div>`;
+                html += `<div>
+                    <div class="cpl-obs-gre-separator" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:6px 12px 6px 22px;" onclick="cplToggleObs('${greId}')">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span id="${greId}-arrow" style="font-size:8px;color:var(--info);transition:transform .2s;display:inline-block;">▶</span>
+                            <span>🏢 ${gre}</span>
+                            ${itensExtras.length > 0 ? `<span style="color:#a29bfe;font-size:8px;">(${itensExtras.length} extras)</span>` : ''}
+                        </div>
+                        <div style="display:flex;gap:6px;align-items:center;">
+                            ${nGManual  > 0 ? `<span class="cpl-obs-pill cpl-obs-pill-manual" style="font-size:8px;">✏️ ${nGManual}</span>` : ''}
+                            ${nGNaoExec > 0 ? `<span class="cpl-obs-pill cpl-obs-pill-naoexec" style="font-size:8px;">🚫 ${nGNaoExec}</span>` : ''}
+                            <span style="font-size:9px;color:var(--slate);">${itens.length} obs.</span>
+                        </div>
+                    </div>
+                    <div id="${greId}" style="display:none;">`;
 
                 // ── Ocorrências regulares agrupadas por motivo ──
                 const motivoMap = {};
@@ -4778,6 +4863,8 @@ window._cplDadosCompliance = [...dados];
 
                     html += `</div>`; // fecha exId
                 }
+
+                html += `</div></div>`; // fecha greId content + GRE wrapper
             });
 
             html += `</div></div>`; // fecha fId e fiscal wrapper
@@ -5235,7 +5322,8 @@ function renderizarTabelaUsuarios() {
         
         return `<tr>
             <td><b>${username}</b>${isOriginal ? ' <span style="font-size:8px;color:var(--success);">(original)</span>' : ''}</td>
-            <td>${dados.nome || ''}</td>
+            <td><input type="text" value="${dados.nome || ''}" id="nome-${username}"
+                style="background:var(--bg);color:white;border:1px solid var(--border);padding:4px 8px;border-radius:4px;width:140px;font-size:10px;" placeholder="Nome completo"></td>
             <td><span class="cpl-score-pill" style="background:${corNivel}22; color:${corNivel}; border:1px solid ${corNivel}44;">${dados.nivel}</span></td>
             <td><input type="text" value="${dados.senha || ''}" id="senha-${username}" 
                 style="background:var(--bg);color:white;border:1px solid var(--border);padding:4px 8px;border-radius:4px;width:100px;font-size:10px;"></td>
@@ -5264,6 +5352,7 @@ function renderizarTabelaUsuarios() {
 function salvarAlteracoesUsuario(username) {
     const novoNivel = document.getElementById(`nivel-${username}`).value;
     const novaSenha = document.getElementById(`senha-${username}`).value;
+    const novoNome = (document.getElementById(`nome-${username}`)?.value || '').trim();
     
     if (!novaSenha || novaSenha.trim() === '') {
         alert('⚠️ A senha não pode ficar em branco!');
@@ -5275,6 +5364,7 @@ function salvarAlteracoesUsuario(username) {
     if (usuarios[username]) {
         usuarios[username].nivel = novoNivel;
         usuarios[username].senha = novaSenha.trim();
+        if (novoNome) usuarios[username].nome = novoNome;
         salvarUsuariosExtras(usuarios);
         alert(`✅ Usuário "${username}" atualizado com sucesso!`);
         renderizarTabelaUsuarios();
