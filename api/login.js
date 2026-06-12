@@ -4,7 +4,8 @@ const usuarios = [
   { usuario: "john_petter", senha: "admin123", nivel: "ADMIN" },
   { usuario: "gestor_pi", senha: "gestor123", nivel: "GESTOR" },
   { usuario: "monitor_ana", senha: "monitor123", nivel: "MONITOR" },
-  { usuario: "fiscal_maria", senha: "fiscal123", nivel: "FISCAL" }
+  { usuario: "fiscal_maria", senha: "fiscal123", nivel: "FISCAL" },
+  { usuario: "Andre", senha: "fiscal123", nivel: "FISCAL" }
 ];
 
 export default function handler(req, res) {
