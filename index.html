@@ -298,6 +298,59 @@
 
         .filter-bar select { width: auto; min-width: 150px; }
 
+        /* ── Resumo Ocorrências Compliance ── */
+        .cpl-obs-fiscal-row {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:8px 12px; background:rgba(230,126,34,.08); border-bottom:1px solid var(--border);
+            cursor:pointer; transition:background .15s; gap:8px; flex-wrap:wrap;
+        }
+        .cpl-obs-fiscal-row:hover { background:rgba(230,126,34,.16); }
+        .cpl-obs-fiscal-name { font-weight:bold; font-size:11px; color:#fff; }
+        .cpl-obs-fiscal-meta { display:flex; gap:10px; align-items:center; }
+        .cpl-obs-pill {
+            padding:2px 8px; border-radius:10px; font-size:9px; font-weight:bold;
+        }
+        .cpl-obs-pill-total { background:rgba(52,152,219,.25); color:#3498db; }
+        .cpl-obs-pill-manual { background:rgba(155,89,182,.25); color:#9b59b6; }
+        .cpl-obs-pill-naoexec { background:rgba(231,76,60,.25); color:#e74c3c; }
+        .cpl-obs-pill-outro { background:rgba(149,165,166,.15); color:var(--slate); }
+
+        .cpl-obs-motivo-row {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:6px 12px 6px 28px; background:rgba(0,0,0,.18);
+            cursor:pointer; transition:background .15s; gap:8px;
+            border-bottom:1px solid rgba(255,255,255,.04);
+        }
+        .cpl-obs-motivo-row:hover { background:rgba(52,152,219,.08); }
+        .cpl-obs-motivo-tag {
+            display:inline-flex; align-items:center; gap:5px;
+            font-size:10px; font-weight:bold;
+        }
+        .cpl-obs-motivo-tag.manual { color:#9b59b6; }
+        .cpl-obs-motivo-tag.nao-exec { color:#e67e22; }
+        .cpl-obs-motivo-tag.outro { color:var(--slate); }
+        .cpl-obs-motivo-count {
+            background:rgba(255,255,255,.1); border-radius:10px;
+            padding:1px 7px; font-size:9px; font-weight:bold; color:#fff; white-space:nowrap;
+        }
+
+        .cpl-obs-item-row {
+            padding:5px 12px 5px 44px;
+            border-bottom:1px solid rgba(255,255,255,.03);
+            font-size:10px; color:var(--slate); background:rgba(0,0,0,.25);
+        }
+        .cpl-obs-item-rota {
+            display:inline-block; background:var(--primary); color:#fff;
+            padding:1px 6px; border-radius:3px; font-size:8px; font-weight:bold;
+            margin-right:6px; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:middle;
+        }
+        .cpl-obs-item-mot { color:var(--info); font-weight:bold; }
+        .cpl-obs-gre-separator {
+            padding:4px 28px; background:rgba(52,152,219,.06);
+            font-size:9px; font-weight:bold; color:var(--info);
+            border-bottom:1px solid rgba(52,152,219,.15); letter-spacing:.5px;
+        }
+
         /* ── Filtro Fornecedor (dropdown multi-select) ── */
         .forn-wrapper { position: relative; display: inline-block; }
         .forn-btn {
@@ -1535,6 +1588,21 @@
                 </div>
                 <div style="font-size:9px;color:var(--slate);margin-top:8px;">👆 Clique no motorista para ver as rotas fraudulentas</div>
             </div>
+        </div>
+
+        <!-- ── LINHA 4a: Resumo Detalhado de Ocorrências por Fiscal (novo) ── -->
+        <div class="card row-new" style="border-top-color:#e67e22; margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+                <h3 style="margin:0;font-size:13px;">📋 Resumo de Ocorrências por Fiscal
+                    <span style="font-size:9px;color:var(--slate);font-weight:normal;margin-left:6px;">Fiscal → Motivo → Detalhe da ocorrência</span>
+                </h3>
+                <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                    <input type="text" id="cpl-obs-busca" placeholder="🔍 Buscar fiscal ou motivo..." oninput="renderCplResumoOcorrencias()"
+                        style="padding:5px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:10px;min-width:180px;">
+                    <span id="cpl-obs-total-badge" style="background:rgba(230,126,34,.2);color:#e67e22;border:1px solid rgba(230,126,34,.4);border-radius:12px;padding:2px 10px;font-size:10px;font-weight:bold;"></span>
+                </div>
+            </div>
+            <div id="cpl-resumo-ocorr-container" class="scroll-area" style="max-height:420px;"></div>
         </div>
 
         <!-- ── LINHA 4: Painel de Ocorrências s/ Justificativa ── -->
@@ -4085,6 +4153,7 @@ filtrarIrregularidades();
         const veiculoMap = {}, greMap = {};
         const cicloMap = { '06': 0, '08': 0, '10': 0, '12': 0, '14': 0, '16': 0, '18': 0, '20': 0 };
         const fiscalOcorrMap = {};
+        const fiscalObsDetalheMap = {}; // mapa detalhado: fiscal → gre → [rows com observação]
 
         dados.forEach(d => {
             const durMin = calcDuracaoMinutos(d.inicio_execucao, d.fim_execucao);
@@ -4105,6 +4174,14 @@ filtrarIrregularidades();
             fiscalOcorrMap[fiscal].total++;
             if (isNaoAberto) fiscalOcorrMap[fiscal].naoAbertas++;
             if (temObs) fiscalOcorrMap[fiscal].comObs++;
+
+            // Mapa detalhado de observações (para o card Resumo)
+            if (temObs) {
+                if (!fiscalObsDetalheMap[fiscal]) fiscalObsDetalheMap[fiscal] = { total: 0, gres: {} };
+                fiscalObsDetalheMap[fiscal].total++;
+                if (!fiscalObsDetalheMap[fiscal].gres[gre]) fiscalObsDetalheMap[fiscal].gres[gre] = [];
+                fiscalObsDetalheMap[fiscal].gres[gre].push(d);
+            }
 
             let tipoAlerta = null, gravidade = 0;
             if (durMin !== null && durMin < 10 && (isConcl || isAndam)) {
@@ -4272,12 +4349,14 @@ filtrarIrregularidades();
         window._cplGreMap = greMap;
         window._cplCicloMap = cicloMap;
         window._cplFiscalOcorrMap = fiscalOcorrMap;
+        window._cplFiscalObsDetalhe = fiscalObsDetalheMap;
 
         renderCplPareto();
         renderCplCiclo();
         renderCplVeiculos();
         renderCplGreMapa();
         renderCplOcorrencias();
+        renderCplResumoOcorrencias();
         renderCplAuditoria();
 
          // ── Ofensores ──
@@ -4531,6 +4610,125 @@ window._cplDadosCompliance = [...dados];
                 <td><span class="cpl-score-pill ${situCls}">${situTxt}</span></td>
             </tr>`;
         }).join('') || '<tr><td colspan="9" style="color:var(--slate);text-align:center;padding:20px;">Sem dados de ocorrências.</td></tr>';
+    }
+
+    // ── Resumo Detalhado de Ocorrências por Fiscal (novo card) ────────────────
+    function _parseTipoObservacao(obs) {
+        if (!obs) return { tipo: 'OUTRO', motivo: '', icone: '📝', cls: 'outro' };
+        const n = obs.trim();
+        if (/\[FISCAL MANUAL\]/i.test(n)) {
+            return { tipo: 'FISCAL MANUAL', motivo: 'Lançamento manual pelo fiscal', icone: '✏️', cls: 'manual' };
+        }
+        const mNE = n.match(/\[NÃO EXECUTADA[^\]]*\]\s*(?:Motivo[:\s]+)?(.*)/i);
+        if (mNE) {
+            const motivo = (mNE[1] || '').trim() || 'Sem motivo informado';
+            return { tipo: 'NÃO EXECUTADA', motivo, icone: '🚫', cls: 'nao-exec' };
+        }
+        return { tipo: 'OBSERVAÇÃO', motivo: n, icone: '📝', cls: 'outro' };
+    }
+
+    function renderCplResumoOcorrencias() {
+        const map = window._cplFiscalObsDetalhe || {};
+        const cont = document.getElementById('cpl-resumo-ocorr-container');
+        const badge = document.getElementById('cpl-obs-total-badge');
+        if (!cont) return;
+
+        const busca = (document.getElementById('cpl-obs-busca')?.value || '').trim();
+        const bNorm = norm(busca);
+
+        // Filtra fiscais pela busca
+        let entradas = Object.entries(map)
+            .map(([fiscal, d]) => ({ fiscal, ...d }))
+            .filter(r => !bNorm || norm(r.fiscal).includes(bNorm) ||
+                Object.values(r.gres).flat().some(o => norm(o.observacao).includes(bNorm) || norm(o.motorista).includes(bNorm) || norm(o.rota).includes(bNorm)))
+            .sort((a, b) => b.total - a.total);
+
+        if (badge) badge.textContent = `${entradas.length} fiscal${entradas.length !== 1 ? 'is' : ''} · ${entradas.reduce((s, r) => s + r.total, 0)} obs.`;
+
+        if (!entradas.length) {
+            cont.innerHTML = `<div style="padding:20px;color:var(--slate);text-align:center;font-size:11px;">${busca ? '🔍 Nenhum resultado para "' + busca + '"' : 'Sem ocorrências com observação registrada.'}</div>`;
+            return;
+        }
+
+        let html = '';
+        entradas.forEach((r, fIdx) => {
+            // Contagens de tipos para pills
+            const todasObs = Object.values(r.gres).flat();
+            const nManual = todasObs.filter(o => /\[FISCAL MANUAL\]/i.test(o.observacao)).length;
+            const nNaoExec = todasObs.filter(o => /\[NÃO EXECUTADA/i.test(o.observacao)).length;
+            const nOutro = todasObs.length - nManual - nNaoExec;
+            const gresStr = Object.keys(r.gres).sort().join(' · ');
+
+            const fId = `cpl-obs-f-${fIdx}`;
+            html += `<div>
+                <div class="cpl-obs-fiscal-row" onclick="cplToggleObs('${fId}')">
+                    <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                        <span id="${fId}-arrow" style="font-size:9px;color:var(--slate);transition:transform .2s;display:inline-block;">▶</span>
+                        <span class="cpl-obs-fiscal-name">${r.fiscal}</span>
+                        <span style="font-size:9px;color:var(--info);">${gresStr}</span>
+                    </div>
+                    <div class="cpl-obs-fiscal-meta">
+                        <span class="cpl-obs-pill cpl-obs-pill-total">📋 ${r.total} obs.</span>
+                        ${nManual > 0 ? `<span class="cpl-obs-pill cpl-obs-pill-manual">✏️ ${nManual} manual</span>` : ''}
+                        ${nNaoExec > 0 ? `<span class="cpl-obs-pill cpl-obs-pill-naoexec">🚫 ${nNaoExec} não exec.</span>` : ''}
+                        ${nOutro > 0 ? `<span class="cpl-obs-pill cpl-obs-pill-outro">📝 ${nOutro} outr.</span>` : ''}
+                    </div>
+                </div>
+                <div id="${fId}" style="display:none;">`;
+
+            // Para cada GRE do fiscal
+            Object.entries(r.gres).sort().forEach(([gre, itens]) => {
+                html += `<div class="cpl-obs-gre-separator">🏢 ${gre} — ${itens.length} ocorrência${itens.length !== 1 ? 's' : ''}</div>`;
+
+                // Agrupa por tipo de observação → motivo
+                const motivoMap = {};
+                itens.forEach(o => {
+                    const p = _parseTipoObservacao(o.observacao);
+                    const chave = `${p.tipo}||${p.motivo}`;
+                    if (!motivoMap[chave]) motivoMap[chave] = { ...p, itens: [] };
+                    motivoMap[chave].itens.push(o);
+                });
+
+                Object.entries(motivoMap).forEach(([chave, m], mIdx) => {
+                    const mId = `${fId}-g${gre.replace(/\W/g, '')}-m${mIdx}`;
+                    html += `<div class="cpl-obs-motivo-row" onclick="cplToggleObs('${mId}')">
+                        <div style="display:flex;align-items:center;gap:6px;min-width:0;">
+                            <span id="${mId}-arrow" style="font-size:8px;color:var(--slate);transition:transform .2s;display:inline-block;">▶</span>
+                            <span class="cpl-obs-motivo-tag ${m.cls}">${m.icone} ${m.tipo}</span>
+                            ${m.motivo && m.motivo !== 'Lançamento manual pelo fiscal' ? `<span style="color:var(--text);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:340px;" title="${m.motivo}">${m.motivo}</span>` : ''}
+                        </div>
+                        <span class="cpl-obs-motivo-count">${m.itens.length}×</span>
+                    </div>
+                    <div id="${mId}" style="display:none;">`;
+
+                    m.itens.forEach(o => {
+                        const rota = (o.rota || '').substring(0, 55);
+                        const mot = o.motorista || 'S/ NOME';
+                        html += `<div class="cpl-obs-item-row">
+                            <span class="cpl-obs-item-rota" title="${o.rota || ''}">${rota}</span>
+                            <span class="cpl-obs-item-mot">${mot}</span>
+                            ${o.data ? `<span style="color:var(--slate);margin-left:8px;font-size:9px;">📅 ${o.data}</span>` : ''}
+                            ${o.veiculo && o.veiculo.length > 2 ? `<span style="color:var(--slate);margin-left:8px;font-size:9px;">🚌 ${o.veiculo}</span>` : ''}
+                        </div>`;
+                    });
+
+                    html += `</div>`; // fecha mId
+                });
+            });
+
+            html += `</div></div>`; // fecha fId e fiscal wrapper
+        });
+
+        cont.innerHTML = html;
+    }
+
+    function cplToggleObs(id) {
+        const el = document.getElementById(id);
+        const arrow = document.getElementById(id + '-arrow');
+        if (!el) return;
+        const open = el.style.display === 'none';
+        el.style.display = open ? 'block' : 'none';
+        if (arrow) arrow.style.transform = open ? 'rotate(90deg)' : '';
     }
 
     // ── Tabela de auditoria prioritária ──────────────────────────────────────
