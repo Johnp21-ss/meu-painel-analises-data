@@ -991,12 +991,40 @@
 
         <div class="grid-top" style="grid-template-columns: 1fr 2fr;">
             <div class="card" style="height:420px; border-top-color:#e67e22; display:flex; flex-direction:column;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-shrink:0;">
+                <!-- Header com toggle -->
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-shrink:0;flex-wrap:wrap;gap:4px;">
                     <h3 style="margin:0;">👤 Performance Campo</h3>
-                    <span id="perf-cobertura-badge" style="font-size:9px;padding:2px 8px;border-radius:10px;background:rgba(230,126,34,.15);color:#e67e22;font-weight:bold;"></span>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <span id="perf-cobertura-badge" style="font-size:9px;padding:2px 8px;border-radius:10px;background:rgba(230,126,34,.15);color:#e67e22;font-weight:bold;display:none;"></span>
+                        <div style="display:flex;background:rgba(0,0,0,.25);border-radius:6px;padding:2px;gap:2px;">
+                            <button id="perf-toggle-rank" onclick="setPerfVista('ranking')"
+                                style="padding:3px 10px;border:none;border-radius:4px;font-size:10px;font-weight:bold;cursor:pointer;background:var(--info);color:#fff;transition:all .2s;">
+                                🏆 Ranking
+                            </button>
+                            <button id="perf-toggle-cob" onclick="setPerfVista('cobertura')"
+                                style="padding:3px 10px;border:none;border-radius:4px;font-size:10px;font-weight:bold;cursor:pointer;background:transparent;color:var(--slate);transition:all .2s;">
+                                📊 Cobertura
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <table id="tFiscal" style="display:none;"><thead><tr></tr></thead><tbody></tbody></table>
-                <div id="perf-campo-container" style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;"></div>
+                <!-- Vista Ranking -->
+                <div id="perf-vista-ranking" style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;display:flex;flex-direction:column;">
+                    <table id="tFiscal" style="font-size:10px;width:100%;">
+                        <thead><tr>
+                            <th width="28">Pos</th>
+                            <th>Responsável</th>
+                            <th width="42" style="text-align:center;">Total</th>
+                            <th width="42" style="text-align:center;">Concl</th>
+                            <th width="48" style="text-align:right;">Assid.</th>
+                        </tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <!-- Vista Cobertura -->
+                <div id="perf-vista-cobertura" style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;display:none;">
+                    <div id="perf-campo-container" style="height:100%;"></div>
+                </div>
             </div>
 
             <div class="card" style="height:420px; border-top-color:var(--extra);">
@@ -1954,7 +1982,7 @@ if (areaNivel && nivelSalvo) {
         return true;
     }
     function rotaPassaFiltroFornecedor(d) {
-        if (fornecedoresSelecionados.has('__TODOS__')) return true;
+        if (fornecedoresSelecionados.size === 0) return true;
         const fn = (d.fornecedor_motorista || 'OUTROS').trim();
         return fornecedoresSelecionados.has(fn);
     }
@@ -2650,12 +2678,17 @@ function carregar() {
     }
 
     // ── Filtro Fornecedor (dropdown multi-select) ──────────────────
+    function _todosOsFornecedores() {
+        return [...new Set(bruto.map(d => (d.fornecedor_motorista || 'OUTROS').trim()))].filter(Boolean).sort();
+    }
+
     function popularFornecedorDropdown() {
-        const fornecedores = [...new Set(bruto.map(d => (d.fornecedor_motorista || 'OUTROS').trim()))].filter(Boolean).sort();
+        const todos = _todosOsFornecedores();
+        fornecedoresSelecionados = new Set(todos); // inicializa todos marcados
         const container = document.getElementById('fornItems');
         if (!container) return;
-        // Monta opções
-        _renderFornItems(fornecedores, '');
+        _renderFornItems(todos, '');
+        _atualizarLabelFornecedor();
     }
 
     function _renderFornItems(lista, busca) {
@@ -2665,12 +2698,13 @@ function carregar() {
             [...new Set(bruto.map(d => (d.fornecedor_motorista || 'OUTROS').trim()))].filter(Boolean).sort();
         const filtrados = busca ? fornecedores.filter(f => norm(f).includes(norm(busca))) : fornecedores;
 
+        const todosChecked = fornecedores.every(f => fornecedoresSelecionados.has(f));
         let html = `<div class="forn-item item-todos">
-            <input type="checkbox" id="forn-todos" onchange="toggleTodosFornecedor(this.checked)" ${fornecedoresSelecionados.has('__TODOS__') ? 'checked' : ''}>
+            <input type="checkbox" id="forn-todos" onchange="toggleTodosFornecedor(this.checked)" ${todosChecked ? 'checked' : ''}>
             <label for="forn-todos" style="cursor:pointer;">✅ Todos</label>
         </div>`;
         filtrados.forEach((f, i) => {
-            const chk = !fornecedoresSelecionados.has('__TODOS__') && fornecedoresSelecionados.has(f);
+            const chk = fornecedoresSelecionados.has(f);
             html += `<div class="forn-item">
                 <input type="checkbox" id="forn-${i}" value="${f}" onchange="toggleFornecedor('${f.replace(/'/g,"\\'")}', this.checked)" ${chk ? 'checked' : ''}>
                 <label for="forn-${i}" style="cursor:pointer;">${f}</label>
@@ -2693,21 +2727,19 @@ function carregar() {
     }
 
     function toggleTodosFornecedor(checked) {
-        fornecedoresSelecionados = checked ? new Set(['__TODOS__']) : new Set();
+        fornecedoresSelecionados = checked ? new Set(_todosOsFornecedores()) : new Set();
         _renderFornItems([], document.getElementById('fornSearch')?.value || '');
         _atualizarLabelFornecedor();
         processarDados();
     }
 
     function toggleFornecedor(nome, checked) {
-        fornecedoresSelecionados.delete('__TODOS__');
         if (checked) fornecedoresSelecionados.add(nome);
         else fornecedoresSelecionados.delete(nome);
-        // Se ficou vazio, volta para TODOS
+        // Se ficou vazio volta a marcar todos
         if (fornecedoresSelecionados.size === 0) {
-            fornecedoresSelecionados.add('__TODOS__');
+            fornecedoresSelecionados = new Set(_todosOsFornecedores());
         }
-        // Re-renderiza itens para sincronizar checkboxes (incluindo o "Todos")
         _renderFornItems([], document.getElementById('fornSearch')?.value || '');
         _atualizarLabelFornecedor();
         processarDados();
@@ -2717,13 +2749,20 @@ function carregar() {
         const label = document.getElementById('fornLabel');
         const badge = document.getElementById('fornBadge');
         if (!label) return;
-        if (fornecedoresSelecionados.has('__TODOS__')) {
+        const todos = _todosOsFornecedores();
+        const todosChecked = todos.length > 0 && todos.every(f => fornecedoresSelecionados.has(f));
+        if (todosChecked) {
             label.textContent = 'Todos os fornecedores';
             if (badge) badge.style.display = 'none';
         } else {
             const n = fornecedoresSelecionados.size;
-            label.textContent = n === 1 ? [...fornecedoresSelecionados][0].substring(0, 20) : `${n} fornecedores`;
-            if (badge) { badge.textContent = n; badge.style.display = 'inline-block'; }
+            if (n === 0) {
+                label.textContent = 'Todos os fornecedores';
+                if (badge) badge.style.display = 'none';
+            } else {
+                label.textContent = n === 1 ? [...fornecedoresSelecionados][0].substring(0, 22) : `${n} fornecedores`;
+                if (badge) { badge.textContent = n; badge.style.display = 'inline-block'; }
+            }
         }
     }
 
@@ -3233,6 +3272,7 @@ function limparFiltroFiscal() {
 
 
         renderPerfCampo(dados);
+        renderRank('tFiscal', 'fiscal_responsavel', 99, dados);
         renderRank('tGre', 'gre', 10, dados);
         renderTabelaCidades(cidadeMap);
         renderTabelaFornecedores(fornMap);
@@ -3328,18 +3368,30 @@ function limparFiltroFiscal() {
             if (norm(d.status).includes("CONCLUID") || norm(d.status).includes("ANDAMENTO")) m[ch].c++;
         });
         const list = Object.entries(m).map(([nm, s]) => ({ nm, t: s.t, c: s.c, p: (s.c / s.t) * 100 })).sort((a, b) => b.p - a.p).slice(0, limit);
-
         if (id === 'tFiscal') {
             dadosAssidGlobal = dados;
-            document.getElementById(id).querySelector('tbody').innerHTML = list.map((r, i) =>
-                `<tr class="pointer" style="transition:background .15s;"
+            document.getElementById(id).querySelector('tbody').innerHTML = list.map((r, i) => {
+                const cor = r.p >= 90 ? '#2ecc71' : r.p >= 70 ? '#f39c12' : '#e74c3c';
+                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}º`;
+                return `<tr class="pointer" style="transition:background .15s;"
                     onmouseover="this.style.background='rgba(255,255,255,.04)'"
                     onmouseout="this.style.background=''"
-                    onclick="selecionarFiscalAssid('${r.nm.replace(/'/g,"\\'")}')">
-                    <td>${i + 1}º</td><td>${r.nm}</td><td>${r.t}</td><td>${r.c}</td>
-                    <td class="perc-bold">${r.p.toFixed(1)}%</td>
-                </tr>`
-            ).join('');
+                    onclick="selecionarFiscalAssid('${r.nm.replace(/'/g,"\\'")}')"> 
+                    <td style="font-size:11px;text-align:center;">${medal}</td>
+                    <td style="font-size:10px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.nm}">${r.nm}</td>
+                    <td style="text-align:center;font-size:10px;">${r.t}</td>
+                    <td style="text-align:center;font-size:10px;">${r.c}</td>
+                    <td style="text-align:right;padding-right:4px;">
+                        <div style="display:flex;align-items:center;gap:5px;justify-content:flex-end;">
+                            <div style="width:38px;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;flex-shrink:0;">
+                                <div style="width:${r.p.toFixed(0)}%;height:100%;background:${cor};border-radius:2px;"></div>
+                            </div>
+                            <span style="color:${cor};font-size:10px;font-weight:bold;min-width:38px;text-align:right;">${r.p.toFixed(1)}%</span>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+            renderAssiduidadeTemporalChart(dados);
             renderAssiduidadeTemporalChart(dados);
         } else {
             document.getElementById(id).querySelector('tbody').innerHTML = list.map((r, i) =>
@@ -3392,6 +3444,7 @@ function limparFiltroFiscal() {
             badge.textContent = `📊 Cobertura geral: ${pct}%`;
             badge.style.background = pct >= 90 ? 'rgba(46,204,113,.15)' : pct >= 70 ? 'rgba(243,156,18,.15)' : 'rgba(231,76,60,.15)';
             badge.style.color = pct >= 90 ? '#2ecc71' : pct >= 70 ? '#f39c12' : '#e74c3c';
+            badge.style.display = 'inline-block';
         }
         if (!fiscais.length) {
             cont.innerHTML = '<div style="padding:20px;color:var(--slate);text-align:center;font-size:11px;">Sem dados.</div>';
@@ -3481,6 +3534,30 @@ function limparFiltroFiscal() {
         const open = el.style.display === 'none';
         el.style.display = open ? 'block' : 'none';
         if (arrow) arrow.style.transform = open ? 'rotate(90deg)' : '';
+    }
+
+
+    function setPerfVista(vista) {
+        const vRank = document.getElementById('perf-vista-ranking');
+        const vCob  = document.getElementById('perf-vista-cobertura');
+        const bRank = document.getElementById('perf-toggle-rank');
+        const bCob  = document.getElementById('perf-toggle-cob');
+        const badge = document.getElementById('perf-cobertura-badge');
+        if (!vRank) return;
+        if (vista === 'ranking') {
+            vRank.style.display = 'flex';
+            vCob.style.display  = 'none';
+            bRank.style.background = 'var(--info)';   bRank.style.color = '#fff';
+            bCob.style.background  = 'transparent';    bCob.style.color  = 'var(--slate)';
+            if (badge) badge.style.display = 'none';
+        } else {
+            vRank.style.display = 'none';
+            vCob.style.display  = 'flex';
+            bRank.style.background = 'transparent';    bRank.style.color = 'var(--slate)';
+            bCob.style.background  = 'var(--info)';    bCob.style.color  = '#fff';
+            if (badge) badge.style.display = 'inline-block';
+        }
+        window._perfVista = vista;
     }
 
     function selecionarFiscalAssid(nome) {
