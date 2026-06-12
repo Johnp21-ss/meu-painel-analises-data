@@ -989,7 +989,7 @@
             <div class="kpi-card" style="border-color: var(--extra)"><h3><span id="k-mix-extra">0</span></h3><small>Volume Extras</small></div>
         </div>
 
-        <div class="grid-top" style="grid-template-columns: 1fr 2fr;">
+        <div id="perf-grid-wrap" class="grid-top" style="grid-template-columns: 1fr 2fr;">
             <div class="card" style="height:420px; border-top-color:#e67e22; display:flex; flex-direction:column;">
                 <!-- Header com toggle -->
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-shrink:0;flex-wrap:wrap;gap:4px;">
@@ -1027,7 +1027,7 @@
                 </div>
             </div>
 
-            <div class="card" style="height:420px; border-top-color:var(--extra);">
+            <div id="assid-card" class="card" style="height:420px; border-top-color:var(--extra);">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
                     <h3 style="margin:0; font-size:13px;">📈 Visão Detalhada de Assiduidade: Top 5 e Seleção</h3>
                     <div style="display:flex; gap:6px;">
@@ -3409,23 +3409,46 @@ function limparFiltroFiscal() {
         dados.forEach(d => {
             const fis = d.fiscal_responsavel || 'NAO IDENTIFICADO';
             if (!fiscalMap[fis]) fiscalMap[fis] = {
-                total: 0, concl: 0, justif: 0, gap: 0,
-                origemApp: 0, origemRastr: 0, origemManual: 0, motivoMap: {}
+                total: 0, concl: 0, manual: 0, justif: 0, gap: 0,
+                origemApp: 0, origemRastr: 0, origemManual: 0,
+                motivoMapManual: {}, motivoMapJustif: {}, motivoMapGap: {}
             };
             const f = fiscalMap[fis];
             f.total++;
-            const isOk = norm(d.status).includes('CONCLUID') || norm(d.status).includes('ANDAMENTO');
-            const temObs = d.observacao && d.observacao.trim().length > 2;
+            const isOk      = norm(d.status).includes('CONCLUID') || norm(d.status).includes('ANDAMENTO');
+            const temObs    = d.observacao && d.observacao.trim().length > 2;
+            const isManualObs = temObs && /\[FISCAL MANUAL\]/i.test(d.observacao);
+            const isJustif  = temObs && /\[NÃO EXECUTADA/i.test(d.observacao);
+
             if (isOk) {
                 f.concl++;
-            } else if (temObs) {
+            } else if (isManualObs) {
+                // Rota executada via lançamento manual do fiscal
+                f.manual++;
+                const p = _parseTipoObservacao(d.observacao);
+                const chave = p.tipo + '||' + p.motivo;
+                if (!f.motivoMapManual[chave]) f.motivoMapManual[chave] = { ...p, itens: [] };
+                f.motivoMapManual[chave].itens.push(d);
+            } else if (isJustif) {
+                // Rota não executada COM justificativa
                 f.justif++;
                 const p = _parseTipoObservacao(d.observacao);
                 const chave = p.tipo + '||' + p.motivo;
-                if (!f.motivoMap[chave]) f.motivoMap[chave] = { ...p, itens: [] };
-                f.motivoMap[chave].itens.push(d);
+                if (!f.motivoMapJustif[chave]) f.motivoMapJustif[chave] = { ...p, itens: [] };
+                f.motivoMapJustif[chave].itens.push(d);
+            } else if (temObs) {
+                // Tem obs mas não se enquadra nos padrões acima — justif genérica
+                f.justif++;
+                const p = _parseTipoObservacao(d.observacao);
+                const chave = p.tipo + '||' + p.motivo;
+                if (!f.motivoMapJustif[chave]) f.motivoMapJustif[chave] = { ...p, itens: [] };
+                f.motivoMapJustif[chave].itens.push(d);
             } else {
+                // Sem cobertura alguma — gargalo real
                 f.gap++;
+                const chave = 'SEM REGISTRO||';
+                if (!f.motivoMapGap[chave]) f.motivoMapGap[chave] = { tipo: 'SEM REGISTRO', motivo: '', icone: '⛔', cls: 'outro', itens: [] };
+                f.motivoMapGap[chave].itens.push(d);
             }
             const ori = norm(d.origem || '');
             if (ori.includes('APP') || ori.includes('MOTORISTA')) f.origemApp++;
@@ -3433,12 +3456,12 @@ function limparFiltroFiscal() {
             else f.origemManual++;
         });
         const fiscais = Object.entries(fiscalMap).sort((a, b) => {
-            const cobA = (a[1].concl + a[1].justif) / (a[1].total || 1);
-            const cobB = (b[1].concl + b[1].justif) / (b[1].total || 1);
-            return cobA - cobB;
+            const cobA = (a[1].concl + a[1].manual + a[1].justif) / (a[1].total || 1);
+            const cobB = (b[1].concl + b[1].manual + b[1].justif) / (b[1].total || 1);
+            return cobA - cobB; // piores primeiro
         });
         const totGlobal = fiscais.reduce((s, [, f]) => s + f.total, 0);
-        const cobGlobal = fiscais.reduce((s, [, f]) => s + f.concl + f.justif, 0);
+        const cobGlobal = fiscais.reduce((s, [, f]) => s + f.concl + f.manual + f.justif, 0);
         if (badge) {
             const pct = totGlobal > 0 ? ((cobGlobal / totGlobal) * 100).toFixed(0) : 0;
             badge.textContent = `📊 Cobertura geral: ${pct}%`;
@@ -3453,11 +3476,13 @@ function limparFiltroFiscal() {
         let html = '';
         fiscais.forEach(([nome, f], idx) => {
             const pConcl  = f.total > 0 ? (f.concl  / f.total) * 100 : 0;
+            const pManual = f.total > 0 ? (f.manual / f.total) * 100 : 0;
             const pJustif = f.total > 0 ? (f.justif / f.total) * 100 : 0;
             const pGap    = f.total > 0 ? (f.gap    / f.total) * 100 : 0;
-            const pCob    = pConcl + pJustif;
+            const pCob    = pConcl + pManual + pJustif;
             const cobCor  = pCob >= 90 ? '#2ecc71' : pCob >= 70 ? '#f39c12' : '#e74c3c';
             const fId = `perf-f-${idx}`;
+
             html += `<div>
                 <div class="perf-fiscal-row" onclick="perfToggle('${fId}')">
                     <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -3469,12 +3494,14 @@ function limparFiltroFiscal() {
                     </div>
                     <div class="perf-bar">
                         <div class="perf-bar-concl"  style="width:${pConcl}%;"></div>
+                        <div style="background:#9b59b6;height:100%;width:${pManual}%;transition:width .4s;"></div>
                         <div class="perf-bar-justif" style="width:${pJustif}%;"></div>
                         <div class="perf-bar-gap"    style="width:${pGap}%;"></div>
                     </div>
                     <div class="perf-fiscal-stats">
                         <span class="perf-stat perf-stat-total">📋 ${f.total}</span>
                         <span class="perf-stat perf-stat-concl">✅ ${f.concl}</span>
+                        ${f.manual > 0 ? `<span class="perf-stat" style="color:#9b59b6;">✏️ ${f.manual}</span>` : ''}
                         ${f.justif > 0 ? `<span class="perf-stat perf-stat-justif">📝 ${f.justif}</span>` : ''}
                         ${f.gap > 0    ? `<span class="perf-stat perf-stat-gap">⛔ ${f.gap} s/cob.</span>` : ''}
                     </div>
@@ -3485,40 +3512,52 @@ function limparFiltroFiscal() {
                         <span class="perf-origem-item">🛰️ Rastr.: <b>${f.origemRastr}</b></span>
                         <span class="perf-origem-item">✏️ Manual: <b>${f.origemManual}</b></span>
                     </div>`;
-            const motivos = Object.entries(f.motivoMap).sort((a, b) => b[1].itens.length - a[1].itens.length);
-            if (motivos.length > 0) {
+
+            // Helper para renderizar seção de motivos
+            const renderSecao = (mapa, secTitulo, secCor, secId) => {
+                const motivos = Object.entries(mapa).sort((a, b) => b[1].itens.length - a[1].itens.length);
+                if (!motivos.length) return;
+                html += `<div style="padding:4px 10px 2px 22px;font-size:9px;font-weight:bold;color:${secCor};letter-spacing:.4px;background:rgba(0,0,0,.15);border-bottom:1px solid rgba(255,255,255,.04);">${secTitulo}</div>`;
                 motivos.forEach(([chave, m], mIdx) => {
-                    const mId = `${fId}-m${mIdx}`;
-                    const clsCor = m.cls === 'manual' ? '#9b59b6' : m.cls === 'nao-exec' ? '#e74c3c' : 'var(--slate)';
+                    const mId = `${fId}-${secId}-m${mIdx}`;
                     const pMotivo = f.total > 0 ? ((m.itens.length / f.total) * 100).toFixed(0) : 0;
                     html += `<div class="perf-motivo-row" onclick="perfToggle('${mId}')">
-                        <div style="display:flex;align-items:center;gap:6px;min-width:0;">
+                        <div style="display:flex;align-items:center;gap:6px;min-width:0;flex:1;">
                             <span id="${mId}-arrow" style="font-size:7px;color:var(--slate);transition:transform .2s;display:inline-block;flex-shrink:0;">&#9654;</span>
-                            <span class="perf-motivo-tag" style="color:${clsCor};">${m.icone} ${m.tipo}</span>
+                            <span class="perf-motivo-tag" style="color:${secCor};white-space:nowrap;">${m.icone} ${m.tipo}</span>
                             ${m.motivo && m.motivo !== 'Lançamento manual pelo fiscal'
-                                ? `<span style="font-size:9px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;" title="${m.motivo}">${m.motivo}</span>`
+                                ? `<span style="font-size:9px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${m.motivo}">${m.motivo}</span>`
                                 : ''}
                         </div>
-                        <span class="perf-motivo-count">${m.itens.length}x <span style="opacity:.65;font-size:8px;">${pMotivo}%</span></span>
+                        <span class="perf-motivo-count" style="flex-shrink:0;">${m.itens.length}× <span style="opacity:.65;font-size:8px;">${pMotivo}%</span></span>
                     </div>
                     <div id="${mId}" style="display:none;">`;
                     m.itens.forEach(o => {
-                        const rota = (o.rota || '').substring(0, 40);
-                        html += `<div class="perf-item-row">
-                            <span style="display:inline-block;background:var(--primary);color:#fff;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:bold;margin-right:5px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;" title="${o.rota||''}">${rota}</span>
-                            <span style="color:var(--info);">${o.motorista || ''}</span>
-                            ${o.data ? `<span style="font-size:8px;margin-left:6px;">📅 ${o.data}</span>` : ''}
+                        const rota = (o.rota || '').substring(0, 55);
+                        html += `<div class="perf-item-row" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                            <span style="display:inline-block;background:var(--primary);color:#fff;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:bold;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${o.rota||''}">${rota}</span>
+                            <span style="color:var(--info);font-size:10px;">${o.motorista || ''}</span>
+                            ${o.data   ? `<span style="font-size:8px;color:var(--slate);">📅 ${o.data}</span>`    : ''}
+                            ${o.cidade ? `<span style="font-size:8px;color:var(--slate);">🏙️ ${o.cidade}</span>` : ''}
+                            ${o.veiculo && o.veiculo.length > 2 ? `<span style="font-size:8px;color:var(--slate);">🚌 ${o.veiculo}</span>` : ''}
                         </div>`;
                     });
                     html += `</div>`;
                 });
-            } else if (f.gap === 0) {
-                html += `<div style="padding:6px 22px;font-size:10px;color:#2ecc71;">✔ Todas as rotas cobertas.</div>`;
-            }
+            };
+
+            renderSecao(f.motivoMapManual, '✏️ LANÇAMENTO MANUAL PELO FISCAL', '#9b59b6', 'man');
+            renderSecao(f.motivoMapJustif, '📝 NÃO EXECUTADAS JUSTIFICADAS',   '#f39c12', 'jus');
+            renderSecao(f.motivoMapGap,    '⛔ SEM COBERTURA — GARGALO REAL',  '#e74c3c', 'gap');
+
+            const todasCob = f.gap === 0 && f.manual === 0 && f.justif === 0;
+            if (todasCob) html += `<div style="padding:6px 22px;font-size:10px;color:#2ecc71;">✔ Todas as rotas cobertas.</div>`;
+
             html += `</div></div>`;
         });
-        html += `<div style="display:flex;gap:10px;padding:8px 10px;border-top:1px solid var(--border);flex-wrap:wrap;">
+        html += `<div style="display:flex;gap:12px;padding:8px 10px;border-top:1px solid var(--border);flex-wrap:wrap;flex-shrink:0;">
             <span style="font-size:9px;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:6px;background:#2ecc71;border-radius:2px;display:inline-block;"></span>✅ Executada</span>
+            <span style="font-size:9px;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:6px;background:#9b59b6;border-radius:2px;display:inline-block;"></span>✏️ Fiscal Manual</span>
             <span style="font-size:9px;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:6px;background:#f39c12;border-radius:2px;display:inline-block;"></span>📝 Justificada</span>
             <span style="font-size:9px;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:6px;background:#e74c3c;border-radius:2px;display:inline-block;"></span>⛔ Gargalo</span>
         </div>`;
@@ -3538,24 +3577,36 @@ function limparFiltroFiscal() {
 
 
     function setPerfVista(vista) {
-        const vRank = document.getElementById('perf-vista-ranking');
-        const vCob  = document.getElementById('perf-vista-cobertura');
-        const bRank = document.getElementById('perf-toggle-rank');
-        const bCob  = document.getElementById('perf-toggle-cob');
-        const badge = document.getElementById('perf-cobertura-badge');
+        const vRank    = document.getElementById('perf-vista-ranking');
+        const vCob     = document.getElementById('perf-vista-cobertura');
+        const bRank    = document.getElementById('perf-toggle-rank');
+        const bCob     = document.getElementById('perf-toggle-cob');
+        const badge    = document.getElementById('perf-cobertura-badge');
+        const grid     = document.getElementById('perf-grid-wrap');
+        const assidCard = document.getElementById('assid-card');
+        const perfCard  = grid ? grid.children[0] : null;
         if (!vRank) return;
+
         if (vista === 'ranking') {
+            // volta ao layout compacto 1fr 2fr
             vRank.style.display = 'flex';
             vCob.style.display  = 'none';
             bRank.style.background = 'var(--info)';   bRank.style.color = '#fff';
             bCob.style.background  = 'transparent';    bCob.style.color  = 'var(--slate)';
             if (badge) badge.style.display = 'none';
+            if (grid) grid.style.gridTemplateColumns = '1fr 2fr';
+            if (assidCard) assidCard.style.display = '';
+            if (perfCard) { perfCard.style.gridColumn = ''; perfCard.style.height = '420px'; }
         } else {
+            // expande para full-width
             vRank.style.display = 'none';
             vCob.style.display  = 'flex';
             bRank.style.background = 'transparent';    bRank.style.color = 'var(--slate)';
             bCob.style.background  = 'var(--info)';    bCob.style.color  = '#fff';
             if (badge) badge.style.display = 'inline-block';
+            if (grid) grid.style.gridTemplateColumns = '1fr';
+            if (assidCard) assidCard.style.display = 'none';
+            if (perfCard) { perfCard.style.gridColumn = '1 / -1'; perfCard.style.height = '520px'; }
         }
         window._perfVista = vista;
     }
