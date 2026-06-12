@@ -305,7 +305,7 @@
             transition: background .15s;
         }
         .perf-fiscal-row:hover { background: rgba(255,255,255,.03); }
-        .perf-fiscal-name { font-size:11px; font-weight:bold; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
+        .perf-fiscal-name { font-size:11px; font-weight:bold; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; flex:1; min-width:0; }
         .perf-fiscal-stats { display:flex; gap:8px; align-items:center; margin-top:4px; flex-wrap:wrap; }
         .perf-stat { font-size:9px; }
         .perf-stat-concl { color:#2ecc71; }
@@ -3526,7 +3526,7 @@ function limparFiltroFiscal() {
                             <span id="${mId}-arrow" style="font-size:7px;color:var(--slate);transition:transform .2s;display:inline-block;flex-shrink:0;">&#9654;</span>
                             <span class="perf-motivo-tag" style="color:${secCor};white-space:nowrap;">${m.icone} ${m.tipo}</span>
                             ${m.motivo && m.motivo !== 'Lançamento manual pelo fiscal'
-                                ? `<span style="font-size:9px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${m.motivo}">${m.motivo}</span>`
+                                ? `<span style="font-size:9px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;" title="${m.motivo}">${m.motivo}</span>`
                                 : ''}
                         </div>
                         <span class="perf-motivo-count" style="flex-shrink:0;">${m.itens.length}× <span style="opacity:.65;font-size:8px;">${pMotivo}%</span></span>
@@ -3535,7 +3535,7 @@ function limparFiltroFiscal() {
                     m.itens.forEach(o => {
                         const rota = (o.rota || '').substring(0, 55);
                         html += `<div class="perf-item-row" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                            <span style="display:inline-block;background:var(--primary);color:#fff;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:bold;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${o.rota||''}">${rota}</span>
+                            <span style="display:inline-block;background:var(--primary);color:#fff;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:bold;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${o.rota||''}">${rota}</span>
                             <span style="color:var(--info);font-size:10px;">${o.motorista || ''}</span>
                             ${o.data   ? `<span style="font-size:8px;color:var(--slate);">📅 ${o.data}</span>`    : ''}
                             ${o.cidade ? `<span style="font-size:8px;color:var(--slate);">🏙️ ${o.cidade}</span>` : ''}
@@ -3577,36 +3577,24 @@ function limparFiltroFiscal() {
 
 
     function setPerfVista(vista) {
-        const vRank    = document.getElementById('perf-vista-ranking');
-        const vCob     = document.getElementById('perf-vista-cobertura');
-        const bRank    = document.getElementById('perf-toggle-rank');
-        const bCob     = document.getElementById('perf-toggle-cob');
-        const badge    = document.getElementById('perf-cobertura-badge');
-        const grid     = document.getElementById('perf-grid-wrap');
-        const assidCard = document.getElementById('assid-card');
-        const perfCard  = grid ? grid.children[0] : null;
+        const vRank = document.getElementById('perf-vista-ranking');
+        const vCob  = document.getElementById('perf-vista-cobertura');
+        const bRank = document.getElementById('perf-toggle-rank');
+        const bCob  = document.getElementById('perf-toggle-cob');
+        const badge = document.getElementById('perf-cobertura-badge');
         if (!vRank) return;
-
         if (vista === 'ranking') {
-            // volta ao layout compacto 1fr 2fr
             vRank.style.display = 'flex';
             vCob.style.display  = 'none';
-            bRank.style.background = 'var(--info)';   bRank.style.color = '#fff';
-            bCob.style.background  = 'transparent';    bCob.style.color  = 'var(--slate)';
+            bRank.style.background = 'var(--info)';  bRank.style.color = '#fff';
+            bCob.style.background  = 'transparent';  bCob.style.color  = 'var(--slate)';
             if (badge) badge.style.display = 'none';
-            if (grid) grid.style.gridTemplateColumns = '1fr 2fr';
-            if (assidCard) assidCard.style.display = '';
-            if (perfCard) { perfCard.style.gridColumn = ''; perfCard.style.height = '420px'; }
         } else {
-            // expande para full-width
             vRank.style.display = 'none';
             vCob.style.display  = 'flex';
-            bRank.style.background = 'transparent';    bRank.style.color = 'var(--slate)';
-            bCob.style.background  = 'var(--info)';    bCob.style.color  = '#fff';
+            bRank.style.background = 'transparent';  bRank.style.color = 'var(--slate)';
+            bCob.style.background  = 'var(--info)';  bCob.style.color  = '#fff';
             if (badge) badge.style.display = 'inline-block';
-            if (grid) grid.style.gridTemplateColumns = '1fr';
-            if (assidCard) assidCard.style.display = 'none';
-            if (perfCard) { perfCard.style.gridColumn = '1 / -1'; perfCard.style.height = '520px'; }
         }
         window._perfVista = vista;
     }
