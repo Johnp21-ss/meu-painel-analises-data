@@ -1196,7 +1196,7 @@
             <div style="font-size:18px; font-weight:bold; color:#fff;">🔐 Gestão de Acessos</div>
             <div style="font-size:10px; color:var(--slate); margin-top:3px;">Controle de permissões · Usuários · Níveis de acesso</div>
         </div>
-        <button onclick="adicionarNovoUsuario()" style="padding:8px 16px;background:var(--success);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer;">➕ Novo Usuário</button>
+        <button onclick="adicionarNovoUsuarioSheets()" style="padding:8px 16px;background:var(--success);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer;">➕ Novo Usuário</button>
     </div>
 
     <!-- Configuração de Permissões por Nível -->
@@ -1207,7 +1207,7 @@
             <table id="tbl-permissoes" style="table-layout:auto;min-width:700px;">
                 <thead>
                     <tr>
-                        <th>Nível</th>
+                        <th>Nível atual</th>
                         <th>Dados Escala</th>
                         <th>Assiduidade</th>
                         <th>Rotas Extras</th>
@@ -1227,14 +1227,14 @@
     <!-- Lista de Usuários -->
     <div class="card row-new" style="border-top-color:var(--success);">
         <h3 style="font-size:13px;">👥 Usuários Cadastrados</h3>
-        <div style="font-size:9px;color:var(--slate);margin-top:-8px;margin-bottom:12px;">Gerencie usuários, níveis de acesso e senhas.</div>
+        <div style="font-size:9px;color:var(--slate);margin-top:-8px;margin-bottom:12px;">Gerencie usuários, níveis de acesso e senhas. Alterações salvas direto no Google Sheets.</div>
         <div style="overflow-x:auto; max-height:400px; overflow-y:auto;">
             <table id="tbl-usuarios" style="table-layout:auto;min-width:800px;">
                 <thead>
                     <tr>
-                        <th>Usuário</th>
+                        <th>Login (acesso)</th>
                         <th>Nome Completo</th>
-                        <th>Nível</th>
+                        <th>Nível atual</th>
                         <th>Senha</th>
                         <th>Status</th>
                         <th>Ações</th>
@@ -5597,88 +5597,168 @@ function renderizarTabelaPermissoes() {
 }
 
 // Renderiza tabela de usuários
-function renderizarTabelaUsuarios() {
-    const usuarios = carregarUsuarios();
+// ── Cache local dos usuários vindos do Sheets ──────────────────────
+let _usuariosSheets = null;
+
+async function carregarUsuariosSheets(forcar = false) {
+    if (_usuariosSheets && !forcar) return _usuariosSheets;
+    try {
+        const resp = await fetch(URL_API_SCRIPT + '?acao=listarUsuarios');
+        const data = await resp.json();
+        _usuariosSheets = data.usuarios || [];
+    } catch(e) {
+        // fallback para ACESSO_PORTAL se Sheets falhar
+        _usuariosSheets = Object.entries(ACESSO_PORTAL).map(([u, d]) => ({
+            usuario: u, senha: d.senha, nivel: d.nivel, nome: d.nome, ativo: 'true'
+        }));
+    }
+    return _usuariosSheets;
+}
+
+async function _chamarGerenciar(params) {
+    const url = URL_API_SCRIPT + '?acao=gerenciarUsuario&' + new URLSearchParams(params).toString();
+    const resp = await fetch(url);
+    return await resp.json();
+}
+
+async function renderizarTabelaUsuarios() {
     const tbody = document.getElementById('tbody-usuarios');
     if (!tbody) return;
-    
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);padding:16px;">⏳ Carregando...</td></tr>';
+
+    const usuarios = await carregarUsuariosSheets(true);
     const usuarioAtual = sessionStorage.getItem("usuario");
-    
-    tbody.innerHTML = Object.entries(usuarios).map(([username, dados]) => {
-        const corNivel = dados.nivel === 'ADMIN' ? '#e74c3c' : dados.nivel === 'GESTOR' ? '#f39c12' : '#3498db';
-        const isOriginal = ACESSO_PORTAL[username] ? true : false;
-        const acesso = getDadosAcesso(username);
-        const isOnline = acesso.online && username !== usuarioAtual;
-        const statusIcon = isOnline ? '🟢' : '⚫';
+
+    tbody.innerHTML = usuarios.map(u => {
+        const corNivel = u.nivel === 'ADMIN' ? '#e74c3c' : u.nivel === 'GESTOR' ? '#f39c12' :
+                         u.nivel === 'MONITOR' ? '#9b59b6' : '#3498db';
+        const ativo = u.ativo !== 'false';
+        const acesso = getDadosAcesso(u.usuario);
+        const isOnline = acesso.online && u.usuario !== usuarioAtual;
+        const isProprio = u.usuario === usuarioAtual;
         const ultimoAcesso = acesso.ultimoAcesso || 'Nunca';
-        const isProprio = username === usuarioAtual;
-        
-        return `<tr>
-            <td><b>${username}</b>${isOriginal ? ' <span style="font-size:8px;color:var(--success);">(original)</span>' : ''}</td>
-            <td><input type="text" value="${dados.nome || ''}" id="nome-${username}"
-                style="background:var(--bg);color:white;border:1px solid var(--border);padding:4px 8px;border-radius:4px;width:140px;font-size:10px;" placeholder="Nome completo"></td>
-            <td><span class="cpl-score-pill" style="background:${corNivel}22; color:${corNivel}; border:1px solid ${corNivel}44;">${dados.nivel}</span></td>
-            <td><input type="text" value="${dados.senha || ''}" id="senha-${username}" 
-                style="background:var(--bg);color:white;border:1px solid var(--border);padding:4px 8px;border-radius:4px;width:100px;font-size:10px;"></td>
+        const uid = u.usuario.replace(/[^a-zA-Z0-9]/g,'_');
+
+        return `<tr style="opacity:${ativo ? 1 : 0.5};">
             <td>
-                <span style="font-size:10px;">${statusIcon} ${isOnline ? 'Online' : (isProprio ? 'Você' : 'Offline')}</span>
-                <br><span style="font-size:8px;color:var(--slate);">Último: ${ultimoAcesso.substring(0, 16)}</span>
+                <input type="text" value="${u.usuario}" id="user-login-${uid}"
+                    style="background:var(--bg);color:#fff;border:1px solid var(--border);padding:4px 8px;border-radius:4px;width:120px;font-size:10px;font-weight:bold;"
+                    ${isProprio ? 'title="Seu próprio usuário"' : ''}>
+            </td>
+            <td><input type="text" value="${u.nome || ''}" id="user-nome-${uid}"
+                style="background:var(--bg);color:white;border:1px solid var(--border);padding:4px 8px;border-radius:4px;width:130px;font-size:10px;" placeholder="Nome completo"></td>
+            <td><span class="cpl-score-pill" style="background:${corNivel}22;color:${corNivel};border:1px solid ${corNivel}44;">${u.nivel}</span></td>
+            <td><input type="text" value="${u.senha || ''}" id="user-senha-${uid}"
+                style="background:var(--bg);color:white;border:1px solid var(--border);padding:4px 8px;border-radius:4px;width:95px;font-size:10px;"></td>
+            <td>
+                <span style="font-size:10px;">${isOnline ? '🟢 Online' : (isProprio ? '🟡 Você' : '⚫ Offline')}</span>
+                <br><span style="font-size:8px;color:var(--slate);">Último: ${ultimoAcesso.substring(0,16)}</span>
             </td>
             <td style="white-space:nowrap;">
-                <select id="nivel-${username}" style="width:auto;min-width:90px;font-size:10px;padding:3px;">
-                    <option value="FISCAL" ${dados.nivel === 'FISCAL' ? 'selected' : ''}>FISCAL</option>
-                    <option value="MONITOR" ${dados.nivel === 'MONITOR' ? 'selected' : ''}>MONITOR</option>
-                    <option value="GESTOR" ${dados.nivel === 'GESTOR' ? 'selected' : ''}>GESTOR</option>
-                    <option value="ADMIN" ${dados.nivel === 'ADMIN' ? 'selected' : ''}>ADMIN</option>
+                <select id="user-nivel-${uid}" style="width:auto;min-width:90px;font-size:10px;padding:3px;">
+                    <option value="FISCAL"  ${u.nivel==='FISCAL'  ? 'selected':''}>FISCAL</option>
+                    <option value="MONITOR" ${u.nivel==='MONITOR' ? 'selected':''}>MONITOR</option>
+                    <option value="GESTOR"  ${u.nivel==='GESTOR'  ? 'selected':''}>GESTOR</option>
+                    <option value="ADMIN"   ${u.nivel==='ADMIN'   ? 'selected':''}>ADMIN</option>
                 </select>
-                <button onclick="salvarAlteracoesUsuario('${username}')" 
-                    style="margin-left:4px;padding:4px 10px;background:var(--info);color:#fff;border:none;border-radius:4px;font-size:9px;cursor:pointer;">💾</button>
-                ${isOnline ? `<button onclick="forcarLogout('${username}')" class="btn-deslogar">🚫 Forçar Saída</button>` : ''}
-                ${!isOriginal ? `<button onclick="excluirUsuario('${username}')" 
-                    style="margin-left:2px;padding:4px 8px;background:var(--danger);color:#fff;border:none;border-radius:4px;font-size:9px;cursor:pointer;">🗑️</button>` : ''}
+                <button onclick="salvarUsuarioSheets('${u.usuario}','${uid}')"
+                    style="margin-left:4px;padding:4px 10px;background:var(--info);color:#fff;border:none;border-radius:4px;font-size:9px;cursor:pointer;" title="Salvar">💾</button>
+                ${isOnline ? `<button onclick="forcarLogout('${u.usuario}')" class="btn-deslogar">🚫</button>` : ''}
+                <button onclick="toggleAtivoUsuario('${u.usuario}','${!ativo}')"
+                    style="margin-left:2px;padding:4px 8px;background:${ativo?'#f39c12':'#2ecc71'};color:#fff;border:none;border-radius:4px;font-size:9px;cursor:pointer;"
+                    title="${ativo ? 'Desativar acesso' : 'Reativar acesso'}">${ativo ? '🔒' : '🔓'}</button>
+                ${!isProprio ? `<button onclick="excluirUsuarioSheets('${u.usuario}')"
+                    style="margin-left:2px;padding:4px 8px;background:var(--danger);color:#fff;border:none;border-radius:4px;font-size:9px;cursor:pointer;" title="Excluir">🗑️</button>` : ''}
             </td>
         </tr>`;
-    }).join('');
+    }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--slate);padding:16px;">Nenhum usuário encontrado.</td></tr>';
 }
 
-// Salva alterações de um usuário
-function salvarAlteracoesUsuario(username) {
-    const novoNivel = document.getElementById(`nivel-${username}`).value;
-    const novaSenha = document.getElementById(`senha-${username}`).value;
-    const novoNome = (document.getElementById(`nome-${username}`)?.value || '').trim();
-    
-    if (!novaSenha || novaSenha.trim() === '') {
-        alert('⚠️ A senha não pode ficar em branco!');
-        return;
-    }
-    
-    const usuarios = carregarUsuarios();
-    
-    if (usuarios[username]) {
-        usuarios[username].nivel = novoNivel;
-        usuarios[username].senha = novaSenha.trim();
-        if (novoNome) usuarios[username].nome = novoNome;
-        salvarUsuariosExtras(usuarios);
-        alert(`✅ Usuário "${username}" atualizado com sucesso!`);
+async function salvarUsuarioSheets(usernameOriginal, uid) {
+    const novoLogin = document.getElementById(`user-login-${uid}`)?.value.trim();
+    const novoNome  = document.getElementById(`user-nome-${uid}`)?.value.trim();
+    const novaSenha = document.getElementById(`user-senha-${uid}`)?.value.trim();
+    const novoNivel = document.getElementById(`user-nivel-${uid}`)?.value;
+
+    if (!novaSenha) { alert('⚠️ A senha não pode ficar em branco!'); return; }
+    if (!novoLogin) { alert('⚠️ O usuário (login) não pode ficar em branco!'); return; }
+
+    const btn = document.querySelector(`button[onclick="salvarUsuarioSheets('${usernameOriginal}','${uid}')"]`);
+    if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+
+    const res = await _chamarGerenciar({
+        op: 'editar',
+        username_original: usernameOriginal,
+        usuario: novoLogin,
+        nome: novoNome,
+        senha: novaSenha,
+        nivel: novoNivel
+    });
+    if (btn) { btn.textContent = '💾'; btn.disabled = false; }
+    if (res.ok) {
+        _usuariosSheets = null;
+        alert(`✅ Usuário atualizado!
+
+Novo login: ${novoLogin}
+Nível: ${novoNivel}
+
+⚠️ O usuário precisará fazer login novamente se o nome de acesso foi alterado.`);
         renderizarTabelaUsuarios();
+    } else {
+        alert('❌ Erro: ' + res.msg);
     }
 }
 
-// Exclui um usuário extra
-function excluirUsuario(username) {
-    if (ACESSO_PORTAL[username]) {
-        alert('⚠️ Não é possível excluir usuários originais do sistema!');
-        return;
-    }
-    
-    if (confirm(`Tem certeza que deseja excluir o usuário "${username}"?`)) {
-        const usuarios = carregarUsuarios();
-        delete usuarios[username];
-        salvarUsuariosExtras(usuarios);
-        alert(`✅ Usuário "${username}" excluído com sucesso!`);
+async function toggleAtivoUsuario(username, novoAtivo) {
+    const acao = novoAtivo === 'true' ? 'reativar' : 'desativar';
+    if (!confirm(`Tem certeza que deseja ${acao} o acesso de "${username}"?`)) return;
+    const res = await _chamarGerenciar({ op: 'editar', username_original: username, ativo: novoAtivo });
+    if (res.ok) {
+        _usuariosSheets = null;
         renderizarTabelaUsuarios();
+    } else {
+        alert('❌ Erro: ' + res.msg);
     }
 }
+
+async function excluirUsuarioSheets(username) {
+    if (!confirm(`⚠️ Excluir permanentemente o usuário "${username}"?
+
+Esta ação não pode ser desfeita.`)) return;
+    const res = await _chamarGerenciar({ op: 'excluir', usuario: username });
+    if (res.ok) {
+        _usuariosSheets = null;
+        alert(`✅ Usuário "${username}" excluído.`);
+        renderizarTabelaUsuarios();
+    } else {
+        alert('❌ Erro: ' + res.msg);
+    }
+}
+
+async function adicionarNovoUsuarioSheets() {
+    const username = prompt('👤 Login (nome de acesso):');
+    if (!username?.trim()) return;
+    const nome   = prompt('📛 Nome completo:') || username;
+    const senha  = prompt('🔑 Senha:');
+    if (!senha?.trim()) { alert('⚠️ Senha obrigatória.'); return; }
+    const nivel  = prompt('🎖️ Nível (FISCAL / MONITOR / GESTOR / ADMIN):')?.toUpperCase() || 'FISCAL';
+    if (!['FISCAL','MONITOR','GESTOR','ADMIN'].includes(nivel)) {
+        alert('⚠️ Nível inválido.'); return;
+    }
+    const res = await _chamarGerenciar({ op: 'criar', usuario: username.trim(), nome, senha: senha.trim(), nivel });
+    if (res.ok) {
+        _usuariosSheets = null;
+        alert(`✅ Usuário "${username}" criado com sucesso!`);
+        renderizarTabelaUsuarios();
+    } else {
+        alert('❌ Erro: ' + res.msg);
+    }
+}
+
+// Mantém compatibilidade com chamadas antigas
+function salvarAlteracoesUsuario(username) { renderizarTabelaUsuarios(); }
+function excluirUsuario(username) { excluirUsuarioSheets(username); }
+function adicionarNovoUsuario() { adicionarNovoUsuarioSheets(); }
 
 // Adiciona novo usuário
 function adicionarNovoUsuario() {
