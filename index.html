@@ -3781,16 +3781,17 @@ function limparFiltroFiscal() {
     //  ANÁLISE DE TECNOLOGIA
     // ═══════════════════════════════════════════════════════════════════════════
     function renderTecnologiaUnificada(dados) {
-        const tree = {};
-        const treeTotal = {};
+    const tree = {};
+    const treeTotal = {};
 
-        dados.forEach(d => {
-            const fis = d.fiscal_responsavel || "NÃO IDENTIFICADO";
-            const gre = d.gre || "S/ GRE";
-            const cid = d.cidade || "S/ CIDADE";
-            const mot = d.motorista || "S/ NOME";
-            const isOk = norm(d.status).includes("CONCLUID") || norm(d.status).includes("ANDAMENTO");
-            const origem = norm(d.origem).includes("APP") ? "APP" : "LINK";
+    dados.forEach(d => {
+        const fis = d.fiscal_responsavel || "NÃO IDENTIFICADO";
+        const gre = d.gre || "S/ GRE";
+        const cid = d.cidade || "S/ CIDADE";
+        const mot = d.motorista || "S/ NOME";
+        // Conta todos os motoristas escalados independente do status
+        const isOk = true;
+        const origem = norm(d.origem).includes("APP") ? "APP" : "LINK";
 
             if (!treeTotal[fis]) treeTotal[fis] = { gres: {} };
             if (!treeTotal[fis].gres[gre]) treeTotal[fis].gres[gre] = { cidades: {} };
