@@ -298,6 +298,150 @@
 
         .filter-bar select { width: auto; min-width: 150px; }
 
+        /* ── Performance Campo accordion ── */
+        .perf-fiscal-row {
+            padding: 8px 10px; cursor:pointer;
+            border-bottom: 1px solid var(--border);
+            transition: background .15s;
+        }
+        .perf-fiscal-row:hover { background: rgba(255,255,255,.03); }
+        .perf-fiscal-name { font-size:11px; font-weight:bold; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; flex:1; min-width:0; }
+        .perf-fiscal-stats { display:flex; gap:8px; align-items:center; margin-top:4px; flex-wrap:wrap; }
+        .perf-stat { font-size:9px; }
+        .perf-stat-concl { color:#2ecc71; }
+        .perf-stat-justif { color:#f39c12; }
+        .perf-stat-gap { color:#e74c3c; font-weight:bold; }
+        .perf-stat-total { color:var(--slate); }
+        .perf-bar { height:5px; border-radius:3px; overflow:hidden; display:flex; margin-top:5px; background:rgba(255,255,255,.08); }
+        .perf-bar-concl { background:#2ecc71; height:100%; transition:width .4s; }
+        .perf-bar-justif { background:#f39c12; height:100%; transition:width .4s; }
+        .perf-bar-gap { background:#e74c3c; height:100%; transition:width .4s; }
+        .perf-cob-pct { font-size:9px; font-weight:bold; }
+        .perf-motivo-row {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:5px 10px 5px 22px; cursor:pointer;
+            background:rgba(0,0,0,.18); border-bottom:1px solid rgba(255,255,255,.04);
+            transition:background .15s; gap:6px;
+        }
+        .perf-motivo-row:hover { background:rgba(52,152,219,.07); }
+        .perf-motivo-tag { font-size:10px; font-weight:bold; }
+        .perf-motivo-count { font-size:9px; background:rgba(255,255,255,.1); border-radius:8px; padding:1px 7px; color:#fff; white-space:nowrap; }
+        .perf-item-row {
+            padding:4px 10px 4px 36px; font-size:10px;
+            color:var(--slate); background:rgba(0,0,0,.25);
+            border-bottom:1px solid rgba(255,255,255,.03);
+        }
+        .perf-origem-row {
+            padding:5px 10px 5px 22px; font-size:9px;
+            background:rgba(52,152,219,.05); border-bottom:1px solid rgba(52,152,219,.1);
+            display:flex; gap:12px; flex-wrap:wrap;
+        }
+        .perf-origem-item { color:var(--slate); }
+        .perf-origem-item b { color:var(--info); }
+
+        /* ── Resumo Ocorrúncias Compliance ── */
+        .cpl-obs-fiscal-row {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:8px 12px; background:rgba(230,126,34,.08); border-bottom:1px solid var(--border);
+            cursor:pointer; transition:background .15s; gap:8px; flex-wrap:wrap;
+        }
+        .cpl-obs-fiscal-row:hover { background:rgba(230,126,34,.16); }
+        .cpl-obs-fiscal-name { font-weight:bold; font-size:11px; color:#fff; }
+        .cpl-obs-fiscal-meta { display:flex; gap:10px; align-items:center; }
+        .cpl-obs-pill {
+            padding:2px 8px; border-radius:10px; font-size:9px; font-weight:bold;
+        }
+        .cpl-obs-pill-total { background:rgba(52,152,219,.25); color:#3498db; }
+        .cpl-obs-pill-manual { background:rgba(155,89,182,.25); color:#9b59b6; }
+        .cpl-obs-pill-naoexec { background:rgba(231,76,60,.25); color:#e74c3c; }
+        .cpl-obs-pill-outro { background:rgba(149,165,166,.15); color:var(--slate); }
+
+        .cpl-obs-motivo-row {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:6px 12px 6px 28px; background:rgba(0,0,0,.18);
+            cursor:pointer; transition:background .15s; gap:8px;
+            border-bottom:1px solid rgba(255,255,255,.04);
+        }
+        .cpl-obs-motivo-row:hover { background:rgba(52,152,219,.08); }
+        .cpl-obs-motivo-tag {
+            display:inline-flex; align-items:center; gap:5px;
+            font-size:10px; font-weight:bold;
+        }
+        .cpl-obs-motivo-tag.manual { color:#9b59b6; }
+        .cpl-obs-motivo-tag.nao-exec { color:#e67e22; }
+        .cpl-obs-motivo-tag.outro { color:var(--slate); }
+        .cpl-obs-motivo-count {
+            background:rgba(255,255,255,.1); border-radius:10px;
+            padding:1px 7px; font-size:9px; font-weight:bold; color:#fff; white-space:nowrap;
+        }
+
+        .cpl-obs-item-row {
+            padding:5px 12px 5px 44px;
+            border-bottom:1px solid rgba(255,255,255,.03);
+            font-size:10px; color:var(--slate); background:rgba(0,0,0,.25);
+        }
+        .cpl-obs-item-rota {
+            display:inline-block; background:var(--primary); color:#fff;
+            padding:1px 6px; border-radius:3px; font-size:8px; font-weight:bold;
+            margin-right:6px; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:middle;
+        }
+        .cpl-obs-item-mot { color:var(--info); font-weight:bold; }
+        .cpl-obs-gre-separator {
+            padding:4px 28px; background:rgba(52,152,219,.06);
+            font-size:9px; font-weight:bold; color:var(--info);
+            border-bottom:1px solid rgba(52,152,219,.15); letter-spacing:.5px;
+        }
+
+        /* ── Filtro Fornecedor (dropdown multi-select) ── */
+        .forn-wrapper { position: relative; display: inline-block; }
+        .forn-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 12px; background: var(--card-bg);
+            border: 1px solid var(--border); border-radius: 8px;
+            color: var(--text); font-size: 11px; font-weight: bold;
+            cursor: pointer; white-space: nowrap; min-width: 170px;
+            transition: border-color .2s;
+        }
+        .forn-btn:hover { border-color: var(--info); }
+        .forn-btn .forn-arrow { margin-left: auto; font-size: 9px; transition: transform .2s; }
+        .forn-btn.open .forn-arrow { transform: rotate(180deg); }
+        .forn-dropdown {
+            display: none; position: absolute; top: calc(100% + 4px); left: 0;
+            min-width: 240px; background: #1a2030; border: 1px solid var(--border);
+            border-radius: 10px; z-index: 9999; padding: 6px 0;
+            box-shadow: 0 8px 24px rgba(0,0,0,.5);
+        }
+        .forn-dropdown.open { display: block; }
+        .forn-search {
+            width: calc(100% - 16px); margin: 6px 8px; padding: 6px 10px;
+            background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+            color: var(--text); font-size: 11px;
+        }
+        .forn-search:focus { outline: none; border-color: var(--info); }
+        .forn-items { max-height: 220px; overflow-y: auto; }
+        .forn-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 14px; cursor: pointer; font-size: 11px;
+            transition: background .15s;
+        }
+        .forn-item:hover { background: rgba(52,152,219,.15); }
+        .forn-item input[type=checkbox] { accent-color: var(--info); cursor: pointer; width: 13px; height: 13px; }
+        .forn-item.item-todos { border-bottom: 1px solid var(--border); margin-bottom: 4px; font-weight: bold; color: var(--info); }
+        .forn-badge {
+            display: inline-block; background: var(--info); color: #fff;
+            border-radius: 10px; padding: 0 6px; font-size: 9px; font-weight: bold;
+        }
+
+        /* ── Filtro Região (botões toggle) ── */
+        .regiao-btns { display: flex; gap: 4px; align-items: center; }
+        .regiao-btn {
+            padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
+            background: transparent; color: var(--slate); font-size: 11px; font-weight: bold;
+            cursor: pointer; transition: all .2s; white-space: nowrap;
+        }
+        .regiao-btn.active { background: var(--info); color: #fff; border-color: var(--info); box-shadow: 0 2px 8px rgba(52,152,219,.3); }
+        .regiao-label { font-size: 10px; color: var(--slate); font-weight: bold; text-transform: uppercase; letter-spacing: .5px; }
+
         /* ── Charts ── */
         .chart-container { height: 500px; width: 100%; position: relative; }
         .chart-container-sm { height: 250px; width: 100%; position: relative; }
@@ -815,6 +959,26 @@
             <select id="fGre" onchange="aoMudarGre()"><option value="TODOS">GRE: TODAS</option></select>
             <select id="fCidade" onchange="processarDados()"><option value="TODOS">CIDADE: TODAS</option></select>
             <select id="fFiscal" onchange="processarDados()"><option value="TODOS">FISCAL: TODOS</option></select>
+            <!-- Filtro Região -->
+            <div style="display:flex; align-items:center; gap:6px;">
+                <span class="regiao-label">REGIÃO:</span>
+                <div class="regiao-btns">
+                    <button class="regiao-btn active" id="rBtn-todas" onclick="setRegiao('TODAS')">Todas</button>
+                    <button class="regiao-btn" id="rBtn-interior" onclick="setRegiao('INTERIOR')">Interior</button>
+                    <button class="regiao-btn" id="rBtn-capital" onclick="setRegiao('CAPITAL')">Capital</button>
+                </div>
+            </div>
+            <!-- Filtro Fornecedor -->
+            <div class="forn-wrapper" id="fornWrapper">
+                <button class="forn-btn" id="fornBtn" onclick="toggleFornDropdown()">
+                    🏢 <span id="fornLabel">Todos os fornecedores</span>
+                    <span class="forn-arrow">▼</span>
+                </button>
+                <div class="forn-dropdown" id="fornDropdown">
+                    <input type="text" class="forn-search" id="fornSearch" placeholder="🔍 Buscar fornecedor..." oninput="filtrarItensFornecedor()">
+                    <div class="forn-items" id="fornItems"></div>
+                </div>
+            </div>
         </div>
 
         <div class="kpi-grid">
@@ -825,16 +989,45 @@
             <div class="kpi-card" style="border-color: var(--extra)"><h3><span id="k-mix-extra">0</span></h3><small>Volume Extras</small></div>
         </div>
 
-        <div class="grid-top" style="grid-template-columns: 1fr 2fr;">
-            <div class="card" style="height:420px;">
-                <h3>👤 Performance Campo <small style="color:var(--info)">Top 7</small></h3>
-                <table id="tFiscal" style="font-size:10px;">
-                    <thead><tr><th width="30">Pos</th><th>Responsável</th><th width="45">Total</th><th width="45">Concl</th><th width="50">Assid.</th></tr></thead>
-                    <tbody></tbody>
-                </table>
+        <div id="perf-grid-wrap" class="grid-top" style="grid-template-columns: 1fr 2fr;">
+            <div class="card" style="height:420px; border-top-color:#e67e22; display:flex; flex-direction:column;">
+                <!-- Header com toggle -->
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-shrink:0;flex-wrap:wrap;gap:4px;">
+                    <h3 style="margin:0;">👤 Performance Campo</h3>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <span id="perf-cobertura-badge" style="font-size:9px;padding:2px 8px;border-radius:10px;background:rgba(230,126,34,.15);color:#e67e22;font-weight:bold;display:none;"></span>
+                        <div style="display:flex;background:rgba(0,0,0,.25);border-radius:6px;padding:2px;gap:2px;">
+                            <button id="perf-toggle-rank" onclick="setPerfVista('ranking')"
+                                style="padding:3px 10px;border:none;border-radius:4px;font-size:10px;font-weight:bold;cursor:pointer;background:var(--info);color:#fff;transition:all .2s;">
+                                🏆 Ranking
+                            </button>
+                            <button id="perf-toggle-cob" onclick="setPerfVista('cobertura')"
+                                style="padding:3px 10px;border:none;border-radius:4px;font-size:10px;font-weight:bold;cursor:pointer;background:transparent;color:var(--slate);transition:all .2s;">
+                                📊 Cobertura
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Vista Ranking -->
+                <div id="perf-vista-ranking" style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;display:flex;flex-direction:column;">
+                    <table id="tFiscal" style="font-size:10px;width:100%;">
+                        <thead><tr>
+                            <th width="28">Pos</th>
+                            <th>Responsável</th>
+                            <th width="42" style="text-align:center;">Total</th>
+                            <th width="42" style="text-align:center;">Concl</th>
+                            <th width="48" style="text-align:right;">Assid.</th>
+                        </tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <!-- Vista Cobertura -->
+                <div id="perf-vista-cobertura" style="flex:1;min-height:0;overflow-y:auto;padding-right:4px;display:none;">
+                    <div id="perf-campo-container" style="height:100%;"></div>
+                </div>
             </div>
 
-            <div class="card" style="height:420px; border-top-color:var(--extra);">
+            <div id="assid-card" class="card" style="height:420px; border-top-color:var(--extra);">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">
                     <h3 style="margin:0; font-size:13px;">📈 Visão Detalhada de Assiduidade: Top 5 e Seleção</h3>
                     <div style="display:flex; gap:6px;">
@@ -1003,7 +1196,7 @@
             <div style="font-size:18px; font-weight:bold; color:#fff;">🔐 Gestão de Acessos</div>
             <div style="font-size:10px; color:var(--slate); margin-top:3px;">Controle de permissões · Usuários · Níveis de acesso</div>
         </div>
-        <button onclick="adicionarNovoUsuario()" style="padding:8px 16px;background:var(--success);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer;">➕ Novo Usuário</button>
+        <button onclick="adicionarNovoUsuarioSheets()" style="padding:8px 16px;background:var(--success);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer;">➕ Novo Usuário</button>
     </div>
 
     <!-- Configuração de Permissões por Nível -->
@@ -1014,7 +1207,7 @@
             <table id="tbl-permissoes" style="table-layout:auto;min-width:700px;">
                 <thead>
                     <tr>
-                        <th>Nível</th>
+                        <th>Nível atual</th>
                         <th>Dados Escala</th>
                         <th>Assiduidade</th>
                         <th>Rotas Extras</th>
@@ -1034,14 +1227,14 @@
     <!-- Lista de Usuários -->
     <div class="card row-new" style="border-top-color:var(--success);">
         <h3 style="font-size:13px;">👥 Usuários Cadastrados</h3>
-        <div style="font-size:9px;color:var(--slate);margin-top:-8px;margin-bottom:12px;">Gerencie usuários, níveis de acesso e senhas.</div>
+        <div style="font-size:9px;color:var(--slate);margin-top:-8px;margin-bottom:12px;">Gerencie usuários, níveis de acesso e senhas. Alterações salvas direto no Google Sheets.</div>
         <div style="overflow-x:auto; max-height:400px; overflow-y:auto;">
             <table id="tbl-usuarios" style="table-layout:auto;min-width:800px;">
                 <thead>
                     <tr>
-                        <th>Usuário</th>
+                        <th>Login (acesso)</th>
                         <th>Nome Completo</th>
-                        <th>Nível</th>
+                        <th>Nível atual</th>
                         <th>Senha</th>
                         <th>Status</th>
                         <th>Ações</th>
@@ -1294,6 +1487,10 @@
                 <select id="cpl-filtro-cidade" onchange="processarCompliance()" style="width:auto;min-width:150px;font-size:10px;padding:6px;">
                     <option value="TODOS">Todas Cidades</option>
                 </select>
+                <!-- Filtro Fornecedor Compliance -->
+                <select id="cpl-filtro-fornecedor" onchange="processarCompliance()" style="width:auto;min-width:170px;font-size:10px;padding:6px;">
+                    <option value="TODOS">Todos Fornecedores</option>
+                </select>
                 <button onclick="processarCompliance()" style="padding:6px 14px;background:var(--info);color:#fff;border:none;border-radius:6px;font-size:10px;font-weight:bold;cursor:pointer;">🔄 Atualizar</button>
             </div>
         </div>
@@ -1461,6 +1658,21 @@
                 </div>
                 <div style="font-size:9px;color:var(--slate);margin-top:8px;">👆 Clique no motorista para ver as rotas fraudulentas</div>
             </div>
+        </div>
+
+        <!-- ── LINHA 4a: Resumo Detalhado de Ocorrências por Fiscal (novo) ── -->
+        <div class="card row-new" style="border-top-color:#e67e22; margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+                <h3 style="margin:0;font-size:13px;">📋 Resumo de Ocorrências por Fiscal
+                    <span style="font-size:9px;color:var(--slate);font-weight:normal;margin-left:6px;">Fiscal → Motivo → Detalhe da ocorrência</span>
+                </h3>
+                <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                    <input type="text" id="cpl-obs-busca" placeholder="🔍 Buscar fiscal ou motivo..." oninput="renderCplResumoOcorrencias()"
+                        style="padding:5px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:10px;min-width:180px;">
+                    <span id="cpl-obs-total-badge" style="background:rgba(230,126,34,.2);color:#e67e22;border:1px solid rgba(230,126,34,.4);border-radius:12px;padding:2px 10px;font-size:10px;font-weight:bold;"></span>
+                </div>
+            </div>
+            <div id="cpl-resumo-ocorr-container" class="scroll-area" style="max-height:420px;"></div>
         </div>
 
         <!-- ── LINHA 4: Painel de Ocorrências s/ Justificativa ── -->
@@ -1748,6 +1960,32 @@ if (areaNivel && nivelSalvo) {
     let bruto = [];
     let charts = {};
     let dtExtras = null;
+    let fornecedoresSelecionados = new Set(['__TODOS__']); // '__TODOS__' = sem filtro
+    let regiaoAtiva = 'TODAS'; // 'TODAS' | 'CAPITAL' | 'INTERIOR'
+
+    // GREs por região (identificadas pelo número no nome)
+    const GRES_CAPITAL = [4, 19, 20, 21];
+    const GRES_INTERIOR = [5, 7, 12, 16, 18];
+
+    function greEhCapital(gre) {
+        if (!gre) return false;
+        return GRES_CAPITAL.some(n => new RegExp('\\b0?' + n + '\\b').test(gre));
+    }
+    function greEhInterior(gre) {
+        if (!gre) return false;
+        return GRES_INTERIOR.some(n => new RegExp('\\b0?' + n + '\\b').test(gre));
+    }
+    function rotaPassaFiltroRegiao(d) {
+        if (regiaoAtiva === 'TODAS') return true;
+        if (regiaoAtiva === 'CAPITAL') return greEhCapital(d.gre);
+        if (regiaoAtiva === 'INTERIOR') return greEhInterior(d.gre);
+        return true;
+    }
+    function rotaPassaFiltroFornecedor(d) {
+        if (fornecedoresSelecionados.size === 0) return true;
+        const fn = (d.fornecedor_motorista || 'OUTROS').trim();
+        return fornecedoresSelecionados.has(fn);
+    }
 
     const norm = (t) => t ? t.toString().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
 
@@ -1960,21 +2198,14 @@ function carregarDadosAsync() {
                         d.tipo_fornecedor = d.tipo_fornecedor || d.TIPO_FORNECEDOR || "";
                         d.fornecedor_motorista = d.fornecedor_motorista || d.FORNECEDOR || "";
                         d.origem = d.origem || d.ORIGEM || "OUTROS";
-                        d.km_planejado = (d.km_planejado || d.KM_PLANEJADO || "0").toString().replace(',', '.');
-                        d.percentual_conclusao = (d.percentual_conclusao || d.PERCENTUAL_CONCLUSAO || "0").toString().replace(',', '.');
+                        d.km_planejado = d.km_planejado || d.KM_PLANEJADO || "0";
+                        d.coordenadas_inicio = d.coordenadas_inicio || d.COORDENADAS_INICIO || "---";
+                        d.coordenadas_fim = d.coordenadas_fim || d.COORDENADAS_FIM || "---";
                         d.inicio_execucao = d.inicio_execucao || d.INICIO_EXECUCAO || "--:--";
                         d.fim_execucao = d.fim_execucao || d.FIM_EXECUCAO || "--:--";
+                        d.percentual_conclusao = d.percentual_conclusao || d.PERCENTUAL_CONCLUSAO || "0%";
                         d.horario = d.horario || d.HORARIO || "";
-                        d.isExtra = norm(d.rota).includes("EXTRA") || norm(d.planejamento || '').includes("NAO PLANEJADA");
-
-                        // Coordenadas: planilha nova usa primeiro_ponto/ultimo_ponto
-                        const coordIni = (d.coordenadas_inicio || '').replace(/\s/g, '');
-                        const coordFim = (d.coordenadas_fim || '').replace(/\s/g, '');
-                        const primPonto = (d.primeiro_ponto || '').replace(/\s/g, '');
-                        const ultPonto  = (d.ultimo_ponto   || '').replace(/\s/g, '');
-                        const invalido = v => !v || v === '---,---' || v === '---, ---' || v === '---';
-                        d.coordenadas_inicio = !invalido(coordIni) ? coordIni : (!invalido(primPonto) ? primPonto : '---');
-                        d.coordenadas_fim    = !invalido(coordFim)  ? coordFim  : (!invalido(ultPonto)  ? ultPonto  : '---');
+                        d.isExtra = norm(d.rota).includes("EXTRA");
 
                         return d;
                     });
@@ -2024,11 +2255,27 @@ function isWeekend(dateStr) {
     return day === 0 || day === 6; // 0 = Domingo, 6 = Sábado
 }
 
-// Função para verificar feriados (lista fixa ou você pode expandir)
+// Calcula a data da Páscoa pelo algoritmo de Butcher/Oudin
+function calcPascoa(ano) {
+    const a = ano % 19, b = Math.floor(ano / 100), c = ano % 100;
+    const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4), k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const mes = Math.floor((h + l - 7 * m + 114) / 31); // 1-based
+    const dia = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(ano, mes - 1, dia);
+}
+
 function isHoliday(dateStr) {
     if (!dateStr) return false;
-    // Lista de feriados nacionais (formato MM-DD)
-    const holidays = [
+    const d = new Date(dateStr + 'T12:00:00');
+    const ano = d.getFullYear();
+    const mmdd = dateStr.substring(5);
+
+    // Feriados nacionais fixos
+    const fixos = [
         '01-01', // Confraternização Universal
         '04-21', // Tiradentes
         '05-01', // Dia do Trabalho
@@ -2036,10 +2283,33 @@ function isHoliday(dateStr) {
         '10-12', // Nossa Senhora Aparecida
         '11-02', // Finados
         '11-15', // Proclamação da República
-        '12-25'  // Natal
+        '12-25', // Natal
     ];
-    const mmdd = dateStr.substring(5); // pega MM-DD
-    return holidays.includes(mmdd);
+    if (fixos.includes(mmdd)) return true;
+
+    // Feriados estaduais do Piauí (fixos)
+    const fixosPiaui = [
+        '03-13', // Dia do Piauí
+        '10-19', // Dia de São Pedro de Alcântara (padroeiro do estado)
+    ];
+    if (fixosPiaui.includes(mmdd)) return true;
+
+    // Feriados móveis baseados na Páscoa
+    const pascoa = calcPascoa(ano);
+    const addDias = (base, n) => { const r = new Date(base); r.setDate(r.getDate() + n); return r; };
+    const fmt = dt => `${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+
+    const moveveis = {
+        'Carnaval Seg':    fmt(addDias(pascoa, -48)),
+        'Carnaval Ter':    fmt(addDias(pascoa, -47)),
+        'Quarta Cinzas':   fmt(addDias(pascoa, -46)),
+        'Sexta Santa':     fmt(addDias(pascoa, -2)),
+        'Páscoa':          fmt(pascoa),
+        'Corpus Christi':  fmt(addDias(pascoa, 60)),
+    };
+    if (Object.values(moveveis).includes(mmdd)) return true;
+
+    return false;
 }
 
 async function carregarHistorico() {
@@ -2404,6 +2674,118 @@ function carregar() {
         preencher('fDirecao', 'direcao');
         preencher('fGre', 'gre');
         aoMudarGre();
+        popularFornecedorDropdown();
+    }
+
+    // ── Filtro Fornecedor (dropdown multi-select) ──────────────────
+    function _todosOsFornecedores() {
+        return [...new Set(bruto.map(d => (d.fornecedor_motorista || 'OUTROS').trim()))].filter(Boolean).sort();
+    }
+
+    function popularFornecedorDropdown() {
+        const todos = _todosOsFornecedores();
+        fornecedoresSelecionados = new Set(todos); // inicializa todos marcados
+        const container = document.getElementById('fornItems');
+        if (!container) return;
+        _renderFornItems(todos, '');
+        _atualizarLabelFornecedor();
+    }
+
+    function _renderFornItems(lista, busca) {
+        const container = document.getElementById('fornItems');
+        if (!container) return;
+        const fornecedores = lista.length ? lista :
+            [...new Set(bruto.map(d => (d.fornecedor_motorista || 'OUTROS').trim()))].filter(Boolean).sort();
+        const filtrados = busca ? fornecedores.filter(f => norm(f).includes(norm(busca))) : fornecedores;
+
+        const todosChecked = fornecedores.every(f => fornecedoresSelecionados.has(f));
+        let html = `<div class="forn-item item-todos">
+            <input type="checkbox" id="forn-todos" onchange="toggleTodosFornecedor(this.checked)" ${todosChecked ? 'checked' : ''}>
+            <label for="forn-todos" style="cursor:pointer;">✅ Todos</label>
+        </div>`;
+        filtrados.forEach((f, i) => {
+            const chk = fornecedoresSelecionados.has(f);
+            html += `<div class="forn-item">
+                <input type="checkbox" id="forn-${i}" value="${f}" onchange="toggleFornecedor('${f.replace(/'/g,"\\'")}', this.checked)" ${chk ? 'checked' : ''}>
+                <label for="forn-${i}" style="cursor:pointer;">${f}</label>
+            </div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    function filtrarItensFornecedor() {
+        const busca = document.getElementById('fornSearch')?.value || '';
+        _renderFornItems([], busca);
+    }
+
+    function toggleFornDropdown() {
+        const btn = document.getElementById('fornBtn');
+        const drop = document.getElementById('fornDropdown');
+        const isOpen = drop.classList.toggle('open');
+        btn.classList.toggle('open', isOpen);
+        if (isOpen) document.getElementById('fornSearch')?.focus();
+    }
+
+    function toggleTodosFornecedor(checked) {
+        fornecedoresSelecionados = checked ? new Set(_todosOsFornecedores()) : new Set();
+        _renderFornItems([], document.getElementById('fornSearch')?.value || '');
+        _atualizarLabelFornecedor();
+        processarDados();
+    }
+
+    function toggleFornecedor(nome, checked) {
+        if (checked) fornecedoresSelecionados.add(nome);
+        else fornecedoresSelecionados.delete(nome);
+        // Se ficou vazio volta a marcar todos
+        if (fornecedoresSelecionados.size === 0) {
+            fornecedoresSelecionados = new Set(_todosOsFornecedores());
+        }
+        _renderFornItems([], document.getElementById('fornSearch')?.value || '');
+        _atualizarLabelFornecedor();
+        processarDados();
+    }
+
+    function _atualizarLabelFornecedor() {
+        const label = document.getElementById('fornLabel');
+        const badge = document.getElementById('fornBadge');
+        if (!label) return;
+        const todos = _todosOsFornecedores();
+        const todosChecked = todos.length > 0 && todos.every(f => fornecedoresSelecionados.has(f));
+        if (todosChecked) {
+            label.textContent = 'Todos os fornecedores';
+            if (badge) badge.style.display = 'none';
+        } else {
+            const n = fornecedoresSelecionados.size;
+            if (n === 0) {
+                label.textContent = 'Todos os fornecedores';
+                if (badge) badge.style.display = 'none';
+            } else {
+                label.textContent = n === 1 ? [...fornecedoresSelecionados][0].substring(0, 22) : `${n} fornecedores`;
+                if (badge) { badge.textContent = n; badge.style.display = 'inline-block'; }
+            }
+        }
+    }
+
+    // Fechar dropdown ao clicar fora
+    document.addEventListener('click', function(e) {
+        const wrapper = document.getElementById('fornWrapper');
+        if (wrapper && !wrapper.contains(e.target)) {
+            document.getElementById('fornDropdown')?.classList.remove('open');
+            document.getElementById('fornBtn')?.classList.remove('open');
+        }
+    });
+
+    // ── Filtro Região ─────────────────────────────────────────────
+    function setRegiao(regiao) {
+        regiaoAtiva = regiao;
+        ['todas','interior','capital'].forEach(r => {
+            const btn = document.getElementById('rBtn-' + r);
+            if (btn) btn.classList.toggle('active', r.toUpperCase() === regiao || (regiao === 'TODAS' && r === 'todas'));
+        });
+        // Ao mudar região, resetar filtro de GRE para não conflitar
+        const fGre = document.getElementById('fGre');
+        if (fGre) fGre.value = 'TODOS';
+        aoMudarGre();
     }
      // 🔥 ADICIONE A FUNÇÃO ABAIXO 🔥
 function limparFiltroFiscal() {
@@ -2422,7 +2804,9 @@ function limparFiltroFiscal() {
 
     function aoMudarGre() {
         const greSel = document.getElementById('fGre').value;
-        const filtrados = greSel === 'TODOS' ? bruto : bruto.filter(d => d.gre === greSel);
+        // Aplica filtro de região ao pool de dados
+        const pool = bruto.filter(d => rotaPassaFiltroRegiao(d));
+        const filtrados = greSel === 'TODOS' ? pool : pool.filter(d => d.gre === greSel);
         const atualizar = (id, campo, label) => {
             const el = document.getElementById(id);
             if (!el) return;
@@ -2430,6 +2814,14 @@ function limparFiltroFiscal() {
             [...new Set(filtrados.map(d => d[campo]))].filter(v => v && v.trim() !== "").sort().forEach(v =>
                 el.add(new Option(v, v)));
         };
+        // Repopula GRE com base na região
+        const elGre = document.getElementById('fGre');
+        if (elGre) {
+            const curVal = elGre.value;
+            elGre.innerHTML = '<option value="TODOS">GRE: TODAS</option>';
+            [...new Set(pool.map(d => d.gre))].filter(v => v && v.trim()).sort().forEach(v => elGre.add(new Option(v, v)));
+            elGre.value = curVal && [...pool.map(d => d.gre)].includes(curVal) ? curVal : 'TODOS';
+        }
         atualizar('fCidade', 'cidade', 'CIDADE: TODAS');
         atualizar('fFiscal', 'fiscal_responsavel', 'FISCAL: TODOS');
         processarDados();
@@ -2816,7 +3208,9 @@ function limparFiltroFiscal() {
             (f.direcao === 'TODOS' || d.direcao === f.direcao) &&
             (f.gre === 'TODOS' || d.gre === f.gre) &&
             (f.cidade === 'TODOS' || d.cidade === f.cidade) &&
-            (f.fiscal === 'TODOS' || d.fiscal_responsavel === f.fiscal)
+            (f.fiscal === 'TODOS' || d.fiscal_responsavel === f.fiscal) &&
+            rotaPassaFiltroRegiao(d) &&
+            rotaPassaFiltroFornecedor(d)
         );
 
         let concl = 0, pend = 0, extras = 0;
@@ -2877,7 +3271,8 @@ function limparFiltroFiscal() {
         document.getElementById('k-mix-extra').innerText = extras;
 
 
-        renderRank('tFiscal', 'fiscal_responsavel', 7, dados);
+        renderPerfCampo(dados);
+        renderRank('tFiscal', 'fiscal_responsavel', 99, dados);
         renderRank('tGre', 'gre', 10, dados);
         renderTabelaCidades(cidadeMap);
         renderTabelaFornecedores(fornMap);
@@ -2973,24 +3368,235 @@ function limparFiltroFiscal() {
             if (norm(d.status).includes("CONCLUID") || norm(d.status).includes("ANDAMENTO")) m[ch].c++;
         });
         const list = Object.entries(m).map(([nm, s]) => ({ nm, t: s.t, c: s.c, p: (s.c / s.t) * 100 })).sort((a, b) => b.p - a.p).slice(0, limit);
-
         if (id === 'tFiscal') {
             dadosAssidGlobal = dados;
-            document.getElementById(id).querySelector('tbody').innerHTML = list.map((r, i) =>
-                `<tr class="pointer" style="transition:background .15s;"
+            document.getElementById(id).querySelector('tbody').innerHTML = list.map((r, i) => {
+                const cor = r.p >= 90 ? '#2ecc71' : r.p >= 70 ? '#f39c12' : '#e74c3c';
+                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}º`;
+                return `<tr class="pointer" style="transition:background .15s;"
                     onmouseover="this.style.background='rgba(255,255,255,.04)'"
                     onmouseout="this.style.background=''"
-                    onclick="selecionarFiscalAssid('${r.nm.replace(/'/g,"\\'")}')">
-                    <td>${i + 1}º</td><td>${r.nm}</td><td>${r.t}</td><td>${r.c}</td>
-                    <td class="perc-bold">${r.p.toFixed(1)}%</td>
-                </tr>`
-            ).join('');
+                    onclick="selecionarFiscalAssid('${r.nm.replace(/'/g,"\\'")}')"> 
+                    <td style="font-size:11px;text-align:center;">${medal}</td>
+                    <td style="font-size:10px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.nm}">${r.nm}</td>
+                    <td style="text-align:center;font-size:10px;">${r.t}</td>
+                    <td style="text-align:center;font-size:10px;">${r.c}</td>
+                    <td style="text-align:right;padding-right:4px;">
+                        <div style="display:flex;align-items:center;gap:5px;justify-content:flex-end;">
+                            <div style="width:38px;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;flex-shrink:0;">
+                                <div style="width:${r.p.toFixed(0)}%;height:100%;background:${cor};border-radius:2px;"></div>
+                            </div>
+                            <span style="color:${cor};font-size:10px;font-weight:bold;min-width:38px;text-align:right;">${r.p.toFixed(1)}%</span>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+            renderAssiduidadeTemporalChart(dados);
             renderAssiduidadeTemporalChart(dados);
         } else {
             document.getElementById(id).querySelector('tbody').innerHTML = list.map((r, i) =>
                 `<tr><td>${i + 1}º</td><td>${r.nm}</td><td>${r.t}</td><td>${r.c}</td><td class="perc-bold">${r.p.toFixed(1)}%</td></tr>`
             ).join('');
         }
+    }
+
+    // Performance Campo accordion 3 camadas
+    function renderPerfCampo(dados) {
+        const cont = document.getElementById('perf-campo-container');
+        const badge = document.getElementById('perf-cobertura-badge');
+        if (!cont) return;
+        const fiscalMap = {};
+        dados.forEach(d => {
+            const fis = d.fiscal_responsavel || 'NAO IDENTIFICADO';
+            if (!fiscalMap[fis]) fiscalMap[fis] = {
+                total: 0, concl: 0, manual: 0, justif: 0, gap: 0,
+                origemApp: 0, origemRastr: 0, origemManual: 0,
+                motivoMapManual: {}, motivoMapJustif: {}, motivoMapGap: {}
+            };
+            const f = fiscalMap[fis];
+            f.total++;
+            const isOk      = norm(d.status).includes('CONCLUID') || norm(d.status).includes('ANDAMENTO');
+            const temObs    = d.observacao && d.observacao.trim().length > 2;
+            const isManualObs = temObs && /\[FISCAL MANUAL\]/i.test(d.observacao);
+            const isJustif  = temObs && /\[NÃO EXECUTADA/i.test(d.observacao);
+
+            if (isOk) {
+                f.concl++;
+            } else if (isManualObs) {
+                // Rota executada via lançamento manual do fiscal
+                f.manual++;
+                const p = _parseTipoObservacao(d.observacao);
+                const chave = p.tipo + '||' + p.motivo;
+                if (!f.motivoMapManual[chave]) f.motivoMapManual[chave] = { ...p, itens: [] };
+                f.motivoMapManual[chave].itens.push(d);
+            } else if (isJustif) {
+                // Rota não executada COM justificativa
+                f.justif++;
+                const p = _parseTipoObservacao(d.observacao);
+                const chave = p.tipo + '||' + p.motivo;
+                if (!f.motivoMapJustif[chave]) f.motivoMapJustif[chave] = { ...p, itens: [] };
+                f.motivoMapJustif[chave].itens.push(d);
+            } else if (temObs) {
+                // Tem obs mas não se enquadra nos padrões acima — justif genérica
+                f.justif++;
+                const p = _parseTipoObservacao(d.observacao);
+                const chave = p.tipo + '||' + p.motivo;
+                if (!f.motivoMapJustif[chave]) f.motivoMapJustif[chave] = { ...p, itens: [] };
+                f.motivoMapJustif[chave].itens.push(d);
+            } else {
+                // Sem cobertura alguma — gargalo real
+                f.gap++;
+                const chave = 'SEM REGISTRO||';
+                if (!f.motivoMapGap[chave]) f.motivoMapGap[chave] = { tipo: 'SEM REGISTRO', motivo: '', icone: '⛔', cls: 'outro', itens: [] };
+                f.motivoMapGap[chave].itens.push(d);
+            }
+            const ori = norm(d.origem || '');
+            if (ori.includes('APP') || ori.includes('MOTORISTA')) f.origemApp++;
+            else if (ori.includes('RASTREADOR')) f.origemRastr++;
+            else f.origemManual++;
+        });
+        const fiscais = Object.entries(fiscalMap).sort((a, b) => {
+            const cobA = (a[1].concl + a[1].manual + a[1].justif) / (a[1].total || 1);
+            const cobB = (b[1].concl + b[1].manual + b[1].justif) / (b[1].total || 1);
+            return cobA - cobB; // piores primeiro
+        });
+        const totGlobal = fiscais.reduce((s, [, f]) => s + f.total, 0);
+        const cobGlobal = fiscais.reduce((s, [, f]) => s + f.concl + f.manual + f.justif, 0);
+        if (badge) {
+            const pct = totGlobal > 0 ? ((cobGlobal / totGlobal) * 100).toFixed(0) : 0;
+            badge.textContent = `📊 Cobertura geral: ${pct}%`;
+            badge.style.background = pct >= 90 ? 'rgba(46,204,113,.15)' : pct >= 70 ? 'rgba(243,156,18,.15)' : 'rgba(231,76,60,.15)';
+            badge.style.color = pct >= 90 ? '#2ecc71' : pct >= 70 ? '#f39c12' : '#e74c3c';
+            badge.style.display = 'inline-block';
+        }
+        if (!fiscais.length) {
+            cont.innerHTML = '<div style="padding:20px;color:var(--slate);text-align:center;font-size:11px;">Sem dados.</div>';
+            return;
+        }
+        let html = '';
+        fiscais.forEach(([nome, f], idx) => {
+            const pConcl  = f.total > 0 ? (f.concl  / f.total) * 100 : 0;
+            const pManual = f.total > 0 ? (f.manual / f.total) * 100 : 0;
+            const pJustif = f.total > 0 ? (f.justif / f.total) * 100 : 0;
+            const pGap    = f.total > 0 ? (f.gap    / f.total) * 100 : 0;
+            const pCob    = pConcl + pManual + pJustif;
+            const cobCor  = pCob >= 90 ? '#2ecc71' : pCob >= 70 ? '#f39c12' : '#e74c3c';
+            const fId = `perf-f-${idx}`;
+
+            html += `<div>
+                <div class="perf-fiscal-row" onclick="perfToggle('${fId}')">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div style="display:flex;align-items:center;gap:6px;min-width:0;">
+                            <span id="${fId}-arrow" style="font-size:8px;color:var(--slate);transition:transform .2s;display:inline-block;flex-shrink:0;">&#9654;</span>
+                            <span class="perf-fiscal-name" title="${nome}">${nome}</span>
+                        </div>
+                        <span class="perf-cob-pct" style="color:${cobCor};flex-shrink:0;margin-left:6px;">${pCob.toFixed(0)}%</span>
+                    </div>
+                    <div class="perf-bar">
+                        <div class="perf-bar-concl"  style="width:${pConcl}%;"></div>
+                        <div style="background:#9b59b6;height:100%;width:${pManual}%;transition:width .4s;"></div>
+                        <div class="perf-bar-justif" style="width:${pJustif}%;"></div>
+                        <div class="perf-bar-gap"    style="width:${pGap}%;"></div>
+                    </div>
+                    <div class="perf-fiscal-stats">
+                        <span class="perf-stat perf-stat-total">📋 ${f.total}</span>
+                        <span class="perf-stat perf-stat-concl">✅ ${f.concl}</span>
+                        ${f.manual > 0 ? `<span class="perf-stat" style="color:#9b59b6;">✏️ ${f.manual}</span>` : ''}
+                        ${f.justif > 0 ? `<span class="perf-stat perf-stat-justif">📝 ${f.justif}</span>` : ''}
+                        ${f.gap > 0    ? `<span class="perf-stat perf-stat-gap">⛔ ${f.gap} s/cob.</span>` : ''}
+                    </div>
+                </div>
+                <div id="${fId}" style="display:none;">
+                    <div class="perf-origem-row">
+                        <span class="perf-origem-item">📱 App: <b>${f.origemApp}</b></span>
+                        <span class="perf-origem-item">🛰️ Rastr.: <b>${f.origemRastr}</b></span>
+                        <span class="perf-origem-item">✏️ Manual: <b>${f.origemManual}</b></span>
+                    </div>`;
+
+            // Helper para renderizar seção de motivos
+            const renderSecao = (mapa, secTitulo, secCor, secId) => {
+                const motivos = Object.entries(mapa).sort((a, b) => b[1].itens.length - a[1].itens.length);
+                if (!motivos.length) return;
+                html += `<div style="padding:4px 10px 2px 22px;font-size:9px;font-weight:bold;color:${secCor};letter-spacing:.4px;background:rgba(0,0,0,.15);border-bottom:1px solid rgba(255,255,255,.04);">${secTitulo}</div>`;
+                motivos.forEach(([chave, m], mIdx) => {
+                    const mId = `${fId}-${secId}-m${mIdx}`;
+                    const pMotivo = f.total > 0 ? ((m.itens.length / f.total) * 100).toFixed(0) : 0;
+                    html += `<div class="perf-motivo-row" onclick="perfToggle('${mId}')">
+                        <div style="display:flex;align-items:center;gap:6px;min-width:0;flex:1;">
+                            <span id="${mId}-arrow" style="font-size:7px;color:var(--slate);transition:transform .2s;display:inline-block;flex-shrink:0;">&#9654;</span>
+                            <span class="perf-motivo-tag" style="color:${secCor};white-space:nowrap;">${m.icone} ${m.tipo}</span>
+                            ${m.motivo && m.motivo !== 'Lançamento manual pelo fiscal'
+                                ? `<span style="font-size:9px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;" title="${m.motivo}">${m.motivo}</span>`
+                                : ''}
+                        </div>
+                        <span class="perf-motivo-count" style="flex-shrink:0;">${m.itens.length}× <span style="opacity:.65;font-size:8px;">${pMotivo}%</span></span>
+                    </div>
+                    <div id="${mId}" style="display:none;">`;
+                    m.itens.forEach(o => {
+                        const rota = (o.rota || '').substring(0, 55);
+                        html += `<div class="perf-item-row" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                            <span style="display:inline-block;background:var(--primary);color:#fff;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:bold;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${o.rota||''}">${rota}</span>
+                            <span style="color:var(--info);font-size:10px;">${o.motorista || ''}</span>
+                            ${o.data   ? `<span style="font-size:8px;color:var(--slate);">📅 ${o.data}</span>`    : ''}
+                            ${o.cidade ? `<span style="font-size:8px;color:var(--slate);">🏙️ ${o.cidade}</span>` : ''}
+                            ${o.veiculo && o.veiculo.length > 2 ? `<span style="font-size:8px;color:var(--slate);">🚌 ${o.veiculo}</span>` : ''}
+                        </div>`;
+                    });
+                    html += `</div>`;
+                });
+            };
+
+            renderSecao(f.motivoMapManual, '✏️ LANÇAMENTO MANUAL PELO FISCAL', '#9b59b6', 'man');
+            renderSecao(f.motivoMapJustif, '📝 NÃO EXECUTADAS JUSTIFICADAS',   '#f39c12', 'jus');
+            renderSecao(f.motivoMapGap,    '⛔ SEM COBERTURA — GARGALO REAL',  '#e74c3c', 'gap');
+
+            const todasCob = f.gap === 0 && f.manual === 0 && f.justif === 0;
+            if (todasCob) html += `<div style="padding:6px 22px;font-size:10px;color:#2ecc71;">✔ Todas as rotas cobertas.</div>`;
+
+            html += `</div></div>`;
+        });
+        html += `<div style="display:flex;gap:12px;padding:8px 10px;border-top:1px solid var(--border);flex-wrap:wrap;flex-shrink:0;">
+            <span style="font-size:9px;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:6px;background:#2ecc71;border-radius:2px;display:inline-block;"></span>✅ Executada</span>
+            <span style="font-size:9px;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:6px;background:#9b59b6;border-radius:2px;display:inline-block;"></span>✏️ Fiscal Manual</span>
+            <span style="font-size:9px;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:6px;background:#f39c12;border-radius:2px;display:inline-block;"></span>📝 Justificada</span>
+            <span style="font-size:9px;display:flex;align-items:center;gap:4px;"><span style="width:10px;height:6px;background:#e74c3c;border-radius:2px;display:inline-block;"></span>⛔ Gargalo</span>
+        </div>`;
+        cont.innerHTML = html;
+        dadosAssidGlobal = dados;
+        renderAssiduidadeTemporalChart(dados);
+    }
+
+    function perfToggle(id) {
+        const el = document.getElementById(id);
+        const arrow = document.getElementById(id + '-arrow');
+        if (!el) return;
+        const open = el.style.display === 'none';
+        el.style.display = open ? 'block' : 'none';
+        if (arrow) arrow.style.transform = open ? 'rotate(90deg)' : '';
+    }
+
+
+    function setPerfVista(vista) {
+        const vRank = document.getElementById('perf-vista-ranking');
+        const vCob  = document.getElementById('perf-vista-cobertura');
+        const bRank = document.getElementById('perf-toggle-rank');
+        const bCob  = document.getElementById('perf-toggle-cob');
+        const badge = document.getElementById('perf-cobertura-badge');
+        if (!vRank) return;
+        if (vista === 'ranking') {
+            vRank.style.display = 'flex';
+            vCob.style.display  = 'none';
+            bRank.style.background = 'var(--info)';  bRank.style.color = '#fff';
+            bCob.style.background  = 'transparent';  bCob.style.color  = 'var(--slate)';
+            if (badge) badge.style.display = 'none';
+        } else {
+            vRank.style.display = 'none';
+            vCob.style.display  = 'flex';
+            bRank.style.background = 'transparent';  bRank.style.color = 'var(--slate)';
+            bCob.style.background  = 'var(--info)';  bCob.style.color  = '#fff';
+            if (badge) badge.style.display = 'inline-block';
+        }
+        window._perfVista = vista;
     }
 
     function selecionarFiscalAssid(nome) {
@@ -3331,14 +3937,22 @@ function limparFiltroFiscal() {
         const filtroCidade = document.getElementById('fCidadeFraude')?.value || 'TODOS';
         const filtroTurno = document.getElementById('fTurnoFraude')?.value || 'TODOS';
         const filtroRota = document.getElementById('fRotaFraude')?.value || 'TODOS';
-
-        
-        const dados = bruto.filter(d =>
+        const apenasFraudes = document.getElementById('chkApenasFraudes')?.checked || false;
+        const _dadosBase = bruto.filter(d =>
             (filtroGre === 'TODOS' || d.gre === filtroGre) &&
             (filtroCidade === 'TODOS' || d.cidade === filtroCidade) &&
             (filtroTurno === 'TODOS' || d.turno === filtroTurno) &&
             (filtroRota === 'TODOS' || d.rota === filtroRota)
         );
+        // Se flag ativo, pré-filtra apenas rotas com indício de fraude (origem rastreador + duração curta ou coord iguais)
+        const limitePreFiltro = parseInt(document.getElementById('fIrregDuracao')?.value || 30);
+        const dados = apenasFraudes ? _dadosBase.filter(d => {
+            const dur = calcDuracaoMinutos(d.inicio_execucao, d.fim_execucao);
+            const dist = calcularDistanciaKm(d.coordenadas_inicio, d.coordenadas_fim);
+            const km = parseFloat((d.km_planejado || '0').toString().replace(',', '.')) || 0;
+            return (dur !== null && dur < limitePreFiltro) ||
+                   (dist !== null && dist < 0.5 && km > 5 && norm(d.origem) === 'RASTREADOR VEICULAR');
+        }) : _dadosBase;
 
         let totalRotas = 0, fraudesTemporal = 0, fraudesMesmoLocal = 0;
         const motoristasMap = new Map(), greMap = new Map(), fiscalMap = new Map();
@@ -3634,6 +4248,28 @@ filtrarIrregularidades();
         );
         if (fStatus !== 'TODOS') extras = extras.filter(d => norm(d.status).includes(norm(fStatus)));
 
+        // Flag "apenas alertas": restringe todo o painel a rotas curtas ou em andamento prolongado
+        if (apenasAlertas) {
+            const agora2 = new Date();
+            extras = extras.filter(d => {
+                const sn = norm(d.status);
+                const dur = calcDuracaoMinutos(d.inicio_execucao, d.fim_execucao);
+                const isConcl = sn.includes("CONCLUID");
+                const isAndam = sn.includes("ANDAMENTO") || sn.includes("EXECUTANDO");
+                if (isConcl && dur !== null && dur < 15) return true;
+                if (isAndam) {
+                    const inicioMin = horaParaMinutos(d.inicio_execucao);
+                    if (inicioMin !== null) {
+                        const agoraMin = agora2.getHours() * 60 + agora2.getMinutes();
+                        let diff = agoraMin - inicioMin;
+                        if (diff < 0) diff += 1440;
+                        if (diff > 360) return true;
+                    }
+                }
+                return false;
+            });
+        }
+
         let totalConcl = 0, totalAndam = 0, somaTempos = 0, countTempos = 0;
         let alertaCurta = [], alertaAbandono = [];
         const greMap = {}, fiscalMap = {}, horaMap = {};
@@ -3856,15 +4492,22 @@ filtrarIrregularidades();
     if (elCidade && elCidade.options.length === 1) {
         [...new Set(bruto.map(d => d.cidade))].filter(Boolean).sort().forEach(v => elCidade.add(new Option(v, v)));
     }
+        const elFornecedor = document.getElementById('cpl-filtro-fornecedor');
+        if (elFornecedor && elFornecedor.options.length === 1) {
+            [...new Set(bruto.map(d => (d.fornecedor_motorista || 'OUTROS').trim()))].filter(Boolean).sort()
+                .forEach(v => elFornecedor.add(new Option(v, v)));
+        }
 
             const filtroGre = elGre?.value || 'TODOS';
             const filtroFiscal = elFiscal?.value || 'TODOS';
             const filtroCidade = elCidade?.value || 'TODOS';
+        const filtroFornecedorCpl = elFornecedor?.value || 'TODOS';
 
         const dados = bruto.filter(d =>
         (filtroGre === 'TODOS' || d.gre === filtroGre) &&
         (filtroFiscal === 'TODOS' || d.fiscal_responsavel === filtroFiscal) &&
-        (filtroCidade === 'TODOS' || d.cidade === filtroCidade)
+        (filtroCidade === 'TODOS' || d.cidade === filtroCidade) &&
+        (filtroFornecedorCpl === 'TODOS' || (d.fornecedor_motorista || 'OUTROS').trim() === filtroFornecedorCpl)
     );
         const agora = new Date();
         cplDadosCriticos = [];
@@ -3873,6 +4516,7 @@ filtrarIrregularidades();
         const veiculoMap = {}, greMap = {};
         const cicloMap = { '06': 0, '08': 0, '10': 0, '12': 0, '14': 0, '16': 0, '18': 0, '20': 0 };
         const fiscalOcorrMap = {};
+        const fiscalObsDetalheMap = {}; // mapa detalhado: fiscal → gre → [rows com observação]
 
         dados.forEach(d => {
             const durMin = calcDuracaoMinutos(d.inicio_execucao, d.fim_execucao);
@@ -3893,6 +4537,14 @@ filtrarIrregularidades();
             fiscalOcorrMap[fiscal].total++;
             if (isNaoAberto) fiscalOcorrMap[fiscal].naoAbertas++;
             if (temObs) fiscalOcorrMap[fiscal].comObs++;
+
+            // Mapa detalhado de observações (para o card Resumo)
+            if (temObs) {
+                if (!fiscalObsDetalheMap[fiscal]) fiscalObsDetalheMap[fiscal] = { total: 0, gres: {} };
+                fiscalObsDetalheMap[fiscal].total++;
+                if (!fiscalObsDetalheMap[fiscal].gres[gre]) fiscalObsDetalheMap[fiscal].gres[gre] = [];
+                fiscalObsDetalheMap[fiscal].gres[gre].push(d);
+            }
 
             let tipoAlerta = null, gravidade = 0;
             if (durMin !== null && durMin < 10 && (isConcl || isAndam)) {
@@ -4060,12 +4712,14 @@ filtrarIrregularidades();
         window._cplGreMap = greMap;
         window._cplCicloMap = cicloMap;
         window._cplFiscalOcorrMap = fiscalOcorrMap;
+        window._cplFiscalObsDetalhe = fiscalObsDetalheMap;
 
         renderCplPareto();
         renderCplCiclo();
         renderCplVeiculos();
         renderCplGreMapa();
         renderCplOcorrencias();
+        renderCplResumoOcorrencias();
         renderCplAuditoria();
 
          // ── Ofensores ──
@@ -4319,6 +4973,206 @@ window._cplDadosCompliance = [...dados];
                 <td><span class="cpl-score-pill ${situCls}">${situTxt}</span></td>
             </tr>`;
         }).join('') || '<tr><td colspan="9" style="color:var(--slate);text-align:center;padding:20px;">Sem dados de ocorrências.</td></tr>';
+    }
+
+    // ── Resumo Detalhado de Ocorrências por Fiscal (novo card) ────────────────
+    function _parseTipoObservacao(obs) {
+        if (!obs) return { tipo: 'OUTRO', motivo: '', icone: '📝', cls: 'outro' };
+        const n = obs.trim();
+        if (/\[FISCAL MANUAL\]/i.test(n)) {
+            return { tipo: 'FISCAL MANUAL', motivo: 'Lançamento manual pelo fiscal', icone: '✏️', cls: 'manual' };
+        }
+        const mNE = n.match(/\[NÃO EXECUTADA[^\]]*\]\s*(?:Motivo[:\s]+)?(.*)/i);
+        if (mNE) {
+            const motivo = (mNE[1] || '').trim() || 'Sem motivo informado';
+            return { tipo: 'NÃO EXECUTADA', motivo, icone: '🚫', cls: 'nao-exec' };
+        }
+        return { tipo: 'OBSERVAÇÃO', motivo: n, icone: '📝', cls: 'outro' };
+    }
+
+    function renderCplResumoOcorrencias() {
+        const map = window._cplFiscalObsDetalhe || {};
+        const cont = document.getElementById('cpl-resumo-ocorr-container');
+        const badge = document.getElementById('cpl-obs-total-badge');
+        if (!cont) return;
+
+        const busca = (document.getElementById('cpl-obs-busca')?.value || '').trim();
+        const bNorm = norm(busca);
+
+        // Filtra fiscais pela busca
+        let entradas = Object.entries(map)
+            .map(([fiscal, d]) => ({ fiscal, ...d }))
+            .filter(r => !bNorm || norm(r.fiscal).includes(bNorm) ||
+                Object.values(r.gres).flat().some(o => norm(o.observacao).includes(bNorm) || norm(o.motorista).includes(bNorm) || norm(o.rota).includes(bNorm)))
+            .sort((a, b) => b.total - a.total);
+
+        if (badge) badge.textContent = `${entradas.length} fiscal${entradas.length !== 1 ? 'is' : ''} · ${entradas.reduce((s, r) => s + r.total, 0)} obs.`;
+
+        if (!entradas.length) {
+            cont.innerHTML = `<div style="padding:20px;color:var(--slate);text-align:center;font-size:11px;">${busca ? '🔍 Nenhum resultado para "' + busca + '"' : 'Sem ocorrências com observação registrada.'}</div>`;
+            return;
+        }
+
+        const pct = (n, total) => total > 0 ? `<span style="opacity:.7;font-size:8px;margin-left:2px;">${((n/total)*100).toFixed(0)}%</span>` : '';
+
+        let html = '';
+        entradas.forEach((r, fIdx) => {
+            // Contagens de tipos para pills (separa extras)
+            const todasObs = Object.values(r.gres).flat();
+            const total = todasObs.length;
+            const nManual   = todasObs.filter(o => /\[FISCAL MANUAL\]/i.test(o.observacao)).length;
+            const nNaoExec  = todasObs.filter(o => /\[NÃO EXECUTADA/i.test(o.observacao)).length;
+            const nExtra    = todasObs.filter(o => o.isExtra).length;
+            // "Outro" = nem manual, nem não-executada, nem extra
+            const nOutro    = todasObs.filter(o =>
+                !(/\[FISCAL MANUAL\]/i.test(o.observacao)) &&
+                !(/\[NÃO EXECUTADA/i.test(o.observacao)) &&
+                !o.isExtra
+            ).length;
+            const gresStr = Object.keys(r.gres).sort().join(' · ');
+
+            const fId = `cpl-obs-f-${fIdx}`;
+            html += `<div>
+                <div class="cpl-obs-fiscal-row" onclick="cplToggleObs('${fId}')">
+                    <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                        <span id="${fId}-arrow" style="font-size:9px;color:var(--slate);transition:transform .2s;display:inline-block;">▶</span>
+                        <span class="cpl-obs-fiscal-name">${r.fiscal}</span>
+                        <span style="font-size:9px;color:var(--info);">${gresStr}</span>
+                    </div>
+                    <div class="cpl-obs-fiscal-meta">
+                        <span class="cpl-obs-pill cpl-obs-pill-total">📋 ${total} obs.</span>
+                        ${nManual  > 0 ? `<span class="cpl-obs-pill cpl-obs-pill-manual">✏️ ${nManual}${pct(nManual,total)} manual</span>` : ''}
+                        ${nNaoExec > 0 ? `<span class="cpl-obs-pill cpl-obs-pill-naoexec">🚫 ${nNaoExec}${pct(nNaoExec,total)} não exec.</span>` : ''}
+                        ${nExtra   > 0 ? `<span class="cpl-obs-pill" style="background:rgba(155,89,182,.18);color:#a29bfe;">🔀 ${nExtra}${pct(nExtra,total)} extra</span>` : ''}
+                        ${nOutro   > 0 ? `<span class="cpl-obs-pill cpl-obs-pill-outro">📝 ${nOutro}${pct(nOutro,total)} outr.</span>` : ''}
+                    </div>
+                </div>
+                <div id="${fId}" style="display:none;">`;
+
+            // ── Nível 2: GRE (accordion) ──
+            Object.entries(r.gres).sort().forEach(([gre, itens]) => {
+                const greId = `${fId}-gre-${gre.replace(/\W/g, '')}`;
+                const itensRegulares = itens.filter(o => !o.isExtra);
+                const itensExtras    = itens.filter(o => o.isExtra);
+                const nGManual  = itens.filter(o => /\[FISCAL MANUAL\]/i.test(o.observacao)).length;
+                const nGNaoExec = itens.filter(o => /\[NÃO EXECUTADA/i.test(o.observacao)).length;
+
+                html += `<div>
+                    <div class="cpl-obs-gre-separator" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:6px 12px 6px 22px;" onclick="cplToggleObs('${greId}')">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span id="${greId}-arrow" style="font-size:8px;color:var(--info);transition:transform .2s;display:inline-block;">▶</span>
+                            <span>🏢 ${gre}</span>
+                            ${itensExtras.length > 0 ? `<span style="color:#a29bfe;font-size:8px;">(${itensExtras.length} extras)</span>` : ''}
+                        </div>
+                        <div style="display:flex;gap:6px;align-items:center;">
+                            ${nGManual  > 0 ? `<span class="cpl-obs-pill cpl-obs-pill-manual" style="font-size:8px;">✏️ ${nGManual}</span>` : ''}
+                            ${nGNaoExec > 0 ? `<span class="cpl-obs-pill cpl-obs-pill-naoexec" style="font-size:8px;">🚫 ${nGNaoExec}</span>` : ''}
+                            <span style="font-size:9px;color:var(--slate);">${itens.length} obs.</span>
+                        </div>
+                    </div>
+                    <div id="${greId}" style="display:none;">`;
+
+                // ── Ocorrências regulares agrupadas por motivo ──
+                const motivoMap = {};
+                itensRegulares.forEach(o => {
+                    const p = _parseTipoObservacao(o.observacao);
+                    const chave = `${p.tipo}||${p.motivo}`;
+                    if (!motivoMap[chave]) motivoMap[chave] = { ...p, itens: [] };
+                    motivoMap[chave].itens.push(o);
+                });
+
+                Object.entries(motivoMap).forEach(([chave, m], mIdx) => {
+                    const mId = `${fId}-g${gre.replace(/\W/g, '')}-m${mIdx}`;
+                    const percStr = itensRegulares.length > 0 ? `<span style="opacity:.65;font-size:8px;margin-left:4px;">${((m.itens.length/itens.length)*100).toFixed(0)}%</span>` : '';
+                    html += `<div class="cpl-obs-motivo-row" onclick="cplToggleObs('${mId}')">
+                        <div style="display:flex;align-items:center;gap:6px;min-width:0;">
+                            <span id="${mId}-arrow" style="font-size:8px;color:var(--slate);transition:transform .2s;display:inline-block;">▶</span>
+                            <span class="cpl-obs-motivo-tag ${m.cls}">${m.icone} ${m.tipo}</span>
+                            ${m.motivo && m.motivo !== 'Lançamento manual pelo fiscal' ? `<span style="color:var(--text);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:320px;" title="${m.motivo}">${m.motivo}</span>` : ''}
+                        </div>
+                        <span class="cpl-obs-motivo-count">${m.itens.length}×${percStr}</span>
+                    </div>
+                    <div id="${mId}" style="display:none;">`;
+
+                    m.itens.forEach(o => {
+                        const rota = (o.rota || '').substring(0, 55);
+                        const mot = o.motorista || 'S/ NOME';
+                        html += `<div class="cpl-obs-item-row">
+                            <span class="cpl-obs-item-rota" title="${o.rota || ''}">${rota}</span>
+                            <span class="cpl-obs-item-mot">${mot}</span>
+                            ${o.data ? `<span style="color:var(--slate);margin-left:8px;font-size:9px;">📅 ${o.data}</span>` : ''}
+                            ${o.veiculo && o.veiculo.length > 2 ? `<span style="color:var(--slate);margin-left:8px;font-size:9px;">🚌 ${o.veiculo}</span>` : ''}
+                        </div>`;
+                    });
+                    html += `</div>`; // fecha mId
+                });
+
+                // ── Bloco colapsável de Rotas Extras ──
+                if (itensExtras.length > 0) {
+                    const exId = `${fId}-g${gre.replace(/\W/g, '')}-extras`;
+                    const percExtra = ((itensExtras.length / itens.length) * 100).toFixed(0);
+                    html += `<div class="cpl-obs-motivo-row" onclick="cplToggleObs('${exId}')" style="background:rgba(155,89,182,.07);border-left:2px solid rgba(162,155,254,.3);">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span id="${exId}-arrow" style="font-size:8px;color:#a29bfe;transition:transform .2s;display:inline-block;">▶</span>
+                            <span style="color:#a29bfe;font-size:10px;font-weight:bold;">🔀 ROTAS EXTRAS</span>
+                            <span style="color:var(--slate);font-size:9px;">IDs de rotas extracurriculares</span>
+                        </div>
+                        <span class="cpl-obs-motivo-count" style="background:rgba(162,155,254,.2);color:#a29bfe;">${itensExtras.length}× <span style="opacity:.7;font-size:8px;">${percExtra}%</span></span>
+                    </div>
+                    <div id="${exId}" style="display:none;">`;
+
+                    // Agrupa extras por motivo também
+                    const extraMotivoMap = {};
+                    itensExtras.forEach(o => {
+                        const p = _parseTipoObservacao(o.observacao);
+                        const chave = `${p.tipo}||${p.motivo}`;
+                        if (!extraMotivoMap[chave]) extraMotivoMap[chave] = { ...p, itens: [] };
+                        extraMotivoMap[chave].itens.push(o);
+                    });
+
+                    Object.entries(extraMotivoMap).forEach(([chave, m], emIdx) => {
+                        const emId = `${exId}-em${emIdx}`;
+                        html += `<div class="cpl-obs-motivo-row" style="padding-left:44px;background:rgba(162,155,254,.04);" onclick="cplToggleObs('${emId}')">
+                            <div style="display:flex;align-items:center;gap:6px;min-width:0;">
+                                <span id="${emId}-arrow" style="font-size:8px;color:var(--slate);transition:transform .2s;display:inline-block;">▶</span>
+                                <span class="cpl-obs-motivo-tag ${m.cls}">${m.icone} ${m.tipo}</span>
+                                ${m.motivo && m.motivo !== 'Lançamento manual pelo fiscal' ? `<span style="color:var(--text);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:280px;" title="${m.motivo}">${m.motivo}</span>` : ''}
+                            </div>
+                            <span class="cpl-obs-motivo-count">${m.itens.length}×</span>
+                        </div>
+                        <div id="${emId}" style="display:none;">`;
+
+                        m.itens.forEach(o => {
+                            const rota = (o.rota || '').substring(0, 55);
+                            const mot = o.motorista || 'S/ NOME';
+                            html += `<div class="cpl-obs-item-row" style="padding-left:58px;">
+                                <span class="cpl-obs-item-rota" style="background:#5f27cd;" title="${o.rota || ''}">${rota}</span>
+                                <span class="cpl-obs-item-mot">${mot}</span>
+                                ${o.data ? `<span style="color:var(--slate);margin-left:8px;font-size:9px;">📅 ${o.data}</span>` : ''}
+                            </div>`;
+                        });
+                        html += `</div>`;
+                    });
+
+                    html += `</div>`; // fecha exId
+                }
+
+                html += `</div></div>`; // fecha greId content + GRE wrapper
+            });
+
+            html += `</div></div>`; // fecha fId e fiscal wrapper
+        });
+
+        cont.innerHTML = html;
+    }
+
+    function cplToggleObs(id) {
+        const el = document.getElementById(id);
+        const arrow = document.getElementById(id + '-arrow');
+        if (!el) return;
+        const open = el.style.display === 'none';
+        el.style.display = open ? 'block' : 'none';
+        if (arrow) arrow.style.transform = open ? 'rotate(90deg)' : '';
     }
 
     // ── Tabela de auditoria prioritária ──────────────────────────────────────
@@ -4639,7 +5493,7 @@ const PERMISSOES_PADRAO = {
         corBadge: 'monitor'
     },
     FISCAL: {
-        abas: ['escala'],
+        abas: ['escala', 'assiduidade'],
         podeRegistrar: false,
         corBadge: 'fiscal'
     }
@@ -4743,85 +5597,168 @@ function renderizarTabelaPermissoes() {
 }
 
 // Renderiza tabela de usuários
-function renderizarTabelaUsuarios() {
-    const usuarios = carregarUsuarios();
+// ── Cache local dos usuários vindos do Sheets ──────────────────────
+let _usuariosSheets = null;
+
+async function carregarUsuariosSheets(forcar = false) {
+    if (_usuariosSheets && !forcar) return _usuariosSheets;
+    try {
+        const resp = await fetch(URL_API_SCRIPT + '?acao=listarUsuarios');
+        const data = await resp.json();
+        _usuariosSheets = data.usuarios || [];
+    } catch(e) {
+        // fallback para ACESSO_PORTAL se Sheets falhar
+        _usuariosSheets = Object.entries(ACESSO_PORTAL).map(([u, d]) => ({
+            usuario: u, senha: d.senha, nivel: d.nivel, nome: d.nome, ativo: 'true'
+        }));
+    }
+    return _usuariosSheets;
+}
+
+async function _chamarGerenciar(params) {
+    const url = URL_API_SCRIPT + '?acao=gerenciarUsuario&' + new URLSearchParams(params).toString();
+    const resp = await fetch(url);
+    return await resp.json();
+}
+
+async function renderizarTabelaUsuarios() {
     const tbody = document.getElementById('tbody-usuarios');
     if (!tbody) return;
-    
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);padding:16px;">⏳ Carregando...</td></tr>';
+
+    const usuarios = await carregarUsuariosSheets(true);
     const usuarioAtual = sessionStorage.getItem("usuario");
-    
-    tbody.innerHTML = Object.entries(usuarios).map(([username, dados]) => {
-        const corNivel = dados.nivel === 'ADMIN' ? '#e74c3c' : dados.nivel === 'GESTOR' ? '#f39c12' : '#3498db';
-        const isOriginal = ACESSO_PORTAL[username] ? true : false;
-        const acesso = getDadosAcesso(username);
-        const isOnline = acesso.online && username !== usuarioAtual;
-        const statusIcon = isOnline ? '🟢' : '⚫';
+
+    tbody.innerHTML = usuarios.map(u => {
+        const corNivel = u.nivel === 'ADMIN' ? '#e74c3c' : u.nivel === 'GESTOR' ? '#f39c12' :
+                         u.nivel === 'MONITOR' ? '#9b59b6' : '#3498db';
+        const ativo = u.ativo !== 'false';
+        const acesso = getDadosAcesso(u.usuario);
+        const isOnline = acesso.online && u.usuario !== usuarioAtual;
+        const isProprio = u.usuario === usuarioAtual;
         const ultimoAcesso = acesso.ultimoAcesso || 'Nunca';
-        const isProprio = username === usuarioAtual;
-        
-        return `<tr>
-            <td><b>${username}</b>${isOriginal ? ' <span style="font-size:8px;color:var(--success);">(original)</span>' : ''}</td>
-            <td>${dados.nome || ''}</td>
-            <td><span class="cpl-score-pill" style="background:${corNivel}22; color:${corNivel}; border:1px solid ${corNivel}44;">${dados.nivel}</span></td>
-            <td><input type="text" value="${dados.senha || ''}" id="senha-${username}" 
-                style="background:var(--bg);color:white;border:1px solid var(--border);padding:4px 8px;border-radius:4px;width:100px;font-size:10px;"></td>
+        const uid = u.usuario.replace(/[^a-zA-Z0-9]/g,'_');
+
+        return `<tr style="opacity:${ativo ? 1 : 0.5};">
             <td>
-                <span style="font-size:10px;">${statusIcon} ${isOnline ? 'Online' : (isProprio ? 'Você' : 'Offline')}</span>
-                <br><span style="font-size:8px;color:var(--slate);">Último: ${ultimoAcesso.substring(0, 16)}</span>
+                <input type="text" value="${u.usuario}" id="user-login-${uid}"
+                    style="background:var(--bg);color:#fff;border:1px solid var(--border);padding:4px 8px;border-radius:4px;width:120px;font-size:10px;font-weight:bold;"
+                    ${isProprio ? 'title="Seu próprio usuário"' : ''}>
+            </td>
+            <td><input type="text" value="${u.nome || ''}" id="user-nome-${uid}"
+                style="background:var(--bg);color:white;border:1px solid var(--border);padding:4px 8px;border-radius:4px;width:130px;font-size:10px;" placeholder="Nome completo"></td>
+            <td><span class="cpl-score-pill" style="background:${corNivel}22;color:${corNivel};border:1px solid ${corNivel}44;">${u.nivel}</span></td>
+            <td><input type="text" value="${u.senha || ''}" id="user-senha-${uid}"
+                style="background:var(--bg);color:white;border:1px solid var(--border);padding:4px 8px;border-radius:4px;width:95px;font-size:10px;"></td>
+            <td>
+                <span style="font-size:10px;">${isOnline ? '🟢 Online' : (isProprio ? '🟡 Você' : '⚫ Offline')}</span>
+                <br><span style="font-size:8px;color:var(--slate);">Último: ${ultimoAcesso.substring(0,16)}</span>
             </td>
             <td style="white-space:nowrap;">
-                <select id="nivel-${username}" style="width:auto;min-width:90px;font-size:10px;padding:3px;">
-                    <option value="FISCAL" ${dados.nivel === 'FISCAL' ? 'selected' : ''}>FISCAL</option>
-                    <option value="MONITOR" ${dados.nivel === 'MONITOR' ? 'selected' : ''}>MONITOR</option>
-                    <option value="GESTOR" ${dados.nivel === 'GESTOR' ? 'selected' : ''}>GESTOR</option>
-                    <option value="ADMIN" ${dados.nivel === 'ADMIN' ? 'selected' : ''}>ADMIN</option>
+                <select id="user-nivel-${uid}" style="width:auto;min-width:90px;font-size:10px;padding:3px;">
+                    <option value="FISCAL"  ${u.nivel==='FISCAL'  ? 'selected':''}>FISCAL</option>
+                    <option value="MONITOR" ${u.nivel==='MONITOR' ? 'selected':''}>MONITOR</option>
+                    <option value="GESTOR"  ${u.nivel==='GESTOR'  ? 'selected':''}>GESTOR</option>
+                    <option value="ADMIN"   ${u.nivel==='ADMIN'   ? 'selected':''}>ADMIN</option>
                 </select>
-                <button onclick="salvarAlteracoesUsuario('${username}')" 
-                    style="margin-left:4px;padding:4px 10px;background:var(--info);color:#fff;border:none;border-radius:4px;font-size:9px;cursor:pointer;">💾</button>
-                ${isOnline ? `<button onclick="forcarLogout('${username}')" class="btn-deslogar">🚫 Forçar Saída</button>` : ''}
-                ${!isOriginal ? `<button onclick="excluirUsuario('${username}')" 
-                    style="margin-left:2px;padding:4px 8px;background:var(--danger);color:#fff;border:none;border-radius:4px;font-size:9px;cursor:pointer;">🗑️</button>` : ''}
+                <button onclick="salvarUsuarioSheets('${u.usuario}','${uid}')"
+                    style="margin-left:4px;padding:4px 10px;background:var(--info);color:#fff;border:none;border-radius:4px;font-size:9px;cursor:pointer;" title="Salvar">💾</button>
+                ${isOnline ? `<button onclick="forcarLogout('${u.usuario}')" class="btn-deslogar">🚫</button>` : ''}
+                <button onclick="toggleAtivoUsuario('${u.usuario}','${!ativo}')"
+                    style="margin-left:2px;padding:4px 8px;background:${ativo?'#f39c12':'#2ecc71'};color:#fff;border:none;border-radius:4px;font-size:9px;cursor:pointer;"
+                    title="${ativo ? 'Desativar acesso' : 'Reativar acesso'}">${ativo ? '🔒' : '🔓'}</button>
+                ${!isProprio ? `<button onclick="excluirUsuarioSheets('${u.usuario}')"
+                    style="margin-left:2px;padding:4px 8px;background:var(--danger);color:#fff;border:none;border-radius:4px;font-size:9px;cursor:pointer;" title="Excluir">🗑️</button>` : ''}
             </td>
         </tr>`;
-    }).join('');
+    }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--slate);padding:16px;">Nenhum usuário encontrado.</td></tr>';
 }
 
-// Salva alterações de um usuário
-function salvarAlteracoesUsuario(username) {
-    const novoNivel = document.getElementById(`nivel-${username}`).value;
-    const novaSenha = document.getElementById(`senha-${username}`).value;
-    
-    if (!novaSenha || novaSenha.trim() === '') {
-        alert('⚠️ A senha não pode ficar em branco!');
-        return;
-    }
-    
-    const usuarios = carregarUsuarios();
-    
-    if (usuarios[username]) {
-        usuarios[username].nivel = novoNivel;
-        usuarios[username].senha = novaSenha.trim();
-        salvarUsuariosExtras(usuarios);
-        alert(`✅ Usuário "${username}" atualizado com sucesso!`);
+async function salvarUsuarioSheets(usernameOriginal, uid) {
+    const novoLogin = document.getElementById(`user-login-${uid}`)?.value.trim();
+    const novoNome  = document.getElementById(`user-nome-${uid}`)?.value.trim();
+    const novaSenha = document.getElementById(`user-senha-${uid}`)?.value.trim();
+    const novoNivel = document.getElementById(`user-nivel-${uid}`)?.value;
+
+    if (!novaSenha) { alert('⚠️ A senha não pode ficar em branco!'); return; }
+    if (!novoLogin) { alert('⚠️ O usuário (login) não pode ficar em branco!'); return; }
+
+    const btn = document.querySelector(`button[onclick="salvarUsuarioSheets('${usernameOriginal}','${uid}')"]`);
+    if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+
+    const res = await _chamarGerenciar({
+        op: 'editar',
+        username_original: usernameOriginal,
+        usuario: novoLogin,
+        nome: novoNome,
+        senha: novaSenha,
+        nivel: novoNivel
+    });
+    if (btn) { btn.textContent = '💾'; btn.disabled = false; }
+    if (res.ok) {
+        _usuariosSheets = null;
+        alert(`✅ Usuário atualizado!
+
+Novo login: ${novoLogin}
+Nível: ${novoNivel}
+
+⚠️ O usuário precisará fazer login novamente se o nome de acesso foi alterado.`);
         renderizarTabelaUsuarios();
+    } else {
+        alert('❌ Erro: ' + res.msg);
     }
 }
 
-// Exclui um usuário extra
-function excluirUsuario(username) {
-    if (ACESSO_PORTAL[username]) {
-        alert('⚠️ Não é possível excluir usuários originais do sistema!');
-        return;
-    }
-    
-    if (confirm(`Tem certeza que deseja excluir o usuário "${username}"?`)) {
-        const usuarios = carregarUsuarios();
-        delete usuarios[username];
-        salvarUsuariosExtras(usuarios);
-        alert(`✅ Usuário "${username}" excluído com sucesso!`);
+async function toggleAtivoUsuario(username, novoAtivo) {
+    const acao = novoAtivo === 'true' ? 'reativar' : 'desativar';
+    if (!confirm(`Tem certeza que deseja ${acao} o acesso de "${username}"?`)) return;
+    const res = await _chamarGerenciar({ op: 'editar', username_original: username, ativo: novoAtivo });
+    if (res.ok) {
+        _usuariosSheets = null;
         renderizarTabelaUsuarios();
+    } else {
+        alert('❌ Erro: ' + res.msg);
     }
 }
+
+async function excluirUsuarioSheets(username) {
+    if (!confirm(`⚠️ Excluir permanentemente o usuário "${username}"?
+
+Esta ação não pode ser desfeita.`)) return;
+    const res = await _chamarGerenciar({ op: 'excluir', usuario: username });
+    if (res.ok) {
+        _usuariosSheets = null;
+        alert(`✅ Usuário "${username}" excluído.`);
+        renderizarTabelaUsuarios();
+    } else {
+        alert('❌ Erro: ' + res.msg);
+    }
+}
+
+async function adicionarNovoUsuarioSheets() {
+    const username = prompt('👤 Login (nome de acesso):');
+    if (!username?.trim()) return;
+    const nome   = prompt('📛 Nome completo:') || username;
+    const senha  = prompt('🔑 Senha:');
+    if (!senha?.trim()) { alert('⚠️ Senha obrigatória.'); return; }
+    const nivel  = prompt('🎖️ Nível (FISCAL / MONITOR / GESTOR / ADMIN):')?.toUpperCase() || 'FISCAL';
+    if (!['FISCAL','MONITOR','GESTOR','ADMIN'].includes(nivel)) {
+        alert('⚠️ Nível inválido.'); return;
+    }
+    const res = await _chamarGerenciar({ op: 'criar', usuario: username.trim(), nome, senha: senha.trim(), nivel });
+    if (res.ok) {
+        _usuariosSheets = null;
+        alert(`✅ Usuário "${username}" criado com sucesso!`);
+        renderizarTabelaUsuarios();
+    } else {
+        alert('❌ Erro: ' + res.msg);
+    }
+}
+
+// Mantém compatibilidade com chamadas antigas
+function salvarAlteracoesUsuario(username) { renderizarTabelaUsuarios(); }
+function excluirUsuario(username) { excluirUsuarioSheets(username); }
+function adicionarNovoUsuario() { adicionarNovoUsuarioSheets(); }
 
 // Adiciona novo usuário
 function adicionarNovoUsuario() {
