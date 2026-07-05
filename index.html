@@ -2113,21 +2113,22 @@ if (areaNivel && nivelSalvo) {
         await fetch(urlFinal, { mode: 'no-cors', method: 'GET' });
         
         let sucesso = false;
-        let dadosAnteriores = bruto.length;
-        
+        // Limpa bruto antes de sincronizar para evitar cache de dia anterior
+        bruto = [];
+        const dataAlvo = campoData.value.split("-").reverse().join("/"); // dd/mm/yyyy
+
         // Loop de espera silencioso
         for (let tentativa = 1; tentativa <= 10; tentativa++) {
-            // Espera sem mostrar contagem para o usuário
             await new Promise(resolve => setTimeout(resolve, tentativa * 2000));
             
             await carregarDadosAsync();
             
-            // Verifica se os dados chegaram
-            if (bruto.length > 0 && bruto.length !== dadosAnteriores) {
+            // Verifica se os dados chegaram E são do dia correto
+            const dadosDoDia = bruto.filter(d => d.data === dataAlvo);
+            if (bruto.length > 0 && dadosDoDia.length > 0) {
                 sucesso = true;
                 break;
             }
-            dadosAnteriores = bruto.length;
         }
         
         if (sucesso) {
