@@ -3790,19 +3790,27 @@ function limparFiltroFiscal() {
         const cid = d.cidade || "S/ CIDADE";
         const mot = d.motorista || "S/ NOME";
         // Conta todos os motoristas escalados independente do status
-        const isOk = true;
-        const origem = norm(d.origem).includes("APP") ? "APP" : "LINK";
+         dados.forEach(d => {
+            const fis = d.fiscal_responsavel || "NÃO IDENTIFICADO";
+            const gre = d.gre || "S/ GRE";
+            const cid = d.cidade || "S/ CIDADE";
+            const mot = d.motorista || "S/ NOME";
+            const isOk = norm(d.status).includes("CONCLUID") || norm(d.status).includes("ANDAMENTO") || norm(d.status).includes("EXECUTANDO");
+            const origem = norm(d.origem).includes("APP") ? "APP" : "LINK";
 
+            // treeTotal — todos os motoristas únicos escalados (independente de status)
             if (!treeTotal[fis]) treeTotal[fis] = { gres: {} };
             if (!treeTotal[fis].gres[gre]) treeTotal[fis].gres[gre] = { cidades: {} };
             if (!treeTotal[fis].gres[gre].cidades[cid]) treeTotal[fis].gres[gre].cidades[cid] = new Set();
             treeTotal[fis].gres[gre].cidades[cid].add(mot);
 
+            // tree — motoristas com rota concluída ou em andamento + origem (APP/LINK)
             if (isOk) {
                 if (!tree[fis]) tree[fis] = { gres: {} };
                 if (!tree[fis].gres[gre]) tree[fis].gres[gre] = { cidades: {} };
                 if (!tree[fis].gres[gre].cidades[cid]) tree[fis].gres[gre].cidades[cid] = { motoristas: {} };
                 const prev = tree[fis].gres[gre].cidades[cid].motoristas[mot];
+                // Se em qualquer rota usou APP, prevalece APP
                 tree[fis].gres[gre].cidades[cid].motoristas[mot] = (prev === "APP" || origem === "APP") ? "APP" : "LINK";
             }
         });
