@@ -147,7 +147,7 @@
         /* ── KPIs ── */
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(6, 1fr);
             gap: 10px;
             margin-bottom: 10px;
         }
@@ -987,7 +987,7 @@
             <div class="kpi-card" style="border-color: var(--danger)"><h3><span id="k-pendente">0</span></h3><small>Não Executado</small></div>
             <div class="kpi-card" style="border-color: var(--warning)"><h3><span id="k-ass-perc">0%</span></h3><small>Assiduidade</small></div>
             <div class="kpi-card" style="border-color: var(--extra)"><h3><span id="k-mix-extra">0</span></h3><small>Volume Extras</small></div>
-            <div class="kpi-card" style="border-color: #9b59b6"><h3><span id="k-km-extra">0 km</span></h3><small>KM Exec. Extras</small></div>
+            <div class="kpi-card" style="border-color: #9b59b6"><h3><span id="k-km-total">0 km</span></h3><small>KM Executado</small></div>
         </div>
 
         <div id="perf-grid-wrap" class="grid-top" style="grid-template-columns: 1fr 2fr;">
@@ -1082,13 +1082,13 @@
             </div>
         </div>
 
-        <!-- ── 4 novos cards KM e Rankings ── -->
-        <div class="grid-2col" style="margin-bottom:15px;">
+        <!-- ── Cards KM e Ranking ── -->
+        <div class="grid-3col" style="margin-bottom:15px;">
             <div class="card row-new" style="border-top-color:#9b59b6;">
                 <h3>📏 KM Executado por GRE</h3>
                 <div class="scroll-area">
                     <table id="tKmGre">
-                        <thead><tr><th width="30">Pos</th><th>GRE</th><th width="80" style="text-align:right">KM Exec.</th></tr></thead>
+                        <thead><tr><th width="30">Pos</th><th>GRE</th><th style="text-align:right">KM Exec.</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -1097,27 +1097,16 @@
                 <h3>📏 KM Executado por Município</h3>
                 <div class="scroll-area">
                     <table id="tKmCidade">
-                        <thead><tr><th width="30">Pos</th><th>Município</th><th width="80" style="text-align:right">KM Exec.</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="grid-2col" style="margin-bottom:15px;">
-            <div class="card row-new" style="border-top-color:#e67e22;">
-                <h3>🚗 Veículos Únicos por Município</h3>
-                <div class="scroll-area">
-                    <table id="tVeiCidade">
-                        <thead><tr><th width="30">Pos</th><th>Município</th><th width="60" style="text-align:right">Veículos</th></tr></thead>
+                        <thead><tr><th width="30">Pos</th><th>Município</th><th style="text-align:right">KM Exec.</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
             </div>
             <div class="card row-new" style="border-top-color:#e74c3c;">
-                <h3>🏆 Ranking Rotas Concluídas por Município</h3>
+                <h3>🏆 Rotas Concluídas por Município</h3>
                 <div class="scroll-area">
                     <table id="tConclCidade">
-                        <thead><tr><th width="30">Pos</th><th>Município</th><th width="60" style="text-align:right">Concluídas</th></tr></thead>
+                        <thead><tr><th width="30">Pos</th><th>Município</th><th style="text-align:right">Concluídas</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -3256,9 +3245,10 @@ function limparFiltroFiscal() {
             rotaPassaFiltroFornecedor(d)
         );
 
-        let concl = 0, pend = 0, extras = 0;
+        let concl = 0, pend = 0, extras = 0, kmExecTotal = 0;
         const motUniq = new Set(), veiUniq = new Set();
         const cidadeMap = {}, fornMap = {}, fiscalObsMap = {};
+        const cidadeKmMap = {}, greKmMap = {}, cidadeConclMap = {};
         const hFrota = {
             PROPRIO: { r: 0, v: new Set(), gres: {} },
             PARCEIRO: { r: 0, v: new Set(), gres: {} },
@@ -3268,10 +3258,22 @@ function limparFiltroFiscal() {
 
         dados.forEach(d => {
             const isOk = norm(d.status).includes("CONCLUID") || norm(d.status).includes("ANDAMENTO") || norm(d.status).includes("EXECUTANDO");
+            const isConcl = norm(d.status).includes("CONCLUID");
             if (isOk) concl++; else pend++;
             if (d.isExtra) extras++;
             if (d.motorista) motUniq.add(d.motorista);
             if (d.veiculo && d.veiculo.length > 2) veiUniq.add(d.veiculo);
+
+            // KM executado — acumula para todos os filtros
+            const km = parseFloat((d.km_executada || '0').toString().replace(',', '.')) || 0;
+            if (isConcl) {
+                kmExecTotal += km;
+                const cid = d.cidade || 'SEM CIDADE';
+                const gre = d.gre || 'SEM GRE';
+                cidadeKmMap[cid] = (cidadeKmMap[cid] || 0) + km;
+                greKmMap[gre] = (greKmMap[gre] || 0) + km;
+                cidadeConclMap[cid] = (cidadeConclMap[cid] || 0) + 1;
+            }
 
             const cid = d.cidade || "SEM CIDADE";
             if (!cidadeMap[cid]) cidadeMap[cid] = { t: 0, c: 0, mot: {} };
@@ -3307,31 +3309,14 @@ function limparFiltroFiscal() {
             }
         });
 
-        // KM executado total (rotas concluídas)
-        let kmExecTotal = 0, kmExecExtra = 0;
-        const cidadeKmMap = {}, greKmMap = {}, cidadeConclMap = {};
-        dados.forEach(d => {
-            const isConcl = norm(d.status).includes('CONCLUID');
-            const km = parseFloat((d.km_executada || '0').toString().replace(',', '.')) || 0;
-            if (isConcl) {
-                kmExecTotal += km;
-                if (d.isExtra) kmExecExtra += km;
-                const cid = d.cidade || 'SEM CIDADE';
-                const gre = d.gre || 'SEM GRE';
-                cidadeKmMap[cid] = (cidadeKmMap[cid] || 0) + km;
-                greKmMap[gre] = (greKmMap[gre] || 0) + km;
-                cidadeConclMap[cid] = (cidadeConclMap[cid] || 0) + 1;
-            }
-        });
-
         document.getElementById('k-total-filtrado').innerText = dados.length;
         document.getElementById('k-concluido').innerText = concl;
         document.getElementById('k-pendente').innerText = pend;
         document.getElementById('k-ass-perc').innerText = dados.length ? ((concl / dados.length) * 100).toFixed(1) + "%" : "0%";
         document.getElementById('k-mix-extra').innerText = extras;
-        const kmExEl = document.getElementById('k-km-extra');
-        if (kmExEl) kmExEl.innerText = kmExecExtra.toFixed(1) + ' km';
-
+        const fmt = v => v >= 1000 ? (v/1000).toFixed(1) + ' mil km' : v.toFixed(1) + ' km';
+        const kmEl = document.getElementById('k-km-total');
+        if (kmEl) kmEl.innerText = fmt(kmExecTotal);
 
         renderPerfCampo(dados);
         renderRank('tFiscal', 'fiscal_responsavel', 99, dados);
@@ -3342,17 +3327,7 @@ function limparFiltroFiscal() {
         renderFrotaPorGre(dados);
         renderOcorrencias(fiscalObsMap);
         renderTecnologiaUnificada(dados);
-
-        // Veículos únicos por município (calculado aqui com dados filtrados)
-        const veiCidadeMap = {};
-        dados.forEach(d => {
-            if (d.veiculo && d.veiculo.length > 2) {
-                const cid = d.cidade || 'SEM CIDADE';
-                if (!veiCidadeMap[cid]) veiCidadeMap[cid] = new Set();
-                veiCidadeMap[cid].add(d.veiculo);
-            }
-        });
-        renderCardsKm(cidadeKmMap, greKmMap, cidadeConclMap, veiCidadeMap);
+        renderCardsKm(cidadeKmMap, greKmMap, cidadeConclMap);
     }
 
     // ── Assiduidade chart ─────────────────────────────────────────────────────
@@ -3728,43 +3703,31 @@ function limparFiltroFiscal() {
         }
     }
 
-    function renderCardsKm(cidadeKmMap, greKmMap, cidadeConclMap, veiCidadeMap) {
+    function renderCardsKm(cidadeKmMap, greKmMap, cidadeConclMap) {
         const fmt = v => v >= 1000 ? (v/1000).toFixed(1) + ' mil km' : v.toFixed(1) + ' km';
 
-        // KM por GRE
         const tGre = document.querySelector('#tKmGre tbody');
         if (tGre) {
             const sorted = Object.entries(greKmMap).sort((a,b) => b[1]-a[1]);
-            tGre.innerHTML = sorted.map(([gre, km], i) =>
+            tGre.innerHTML = sorted.length ? sorted.map(([gre, km], i) =>
                 `<tr><td style="color:var(--slate)">${i+1}º</td><td>${gre}</td><td style="text-align:right;color:#9b59b6;font-weight:bold">${fmt(km)}</td></tr>`
-            ).join('') || '<tr><td colspan="3" style="color:var(--slate)">Sem dados</td></tr>';
+            ).join('') : '<tr><td colspan="3" style="color:var(--slate);text-align:center">Sem dados</td></tr>';
         }
 
-        // KM por Município
         const tCid = document.querySelector('#tKmCidade tbody');
         if (tCid) {
             const sorted = Object.entries(cidadeKmMap).sort((a,b) => b[1]-a[1]);
-            tCid.innerHTML = sorted.map(([cid, km], i) =>
+            tCid.innerHTML = sorted.length ? sorted.map(([cid, km], i) =>
                 `<tr><td style="color:var(--slate)">${i+1}º</td><td>${cid}</td><td style="text-align:right;color:#1abc9c;font-weight:bold">${fmt(km)}</td></tr>`
-            ).join('') || '<tr><td colspan="3" style="color:var(--slate)">Sem dados</td></tr>';
+            ).join('') : '<tr><td colspan="3" style="color:var(--slate);text-align:center">Sem dados</td></tr>';
         }
 
-        // Veículos por Município
-        const tVei = document.querySelector('#tVeiCidade tbody');
-        if (tVei && veiCidadeMap) {
-            const sorted = Object.entries(veiCidadeMap).sort((a,b) => b[1].size - a[1].size);
-            tVei.innerHTML = sorted.map(([cid, veics], i) =>
-                `<tr><td style="color:var(--slate)">${i+1}º</td><td>${cid}</td><td style="text-align:right;color:#e67e22;font-weight:bold">${veics.size}</td></tr>`
-            ).join('') || '<tr><td colspan="3" style="color:var(--slate)">Sem dados</td></tr>';
-        }
-
-        // Ranking Rotas Concluídas por Município
         const tConcl = document.querySelector('#tConclCidade tbody');
         if (tConcl) {
             const sorted = Object.entries(cidadeConclMap).sort((a,b) => b[1]-a[1]);
-            tConcl.innerHTML = sorted.map(([cid, n], i) =>
+            tConcl.innerHTML = sorted.length ? sorted.map(([cid, n], i) =>
                 `<tr><td style="color:var(--slate)">${i+1}º</td><td>${cid}</td><td style="text-align:right;color:#e74c3c;font-weight:bold">${n}</td></tr>`
-            ).join('') || '<tr><td colspan="3" style="color:var(--slate)">Sem dados</td></tr>';
+            ).join('') : '<tr><td colspan="3" style="color:var(--slate);text-align:center">Sem dados</td></tr>';
         }
     }
 
@@ -5467,91 +5430,69 @@ window._cplDadosCompliance = [...dados];
 
     // ── Utils ─────────────────────────────────────────────────────────────────
     function exportarPDF() {
-        // Descobre aba ativa
         const abaAtiva = document.querySelector('.tab-content.active');
         if (!abaAtiva) { alert('Nenhuma aba ativa encontrada.'); return; }
 
-        // Blocos disponíveis na aba ativa
-        const todosCards = [...abaAtiva.querySelectorAll('.card, .kpi-grid, .kpi-grid-extras, .grid-2col, .grid-new, .grid-top')];
-        if (todosCards.length === 0) { alert('Nenhum bloco encontrado para exportar.'); return; }
+        const todosCards = [...abaAtiva.querySelectorAll(':scope > .card, :scope > .kpi-grid, :scope > .kpi-grid-extras, :scope > .grid-2col, :scope > .grid-3col, :scope > .grid-new, :scope > .grid-top, :scope > [id^="perf"]')];
+        if (todosCards.length === 0) { alert('Nenhum bloco encontrado.'); return; }
 
-        // Modal de seleção
         const modal = document.createElement('div');
-        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center;';
         modal.innerHTML = `
-            <div style="background:#2f3640;border-radius:12px;padding:24px;width:480px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.5);">
-                <h3 style="color:#fff;margin:0 0 16px;font-size:16px;">📄 Exportar PDF — Selecione os blocos</h3>
-                <div style="font-size:11px;color:#a0aec0;margin-bottom:12px;">Aba ativa: <b style="color:#3498db">${abaAtiva.id.replace('aba-','').toUpperCase()}</b></div>
-                <div id="pdf-block-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;"></div>
+            <div style="background:#2f3640;border-radius:12px;padding:24px;width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.6);">
+                <h3 style="color:#fff;margin:0 0 6px;font-size:15px;">📄 Exportar PDF — Selecione os blocos</h3>
+                <div style="font-size:10px;color:#a0aec0;margin-bottom:14px;">Aba: <b style="color:#3498db">${abaAtiva.id.replace('aba-','').toUpperCase()}</b> &nbsp;|&nbsp; Orientação: Paisagem A4</div>
+                <div style="display:flex;gap:8px;margin-bottom:12px;">
+                    <button onclick="document.querySelectorAll('.pdf-chk').forEach(c=>c.checked=true)" style="padding:4px 10px;font-size:10px;background:#3498db;color:#fff;border:none;border-radius:4px;cursor:pointer;">Marcar todos</button>
+                    <button onclick="document.querySelectorAll('.pdf-chk').forEach(c=>c.checked=false)" style="padding:4px 10px;font-size:10px;background:#4a5568;color:#fff;border:none;border-radius:4px;cursor:pointer;">Desmarcar todos</button>
+                </div>
+                <div id="pdf-block-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:20px;"></div>
                 <div style="display:flex;gap:10px;justify-content:flex-end;">
-                    <button onclick="document.body.removeChild(this.closest('[style*=fixed]'))" 
-                        style="padding:8px 16px;background:#4a5568;color:#fff;border:none;border-radius:6px;cursor:pointer;">Cancelar</button>
-                    <button id="btn-gerar-pdf"
-                        style="padding:8px 20px;background:#3498db;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:bold;">🖨️ Gerar PDF</button>
+                    <button onclick="this.closest('[style*=fixed]').remove()" style="padding:8px 16px;background:#4a5568;color:#fff;border:none;border-radius:6px;cursor:pointer;">Cancelar</button>
+                    <button id="btn-gerar-pdf" style="padding:8px 20px;background:#3498db;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:bold;">🖨️ Gerar PDF</button>
                 </div>
             </div>`;
         document.body.appendChild(modal);
 
-        // Popula lista de blocos com checkboxes
         const lista = modal.querySelector('#pdf-block-list');
-        const blocosParaExportar = [];
+        const blocosRef = [];
         todosCards.forEach((card, i) => {
-            const titulo = card.querySelector('h3')?.innerText?.trim() || card.querySelector('small')?.innerText?.trim() || `Bloco ${i+1}`;
+            const titulo = card.querySelector('h3,small')?.innerText?.trim() || `Bloco ${i+1}`;
             if (!titulo || titulo.length < 2) return;
             const id = `pdf-blk-${i}`;
-            blocosParaExportar.push({ id, card });
-            lista.innerHTML += `
-                <label style="display:flex;align-items:center;gap:10px;color:#e2e8f0;font-size:12px;cursor:pointer;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,.05);">
-                    <input type="checkbox" id="${id}" checked style="width:14px;height:14px;cursor:pointer;">
-                    ${titulo}
-                </label>`;
+            blocosRef.push({ id, card });
+            lista.innerHTML += `<label style="display:flex;align-items:center;gap:10px;color:#e2e8f0;font-size:11px;cursor:pointer;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,.05);">
+                <input type="checkbox" class="pdf-chk" id="${id}" checked style="width:14px;height:14px;cursor:pointer;"> ${titulo}</label>`;
         });
 
-        // Botão gerar
         modal.querySelector('#btn-gerar-pdf').onclick = () => {
-            const selecionados = blocosParaExportar.filter(b => modal.querySelector(`#${b.id}`)?.checked);
-            if (selecionados.length === 0) { alert('Selecione pelo menos um bloco.'); return; }
-            document.body.removeChild(modal);
+            const selecionados = blocosRef.filter(b => modal.querySelector(`#${b.id}`)?.checked);
+            if (!selecionados.length) { alert('Selecione ao menos um bloco.'); return; }
+            modal.remove();
 
-            // Cria container temporário com os blocos selecionados
             const container = document.createElement('div');
-            container.style.cssText = 'width:277mm;padding:10mm;background:#fff;font-family:Segoe UI,sans-serif;';
-
-            // Cabeçalho do relatório
+            container.style.cssText = 'width:277mm;padding:10mm;background:#fff;font-family:Segoe UI,sans-serif;color:#1a202c;';
             const dataVis = document.getElementById('update-time')?.innerText || '';
-            container.innerHTML = `
-                <div style="border-bottom:2px solid #3498db;padding-bottom:8px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
-                    <div>
-                        <div style="font-size:18px;font-weight:bold;color:#1a202c;">🔧 LOG-PI CENTER</div>
-                        <div style="font-size:11px;color:#718096;">Inteligência Logística — Transporte Escolar Piauí</div>
-                    </div>
-                    <div style="text-align:right;font-size:10px;color:#718096;">
-                        <div>${dataVis}</div>
-                        <div>Emitido em: ${new Date().toLocaleString('pt-BR')}</div>
-                    </div>
-                </div>`;
+            container.innerHTML = `<div style="border-bottom:2px solid #3498db;padding-bottom:8px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
+                <div><div style="font-size:16px;font-weight:bold;">🔧 LOG-PI CENTER</div>
+                <div style="font-size:10px;color:#718096;">Inteligência Logística — Transporte Escolar Piauí</div></div>
+                <div style="text-align:right;font-size:10px;color:#718096;">
+                    <div>${dataVis}</div><div>Emitido: ${new Date().toLocaleString('pt-BR')}</div></div></div>`;
 
-            // Clona cada bloco selecionado
             selecionados.forEach(b => {
                 const clone = b.card.cloneNode(true);
-                clone.style.cssText = 'margin-bottom:12px;padding:10px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;break-inside:avoid;';
-                // Ajusta cores para impressão
-                clone.querySelectorAll('*').forEach(el => {
-                    el.style.color = el.style.color?.includes('var(') ? '#1a202c' : el.style.color || '';
-                });
+                clone.style.cssText = 'margin-bottom:10px;padding:8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;break-inside:avoid;page-break-inside:avoid;';
+                clone.querySelectorAll('[style*="var("]').forEach(el => { el.style.color = '#1a202c'; });
                 container.appendChild(clone);
             });
 
             document.body.appendChild(container);
-            const opt = {
-                margin: [8, 8, 8, 8],
+            html2pdf().set({
+                margin: [6,6,6,6],
                 filename: `BI_LOGISTICA_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`,
                 html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-            };
-            html2pdf().set(opt).from(container).save().then(() => {
-                document.body.removeChild(container);
-            });
+            }).from(container).save().then(() => container.remove());
         };
     }
 
