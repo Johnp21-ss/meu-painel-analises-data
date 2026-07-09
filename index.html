@@ -5492,36 +5492,114 @@ window._cplDadosCompliance = [...dados];
             if (!selecionados.length) { alert('Selecione ao menos um bloco.'); return; }
             modal.remove();
 
-            // 🔧 FIX 3: container visível mas coberto por overlay branco
-            // opacity:0 / z-index:-1 fazem o browser não renderizar o conteúdo antes da captura.
-            // Overlay branco cobre o container para o usuário não ver a tela piscando.
-            const overlay = document.createElement('div');
-            overlay.style.cssText = 'position:fixed;inset:0;background:#fff;z-index:99998;pointer-events:none;';
-            document.body.appendChild(overlay);
+            const dataVis = document.getElementById('update-time')?.innerText || '';
+            const abaLabel = abaAtiva.id.replace('aba-','').toUpperCase();
 
+            // ─── Mapa de todas as variáveis CSS do tema (valores reais, sem var()) ───
+            // O html2canvas roda num contexto isolado — var(--bg) etc. não são resolvidas.
+            // Injetamos os valores hard-coded para garantir que tudo apareça.
+            const CSS_VARS = {
+                '--bg':       '#1e272e',
+                '--card-bg':  '#2f3640',
+                '--text':     '#f5f6fa',
+                '--primary':  '#34495e',
+                '--success':  '#2ecc71',
+                '--warning':  '#f1c40f',
+                '--danger':   '#e74c3c',
+                '--info':     '#3498db',
+                '--extra':    '#9b59b6',
+                '--border':   '#485460',
+                '--slate':    '#95a5a6'
+            };
+
+            // ─── Função que substitui var(--x) pelos valores reais em um style inline ─
+            function resolverVars(cssText) {
+                if (!cssText) return cssText;
+                return cssText.replace(/var\((--[\w-]+)\)/g, (_, nome) => CSS_VARS[nome] || '');
+            }
+
+            // ─── Função que percorre todos os elementos do clone e força cores sólidas ─
+            // Converte tema escuro → tema claro para o PDF
+            function aplicarTemaClaro(el) {
+                const COR_FUNDO_CARD  = '#ffffff';
+                const COR_TEXTO       = '#1a202c';
+                const COR_TEXTO_SUB   = '#4a5568';
+                const COR_BORDA       = '#e2e8f0';
+
+                el.querySelectorAll('*').forEach(node => {
+                    const s = node.style;
+                    if (!s) return;
+
+                    // Resolve var() em cada propriedade relevante
+                    ['color','background','backgroundColor','borderColor',
+                     'borderTopColor','borderBottomColor','fill','stroke'].forEach(prop => {
+                        if (s[prop] && s[prop].includes('var(')) {
+                            s[prop] = resolverVars(s[prop]);
+                        }
+                    });
+
+                    // Converte cores escuras do tema → claras para o PDF
+                    const bg = s.backgroundColor || s.background || '';
+                    const cor = s.color || '';
+
+                    // Fundos escuros → branco/cinza claro
+                    if (bg.includes('#1e272e') || bg.includes('#2f3640') || bg.includes('#1a2438') ||
+                        bg.includes('#0d1521') || bg.includes('#1a1f2e') || bg.includes('#1a2030') ||
+                        bg.includes('rgba(0,0,0') || bg.includes('rgba(0, 0, 0')) {
+                        s.backgroundColor = COR_FUNDO_CARD;
+                        s.background = COR_FUNDO_CARD;
+                    }
+
+                    // Texto claro (#f5f6fa, #fff, #ecf0f1 etc.) → escuro
+                    if (cor === '#f5f6fa' || cor === '#fff' || cor === 'white' ||
+                        cor === '#ffffff' || cor === '#ecf0f1' || cor === '#dcdde1') {
+                        s.color = COR_TEXTO;
+                    }
+                    // Texto cinza claro (#a4b0be, #95a5a6 etc.) → cinza escuro
+                    if (cor === '#a4b0be' || cor === '#95a5a6' || cor === '#7f8c8d') {
+                        s.color = COR_TEXTO_SUB;
+                    }
+
+                    // Bordas escuras → claras
+                    if (s.borderTopColor && s.borderTopColor.includes('#485460')) {
+                        s.borderTopColor = '#3498db';
+                    }
+                    if (s.borderColor && s.borderColor.includes('#485460')) {
+                        s.borderColor = COR_BORDA;
+                    }
+                });
+
+                // Força cor de texto no wrapper principal
+                el.style.color = COR_TEXTO;
+                el.style.backgroundColor = COR_FUNDO_CARD;
+            }
+
+            // ─── Monta o container de impressão ──────────────────────────────────────
             const container = document.createElement('div');
             container.id = 'pdf-export-container';
             container.style.cssText = [
-                'position:fixed',
+                'position:absolute',
                 'top:0',
                 'left:0',
                 'width:277mm',
-                'min-height:100px',
                 'padding:10mm',
                 'background:#ffffff',
                 'font-family:Segoe UI,sans-serif',
                 'color:#1a202c',
-                'z-index:99999',
-                'overflow:visible'
+                'z-index:99999'
             ].join(';');
 
-            const dataVis = document.getElementById('update-time')?.innerText || '';
-            const abaLabel = abaAtiva.id.replace('aba-','').toUpperCase();
+            // Cabeçalho
             container.innerHTML = `
-                <div style="border-bottom:2px solid #3498db;padding-bottom:8px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
+                <div style="border-bottom:2px solid #3498db;padding-bottom:8px;margin-bottom:14px;
+                            display:flex;justify-content:space-between;align-items:center;">
                     <div>
-                        <div style="font-size:16px;font-weight:bold;color:#1a202c;">🔧 LOG-PI CENTER — ${abaLabel}</div>
-                        <div style="font-size:10px;color:#718096;">Inteligência Logística — Transporte Escolar Piauí</div>
+                        <div style="font-size:16px;font-weight:bold;color:#1a202c;">
+                            🛰️ LOG-PI CENTER — ${abaLabel}
+                        </div>
+                        <div style="font-size:10px;color:#718096;">
+                            Inteligência Logística — Transporte Escolar Piauí
+                        </div>
                     </div>
                     <div style="text-align:right;font-size:10px;color:#718096;">
                         <div>${dataVis}</div>
@@ -5529,54 +5607,74 @@ window._cplDadosCompliance = [...dados];
                     </div>
                 </div>`;
 
+            // ─── Clona cada bloco selecionado ─────────────────────────────────────────
             selecionados.forEach(b => {
                 const clone = b.el.cloneNode(true);
-                clone.style.cssText = 'margin-bottom:10px;padding:8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;break-inside:avoid;page-break-inside:avoid;color:#1a202c;';
 
-                // 🔧 FIX 4: captura o bitmap de cada <canvas> (Chart.js) antes do clone
-                // cloneNode copia o elemento mas NÃO o desenho — substitui por <img> com o bitmap
+                // 1) Canvas → img com bitmap real (Chart.js)
                 b.el.querySelectorAll('canvas').forEach((canvas, idx) => {
                     try {
-                        const img = clone.querySelectorAll('canvas')[idx];
-                        if (!img) return;
+                        const canvasClone = clone.querySelectorAll('canvas')[idx];
+                        if (!canvasClone) return;
                         const dataUrl = canvas.toDataURL('image/png');
                         const imgEl = document.createElement('img');
                         imgEl.src = dataUrl;
                         imgEl.style.cssText = 'max-width:100%;height:auto;display:block;';
-                        img.parentNode.replaceChild(imgEl, img);
-                    } catch(e) { /* canvas pode estar vazio, ignora */ }
+                        canvasClone.parentNode.replaceChild(imgEl, canvasClone);
+                    } catch(e) {}
                 });
+
+                // 2) Remove elementos desnecessários no PDF (botões de ação, scrollbars)
+                clone.querySelectorAll('.btn-action, button, input[type=range], input[type=checkbox], select').forEach(el => {
+                    el.style.display = 'none';
+                });
+
+                // 3) Converte tema escuro → claro
+                aplicarTemaClaro(clone);
+
+                // 4) Estilo do wrapper do bloco
+                clone.style.cssText = [
+                    'margin-bottom:12px',
+                    'padding:10px',
+                    'border:1px solid #e2e8f0',
+                    'border-radius:6px',
+                    'background:#ffffff',
+                    'break-inside:avoid',
+                    'page-break-inside:avoid',
+                    'color:#1a202c',
+                    'overflow:hidden'
+                ].join(';');
 
                 container.appendChild(clone);
             });
 
+            // ─── Injeta no body e aguarda render ──────────────────────────────────────
             document.body.appendChild(container);
 
             const limpar = () => {
                 if (document.body.contains(container)) document.body.removeChild(container);
-                if (document.body.contains(overlay)) document.body.removeChild(overlay);
             };
 
-            // requestAnimationFrame duplo: garante que o browser pintou o container
-            // antes do html2canvas tentar capturar (resolve PDF em branco)
-            requestAnimationFrame(() => requestAnimationFrame(() => {
+            // Pequeno delay para garantir que o browser terminou de pintar
+            setTimeout(() => {
                 html2pdf().set({
-                    margin: [6, 6, 6, 6],
+                    margin: [8, 8, 8, 8],
                     filename: `BI_${abaLabel}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`,
                     html2canvas: {
-                        scale: 2,
+                        scale: 1.5,
                         useCORS: true,
                         backgroundColor: '#ffffff',
                         logging: false,
                         allowTaint: true,
                         scrollX: 0,
-                        scrollY: 0
+                        scrollY: -window.scrollY
                     },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+                    pagebreak: { mode: ['avoid-all', 'css'] }
                 }).from(container).save()
                   .then(limpar)
                   .catch(err => { limpar(); alert('Erro ao gerar PDF: ' + err.message); });
-            }));
+            }, 300);
         };
     }
 
