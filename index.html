@@ -5430,69 +5430,142 @@ window._cplDadosCompliance = [...dados];
 
     // ── Utils ─────────────────────────────────────────────────────────────────
     function exportarPDF() {
-        const abaAtiva = document.querySelector('.tab-content.active');
+        // 🔧 FIX 1: seletor corrigido de '.tab-content.active' → '.content-section.active'
+        const abaAtiva = document.querySelector('.content-section.active');
         if (!abaAtiva) { alert('Nenhuma aba ativa encontrada.'); return; }
 
-        const todosCards = [...abaAtiva.querySelectorAll(':scope > .card, :scope > .kpi-grid, :scope > .kpi-grid-extras, :scope > .grid-2col, :scope > .grid-3col, :scope > .grid-new, :scope > .grid-top, :scope > [id^="perf"]')];
+        // 🔧 FIX 2: apenas .card, .kpi-grid e .kpi-grid-extras — sem wrappers de layout
+        // (.grid-2col/.grid-3col/.grid-new não têm <h3> próprio, causavam duplicatas)
+        const todosCards = [...abaAtiva.querySelectorAll('.card, .kpi-grid, .kpi-grid-extras')];
         if (todosCards.length === 0) { alert('Nenhum bloco encontrado.'); return; }
 
+        // Monta lista de blocos com título identificável
+        const blocosRef = [];
+        todosCards.forEach((card, i) => {
+            const titulo = card.querySelector('h3')?.innerText?.trim()
+                || card.querySelector('small')?.innerText?.trim()
+                || (card.classList.contains('kpi-grid') ? '📊 KPIs Gerais' : null)
+                || (card.classList.contains('kpi-grid-extras') ? '📊 KPIs Detalhados' : null);
+            if (!titulo || titulo.length < 2) return;
+            blocosRef.push({ id: `pdf-blk-${i}`, el: card, titulo });
+        });
+
+        if (!blocosRef.length) { alert('Nenhum bloco com título encontrado para exportar.'); return; }
+
+        // Modal de seleção
         const modal = document.createElement('div');
         modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center;';
         modal.innerHTML = `
             <div style="background:#2f3640;border-radius:12px;padding:24px;width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.6);">
                 <h3 style="color:#fff;margin:0 0 6px;font-size:15px;">📄 Exportar PDF — Selecione os blocos</h3>
-                <div style="font-size:10px;color:#a0aec0;margin-bottom:14px;">Aba: <b style="color:#3498db">${abaAtiva.id.replace('aba-','').toUpperCase()}</b> &nbsp;|&nbsp; Orientação: Paisagem A4</div>
+                <div style="font-size:10px;color:#a0aec0;margin-bottom:14px;">
+                    Aba: <b style="color:#3498db">${abaAtiva.id.replace('aba-','').toUpperCase()}</b>
+                    &nbsp;|&nbsp; A4 Paisagem
+                </div>
                 <div style="display:flex;gap:8px;margin-bottom:12px;">
-                    <button onclick="document.querySelectorAll('.pdf-chk').forEach(c=>c.checked=true)" style="padding:4px 10px;font-size:10px;background:#3498db;color:#fff;border:none;border-radius:4px;cursor:pointer;">Marcar todos</button>
-                    <button onclick="document.querySelectorAll('.pdf-chk').forEach(c=>c.checked=false)" style="padding:4px 10px;font-size:10px;background:#4a5568;color:#fff;border:none;border-radius:4px;cursor:pointer;">Desmarcar todos</button>
+                    <button onclick="document.querySelectorAll('.pdf-chk').forEach(c=>c.checked=true)"
+                        style="padding:4px 10px;font-size:10px;background:#3498db;color:#fff;border:none;border-radius:4px;cursor:pointer;">✅ Marcar todos</button>
+                    <button onclick="document.querySelectorAll('.pdf-chk').forEach(c=>c.checked=false)"
+                        style="padding:4px 10px;font-size:10px;background:#4a5568;color:#fff;border:none;border-radius:4px;cursor:pointer;">⬜ Desmarcar todos</button>
                 </div>
                 <div id="pdf-block-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:20px;"></div>
                 <div style="display:flex;gap:10px;justify-content:flex-end;">
-                    <button onclick="this.closest('[style*=fixed]').remove()" style="padding:8px 16px;background:#4a5568;color:#fff;border:none;border-radius:6px;cursor:pointer;">Cancelar</button>
-                    <button id="btn-gerar-pdf" style="padding:8px 20px;background:#3498db;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:bold;">🖨️ Gerar PDF</button>
+                    <button onclick="this.closest('div[style*=fixed]').remove()"
+                        style="padding:8px 16px;background:#4a5568;color:#fff;border:none;border-radius:6px;cursor:pointer;">Cancelar</button>
+                    <button id="btn-gerar-pdf"
+                        style="padding:8px 20px;background:#3498db;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:bold;">🖨️ Gerar PDF</button>
                 </div>
             </div>`;
         document.body.appendChild(modal);
 
         const lista = modal.querySelector('#pdf-block-list');
-        const blocosRef = [];
-        todosCards.forEach((card, i) => {
-            const titulo = card.querySelector('h3,small')?.innerText?.trim() || `Bloco ${i+1}`;
-            if (!titulo || titulo.length < 2) return;
-            const id = `pdf-blk-${i}`;
-            blocosRef.push({ id, card });
-            lista.innerHTML += `<label style="display:flex;align-items:center;gap:10px;color:#e2e8f0;font-size:11px;cursor:pointer;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,.05);">
-                <input type="checkbox" class="pdf-chk" id="${id}" checked style="width:14px;height:14px;cursor:pointer;"> ${titulo}</label>`;
+        blocosRef.forEach(b => {
+            lista.innerHTML += `
+                <label style="display:flex;align-items:center;gap:10px;color:#e2e8f0;font-size:11px;cursor:pointer;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,.05);">
+                    <input type="checkbox" class="pdf-chk" id="${b.id}" checked style="width:14px;height:14px;cursor:pointer;">
+                    ${b.titulo}
+                </label>`;
         });
 
         modal.querySelector('#btn-gerar-pdf').onclick = () => {
-            const selecionados = blocosRef.filter(b => modal.querySelector(`#${b.id}`)?.checked);
+            const selecionados = blocosRef.filter(b => document.getElementById(b.id)?.checked);
             if (!selecionados.length) { alert('Selecione ao menos um bloco.'); return; }
             modal.remove();
 
+            // 🔧 FIX 3: container posicionado em cima da tela mas invisível
+            // position:fixed + opacity:0 garante que html2canvas consiga renderizar
+            // (left:-9999px faz o html2canvas não capturar em vários navegadores)
             const container = document.createElement('div');
-            container.style.cssText = 'width:277mm;padding:10mm;background:#fff;font-family:Segoe UI,sans-serif;color:#1a202c;';
+            container.id = 'pdf-export-container';
+            container.style.cssText = [
+                'position:fixed',
+                'top:0',
+                'left:0',
+                'opacity:0',
+                'pointer-events:none',
+                'z-index:-1',
+                'width:277mm',
+                'padding:10mm',
+                'background:#ffffff',
+                'font-family:Segoe UI,sans-serif',
+                'color:#1a202c',
+                'overflow:hidden'
+            ].join(';');
+
             const dataVis = document.getElementById('update-time')?.innerText || '';
-            container.innerHTML = `<div style="border-bottom:2px solid #3498db;padding-bottom:8px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
-                <div><div style="font-size:16px;font-weight:bold;">🔧 LOG-PI CENTER</div>
-                <div style="font-size:10px;color:#718096;">Inteligência Logística — Transporte Escolar Piauí</div></div>
-                <div style="text-align:right;font-size:10px;color:#718096;">
-                    <div>${dataVis}</div><div>Emitido: ${new Date().toLocaleString('pt-BR')}</div></div></div>`;
+            const abaLabel = abaAtiva.id.replace('aba-','').toUpperCase();
+            container.innerHTML = `
+                <div style="border-bottom:2px solid #3498db;padding-bottom:8px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div style="font-size:16px;font-weight:bold;color:#1a202c;">🔧 LOG-PI CENTER — ${abaLabel}</div>
+                        <div style="font-size:10px;color:#718096;">Inteligência Logística — Transporte Escolar Piauí</div>
+                    </div>
+                    <div style="text-align:right;font-size:10px;color:#718096;">
+                        <div>${dataVis}</div>
+                        <div>Emitido: ${new Date().toLocaleString('pt-BR')}</div>
+                    </div>
+                </div>`;
 
             selecionados.forEach(b => {
-                const clone = b.card.cloneNode(true);
-                clone.style.cssText = 'margin-bottom:10px;padding:8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;break-inside:avoid;page-break-inside:avoid;';
-                clone.querySelectorAll('[style*="var("]').forEach(el => { el.style.color = '#1a202c'; });
+                const clone = b.el.cloneNode(true);
+                clone.style.cssText = 'margin-bottom:10px;padding:8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;break-inside:avoid;page-break-inside:avoid;color:#1a202c;';
+
+                // 🔧 FIX 4: captura o bitmap de cada <canvas> (Chart.js) antes do clone
+                // cloneNode copia o elemento mas NÃO o desenho — substitui por <img> com o bitmap
+                b.el.querySelectorAll('canvas').forEach((canvas, idx) => {
+                    try {
+                        const img = clone.querySelectorAll('canvas')[idx];
+                        if (!img) return;
+                        const dataUrl = canvas.toDataURL('image/png');
+                        const imgEl = document.createElement('img');
+                        imgEl.src = dataUrl;
+                        imgEl.style.cssText = 'max-width:100%;height:auto;display:block;';
+                        img.parentNode.replaceChild(imgEl, img);
+                    } catch(e) { /* canvas pode estar vazio, ignora */ }
+                });
+
                 container.appendChild(clone);
             });
 
             document.body.appendChild(container);
+
             html2pdf().set({
-                margin: [6,6,6,6],
-                filename: `BI_LOGISTICA_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`,
-                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                margin: [6, 6, 6, 6],
+                filename: `BI_${abaLabel}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`,
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    allowTaint: true
+                },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-            }).from(container).save().then(() => container.remove());
+            }).from(container).save()
+              .then(() => { document.body.removeChild(container); })
+              .catch(err => {
+                  if (document.body.contains(container)) document.body.removeChild(container);
+                  alert('Erro ao gerar PDF: ' + err.message);
+              });
         };
     }
 
