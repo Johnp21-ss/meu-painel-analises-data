@@ -5492,24 +5492,27 @@ window._cplDadosCompliance = [...dados];
             if (!selecionados.length) { alert('Selecione ao menos um bloco.'); return; }
             modal.remove();
 
-            // 🔧 FIX 3: container posicionado em cima da tela mas invisível
-            // position:fixed + opacity:0 garante que html2canvas consiga renderizar
-            // (left:-9999px faz o html2canvas não capturar em vários navegadores)
+            // 🔧 FIX 3: container visível mas coberto por overlay branco
+            // opacity:0 / z-index:-1 fazem o browser não renderizar o conteúdo antes da captura.
+            // Overlay branco cobre o container para o usuário não ver a tela piscando.
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;inset:0;background:#fff;z-index:99998;pointer-events:none;';
+            document.body.appendChild(overlay);
+
             const container = document.createElement('div');
             container.id = 'pdf-export-container';
             container.style.cssText = [
                 'position:fixed',
                 'top:0',
                 'left:0',
-                'opacity:0',
-                'pointer-events:none',
-                'z-index:-1',
                 'width:277mm',
+                'min-height:100px',
                 'padding:10mm',
                 'background:#ffffff',
                 'font-family:Segoe UI,sans-serif',
                 'color:#1a202c',
-                'overflow:hidden'
+                'z-index:99999',
+                'overflow:visible'
             ].join(';');
 
             const dataVis = document.getElementById('update-time')?.innerText || '';
@@ -5549,23 +5552,31 @@ window._cplDadosCompliance = [...dados];
 
             document.body.appendChild(container);
 
-            html2pdf().set({
-                margin: [6, 6, 6, 6],
-                filename: `BI_${abaLabel}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`,
-                html2canvas: {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    allowTaint: true
-                },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-            }).from(container).save()
-              .then(() => { document.body.removeChild(container); })
-              .catch(err => {
-                  if (document.body.contains(container)) document.body.removeChild(container);
-                  alert('Erro ao gerar PDF: ' + err.message);
-              });
+            const limpar = () => {
+                if (document.body.contains(container)) document.body.removeChild(container);
+                if (document.body.contains(overlay)) document.body.removeChild(overlay);
+            };
+
+            // requestAnimationFrame duplo: garante que o browser pintou o container
+            // antes do html2canvas tentar capturar (resolve PDF em branco)
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                html2pdf().set({
+                    margin: [6, 6, 6, 6],
+                    filename: `BI_${abaLabel}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`,
+                    html2canvas: {
+                        scale: 2,
+                        useCORS: true,
+                        backgroundColor: '#ffffff',
+                        logging: false,
+                        allowTaint: true,
+                        scrollX: 0,
+                        scrollY: 0
+                    },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                }).from(container).save()
+                  .then(limpar)
+                  .catch(err => { limpar(); alert('Erro ao gerar PDF: ' + err.message); });
+            }));
         };
     }
 
