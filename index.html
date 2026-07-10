@@ -863,8 +863,86 @@
 .btn-deslogar:hover {
     background: #c0392b;
 }
+    /* ══════════════════════════════════════
+       PRINT — Layout A4 Paisagem
+    ══════════════════════════════════════ */
+    #printBlock { display: none; }
+
+    @media print {
+        html, body { background: #fff !important; color: #000 !important; margin: 0; padding: 0; }
+        .no-print { display: none !important; }
+        #printBlock {
+            display: block !important;
+            width: 100%;
+            background: #fff;
+            color: #1a202c;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 8.5pt;
+        }
+        @page { size: A4 landscape; margin: 10mm 10mm; }
+
+        .ph { border-bottom: 2.5px solid #3498db; padding-bottom: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .ph-titulo { font-size: 13pt; font-weight: 800; color: #3498db; margin: 0 0 2px; }
+        .ph-sub    { font-size: 8pt; color: #555; margin-bottom: 2px; }
+        .ph-meta   { font-size: 7.5pt; color: #333; }
+        .ph-meta span { margin-right: 14px; }
+
+        .p-kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 10px; }
+        .p-kpi  { border: 1px solid #dde3f0; border-radius: 4px; padding: 6px 8px; border-top: 3px solid #3498db; }
+        .p-kpi .pk-label { font-size: 6pt; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
+        .p-kpi .pk-valor { font-size: 13pt; font-weight: 800; color: #000; line-height: 1; }
+
+        .psec { font-size: 8pt; font-weight: 800; color: #3498db; text-transform: uppercase; border-bottom: 1px solid #dde3f0; padding-bottom: 2px; margin: 8px 0 5px; }
+
+        .ptab { width: 100%; border-collapse: collapse; page-break-inside: auto; margin-bottom: 8px; }
+        .ptab thead th { background: #f0f4fb !important; color: #000; font-size: 7pt; font-weight: 700; text-transform: uppercase; padding: 4px 6px; border: 1px solid #dde3f0; text-align: left; }
+        .ptab tbody tr { page-break-inside: avoid; }
+        .ptab tbody td { padding: 3px 6px; font-size: 7.5pt; border: 1px solid #e8ecf5; color: #000; vertical-align: middle; }
+        .ptab tbody tr:nth-child(even) td { background: #f9fafb; }
+
+        .p-badge        { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 6.5pt; font-weight: 700; border: 1px solid; }
+        .p-badge-ok     { background: #e6f9f1; color: #0a7a50; border-color: #9de0c1; }
+        .p-badge-danger { background: #fff0ee; color: #c0392b; border-color: #fca5a5; }
+        .p-badge-warn   { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+        .p-badge-info   { background: #ebf8ff; color: #2b6cb0; border-color: #bee3f8; }
+        .p-badge-slate  { background: #f0f4fb; color: #334;    border-color: #dde3f0; }
+
+        .pfoot { margin-top: 8px; border-top: 1px solid #dde3f0; padding-top: 4px; font-size: 6.5pt; color: #999; display: flex; justify-content: space-between; }
+        .pdf-sec-hidden { display: none !important; }
+    }
     </style> </head>
 <body>
+<!-- ══════════════════════════════════════════
+     BLOCO DE IMPRESSÃO (só aparece no print)
+══════════════════════════════════════════ -->
+<div id="printBlock">
+    <!-- Cabeçalho -->
+    <div class="ph">
+        <div>
+            <div class="ph-titulo">🛰️ LOG-PI CENTER — <span id="pAbaLabel">ESCALA</span></div>
+            <div class="ph-sub">Inteligência Logística — Transporte Escolar Piauí</div>
+        </div>
+        <div style="text-align:right;">
+            <div class="ph-meta"><span>📅 Referência: <strong id="pDataRef">—</strong></span></div>
+            <div class="ph-meta" style="margin-top:2px;">Emitido: <strong id="pEmitido">—</strong></div>
+        </div>
+    </div>
+
+    <!-- KPIs (sempre incluídos) -->
+    <div class="psec">Resumo Operacional</div>
+    <div class="p-kpis" id="pKpisBloco"></div>
+
+    <!-- Conteúdo dinâmico das seções selecionadas -->
+    <div id="pConteudoDinamico"></div>
+
+    <!-- Rodapé -->
+    <div class="pfoot">
+        <span>LOG-PI CENTER — Sistema de Monitoramento de Transporte Escolar | Piauí</span>
+        <span id="pFooter">—</span>
+    </div>
+</div>
+<!-- FIM BLOCO IMPRESSÃO -->
+
     <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1a1a1a; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center;">
         <div style="background: #2c3e50; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; width: 320px;">
             <h2 style="color: white; margin-bottom: 20px; font-family: sans-serif;">Portal Logística</h2>
@@ -876,7 +954,7 @@
     </div>
     
     <!-- ── Display do Usuário Logado ── -->
-<div id="user-display">
+<div id="user-display" class="no-print">
     👤 Olá, <span id="nome-logado" style="color: #27ae60; font-weight: bold;">Visitante</span>
     <span id="nivel-badge" style="background: #3498db; color: white; padding: 1px 8px; border-radius: 10px; font-size: 8px; margin-left: 5px; font-weight: bold;">
         <span id="nivel-logado">--</span>
@@ -885,7 +963,7 @@
     <a href="#" onclick="marcarOffline(sessionStorage.getItem('usuario')); sessionStorage.clear(); location.reload();" style="color: #e74c3c; text-decoration: none; font-weight: bold;">🚪 Sair</a>
 </div>
 
-<div class="wrapper">
+<div class="wrapper no-print">
 
     <!-- ══════════════════════════════════════
          MODAL: CONFIRMAÇÃO DE REGISTRO
@@ -926,7 +1004,7 @@
     </div>
 
     <!-- ── Navegação ── -->
-    <nav class="nav-tabs">
+    <nav class="nav-tabs no-print">
         <div class="logo-box">🛰️ LOG-PI CENTER</div>
         <button class="tab-btn active" onclick="switchTab(event,'aba-escala')">📡 Dados Escala</button>
         <button class="tab-btn" onclick="switchTab(event,'aba-assiduidade')">⏱️ Assiduidade Temporal</button>
@@ -5430,16 +5508,11 @@ window._cplDadosCompliance = [...dados];
 
     // ── Utils ─────────────────────────────────────────────────────────────────
     function exportarPDF() {
-        // 🔧 FIX 1: seletor corrigido de '.tab-content.active' → '.content-section.active'
         const abaAtiva = document.querySelector('.content-section.active');
         if (!abaAtiva) { alert('Nenhuma aba ativa encontrada.'); return; }
 
-        // 🔧 FIX 2: apenas .card, .kpi-grid e .kpi-grid-extras — sem wrappers de layout
-        // (.grid-2col/.grid-3col/.grid-new não têm <h3> próprio, causavam duplicatas)
+        // Coleta blocos com título identificável
         const todosCards = [...abaAtiva.querySelectorAll('.card, .kpi-grid, .kpi-grid-extras')];
-        if (todosCards.length === 0) { alert('Nenhum bloco encontrado.'); return; }
-
-        // Monta lista de blocos com título identificável
         const blocosRef = [];
         todosCards.forEach((card, i) => {
             const titulo = card.querySelector('h3')?.innerText?.trim()
@@ -5450,9 +5523,9 @@ window._cplDadosCompliance = [...dados];
             blocosRef.push({ id: `pdf-blk-${i}`, el: card, titulo });
         });
 
-        if (!blocosRef.length) { alert('Nenhum bloco com título encontrado para exportar.'); return; }
+        if (!blocosRef.length) { alert('Nenhum bloco encontrado para exportar.'); return; }
 
-        // Modal de seleção
+        // Modal de seleção (mantido igual ao original)
         const modal = document.createElement('div');
         modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center;';
         modal.innerHTML = `
@@ -5473,7 +5546,7 @@ window._cplDadosCompliance = [...dados];
                     <button onclick="this.closest('div[style*=fixed]').remove()"
                         style="padding:8px 16px;background:#4a5568;color:#fff;border:none;border-radius:6px;cursor:pointer;">Cancelar</button>
                     <button id="btn-gerar-pdf"
-                        style="padding:8px 20px;background:#3498db;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:bold;">🖨️ Gerar PDF</button>
+                        style="padding:8px 20px;background:#c0392b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:bold;">🖨️ Gerar PDF</button>
                 </div>
             </div>`;
         document.body.appendChild(modal);
@@ -5492,151 +5565,103 @@ window._cplDadosCompliance = [...dados];
             if (!selecionados.length) { alert('Selecione ao menos um bloco.'); return; }
             modal.remove();
 
-            const dataVis = document.getElementById('update-time')?.innerText || '';
             const abaLabel = abaAtiva.id.replace('aba-','').toUpperCase();
+            const dataVis  = document.getElementById('update-time')?.innerText || '—';
+            const agora    = new Date().toLocaleString('pt-BR');
 
-            // ── Container de impressão ───────────────────────────────────────────────
-            const container = document.createElement('div');
-            container.id = 'pdf-export-container';
-            container.style.cssText = 'position:absolute;top:0;left:0;width:277mm;padding:10mm;background:#ffffff;font-family:Segoe UI,sans-serif;color:#1a202c;z-index:99999;';
+            // ── Preenche KPIs no printBlock ───────────────────────────────
+            const kpiGrid = abaAtiva.querySelector('.kpi-grid, .kpi-grid-fraude, .kpi-grid-extras');
+            let kpisHtml = '';
+            if (kpiGrid) {
+                kpiGrid.querySelectorAll('.kpi-card, .kpi-card-fraude, .kpi-card-extra').forEach(kpi => {
+                    const val   = kpi.querySelector('h3')?.innerText?.trim() || kpi.querySelector('.kpi-icon + h3')?.innerText?.trim() || '—';
+                    const label = kpi.querySelector('small')?.innerText?.trim() || '';
+                    kpisHtml += `<div class="p-kpi">
+                        <div class="pk-label">${label}</div>
+                        <div class="pk-valor">${val}</div>
+                    </div>`;
+                });
+            }
+            document.getElementById('pKpisBloco').innerHTML = kpisHtml || '<div style="color:#888;font-size:8pt;">KPIs não disponíveis para esta aba.</div>';
 
-            // ── STYLE TAG: redefine variáveis CSS e força tema claro no container ────
-            // Esta é a forma correta: sobrescreve as vars do :root dentro do escopo
-            // do container, sem precisar percorrer elemento por elemento.
-            const styleTag = document.createElement('style');
-            styleTag.textContent = `
-                #pdf-export-container {
-                    --bg: #f8fafc;
-                    --card-bg: #ffffff;
-                    --text: #1a202c;
-                    --primary: #2d3748;
-                    --success: #276749;
-                    --warning: #b7791f;
-                    --danger: #c53030;
-                    --info: #2b6cb0;
-                    --extra: #6b46c1;
-                    --border: #e2e8f0;
-                    --slate: #4a5568;
-                }
-                #pdf-export-container * {
-                    color: #1a202c !important;
-                    border-color: #e2e8f0 !important;
-                }
-                #pdf-export-container .card,
-                #pdf-export-container .kpi-card,
-                #pdf-export-container .kpi-card-fraude,
-                #pdf-export-container .kpi-card-extra {
-                    background: #ffffff !important;
-                    box-shadow: none !important;
-                }
-                #pdf-export-container th {
-                    background: #f1f5f9 !important;
-                    color: #2d3748 !important;
-                }
-                #pdf-export-container td {
-                    color: #1a202c !important;
-                }
-                #pdf-export-container .badge-danger  { background: #fed7d7 !important; color: #c53030 !important; }
-                #pdf-export-container .badge-warning { background: #fefcbf !important; color: #b7791f !important; }
-                #pdf-export-container .badge-success { background: #c6f6d5 !important; color: #276749 !important; }
-                #pdf-export-container .badge-info    { background: #bee3f8 !important; color: #2b6cb0 !important; }
-                #pdf-export-container .perc-bold     { color: #276749 !important; }
-                #pdf-export-container .val-fraude    { color: #c53030 !important; }
-                #pdf-export-container .val-alerta    { color: #b7791f !important; }
-                #pdf-export-container small          { color: #4a5568 !important; }
-                #pdf-export-container h3             { color: #1a202c !important; }
-                #pdf-export-container .btn-action,
-                #pdf-export-container button,
-                #pdf-export-container input[type=range],
-                #pdf-export-container input[type=checkbox],
-                #pdf-export-container select,
-                #pdf-export-container .forn-wrapper,
-                #pdf-export-container .regiao-btns,
-                #pdf-export-container .scroll-area::-webkit-scrollbar { display: none !important; }
-            `;
-            container.appendChild(styleTag);
+            // ── Preenche cabeçalho ────────────────────────────────────────
+            document.getElementById('pAbaLabel').textContent = abaLabel;
+            document.getElementById('pDataRef').textContent  = dataVis;
+            document.getElementById('pEmitido').textContent  = agora;
+            document.getElementById('pFooter').textContent   = `LOG-PI CENTER | Aba: ${abaLabel} | ${dataVis} | Emitido: ${agora}`;
 
-            // ── Cabeçalho ────────────────────────────────────────────────────────────
-            const header = document.createElement('div');
-            header.style.cssText = 'border-bottom:2px solid #3498db;padding-bottom:8px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;';
-            header.innerHTML = `
-                <div>
-                    <div style="font-size:16px;font-weight:bold;color:#1a202c;">🛰️ LOG-PI CENTER — ${abaLabel}</div>
-                    <div style="font-size:10px;color:#4a5568;">Inteligência Logística — Transporte Escolar Piauí</div>
-                </div>
-                <div style="text-align:right;font-size:10px;color:#4a5568;">
-                    <div>${dataVis}</div>
-                    <div>Emitido: ${new Date().toLocaleString('pt-BR')}</div>
-                </div>`;
-            container.appendChild(header);
+            // ── Monta conteúdo dinâmico das seções selecionadas ──────────
+            const contDin = document.getElementById('pConteudoDinamico');
+            contDin.innerHTML = '';
 
-            // ── Clona cada bloco selecionado ─────────────────────────────────────────
             selecionados.forEach(b => {
-                const clone = b.el.cloneNode(true);
+                const secDiv = document.createElement('div');
+                secDiv.style.cssText = 'margin-bottom:10px;page-break-inside:avoid;';
 
-                // Canvas → img com bitmap real (Chart.js não copia o desenho no clone)
-                b.el.querySelectorAll('canvas').forEach((canvas, idx) => {
-                    try {
-                        const canvasClone = clone.querySelectorAll('canvas')[idx];
-                        if (!canvasClone) return;
-                        const dataUrl = canvas.toDataURL('image/png');
-                        const imgEl = document.createElement('img');
-                        imgEl.src = dataUrl;
-                        imgEl.style.cssText = 'max-width:100%;height:auto;display:block;background:#fff;';
-                        canvasClone.parentNode.replaceChild(imgEl, canvasClone);
-                    } catch(e) {}
-                });
+                // Título da seção
+                const tituloEl = document.createElement('div');
+                tituloEl.className = 'psec';
+                tituloEl.textContent = b.titulo;
+                secDiv.appendChild(tituloEl);
 
-                // Remove scroll areas fixas para o conteúdo aparecer completo
-                clone.querySelectorAll('.scroll-area, .scroll-area-sm, .sticky-table').forEach(el => {
-                    el.style.maxHeight = 'none';
-                    el.style.overflow = 'visible';
-                });
+                // Canvas → tabela de imagem para o print
+                const canvases = b.el.querySelectorAll('canvas');
+                if (canvases.length) {
+                    canvases.forEach(canvas => {
+                        try {
+                            const dataUrl = canvas.toDataURL('image/png');
+                            const img = document.createElement('img');
+                            img.src = dataUrl;
+                            img.style.cssText = 'max-width:100%;height:auto;display:block;border:1px solid #dde3f0;border-radius:4px;margin-bottom:4px;background:#fff;';
+                            secDiv.appendChild(img);
+                        } catch(e) {}
+                    });
+                }
 
-                // Remove height fixo dos cards para não cortar conteúdo
-                clone.style.height = 'auto';
-                clone.style.minHeight = '0';
-                clone.style.maxHeight = 'none';
-                clone.style.overflow = 'visible';
-                clone.style.marginBottom = '12px';
-                clone.style.pageBreakInside = 'avoid';
+                // Tabelas → clona e converte para tema claro
+                const tabelas = b.el.querySelectorAll('table');
+                if (tabelas.length) {
+                    tabelas.forEach(tbl => {
+                        const clone = tbl.cloneNode(true);
+                        clone.className = 'ptab';
+                        // Remove botões e inputs dentro da tabela clonada
+                        clone.querySelectorAll('button, input, select, .btn-action').forEach(el => el.remove());
+                        // Força texto preto em todas as células
+                        clone.querySelectorAll('td, th').forEach(cell => {
+                            cell.style.color = '#1a202c';
+                            cell.style.background = '';
+                            cell.style.backgroundColor = '';
+                        });
+                        // Converte badges coloridos para versão print
+                        clone.querySelectorAll('.badge-danger, .cpl-risco-critico, .cpl-alerta-temporal').forEach(el => {
+                            el.className = 'p-badge p-badge-danger';
+                        });
+                        clone.querySelectorAll('.badge-warning, .cpl-risco-alto').forEach(el => {
+                            el.className = 'p-badge p-badge-warn';
+                        });
+                        clone.querySelectorAll('.badge-success, .cpl-risco-baixo').forEach(el => {
+                            el.className = 'p-badge p-badge-ok';
+                        });
+                        clone.querySelectorAll('.badge-info, .cpl-risco-medio').forEach(el => {
+                            el.className = 'p-badge p-badge-info';
+                        });
+                        secDiv.appendChild(clone);
+                    });
+                }
 
-                container.appendChild(clone);
+                // Se não tem canvas nem tabela, tenta pegar o texto dos KPIs e listas simples
+                if (!canvases.length && !tabelas.length) {
+                    const txt = document.createElement('div');
+                    txt.style.cssText = 'font-size:8pt;color:#555;padding:4px;';
+                    txt.textContent = b.el.innerText?.substring(0, 500) || '';
+                    secDiv.appendChild(txt);
+                }
+
+                contDin.appendChild(secDiv);
             });
 
-            // ── Injeta no body, aguarda render e captura ─────────────────────────────
-            document.body.appendChild(container);
-
-            const limpar = () => {
-                if (document.body.contains(container)) document.body.removeChild(container);
-            };
-
-            setTimeout(() => {
-                html2pdf().set({
-                    margin: [8, 8, 8, 8],
-                    filename: `BI_${abaLabel}_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`,
-                    html2canvas: {
-                        scale: 1.5,
-                        useCORS: true,
-                        backgroundColor: '#ffffff',
-                        logging: false,
-                        allowTaint: true,
-                        scrollX: 0,
-                        scrollY: -window.scrollY,
-                        onclone: (doc) => {
-                            // Garante que as variáveis CSS do :root original
-                            // não sobrescrevam as do container no documento clonado
-                            const s = doc.createElement('style');
-                            s.textContent = ':root { --bg:#f8fafc; --card-bg:#ffffff; --text:#1a202c; --border:#e2e8f0; --slate:#4a5568; }';
-                            doc.head.appendChild(s);
-                        }
-                    },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
-                    pagebreak: { mode: ['avoid-all', 'css'] }
-                }).from(container).save()
-                  .then(limpar)
-                  .catch(err => { limpar(); alert('Erro ao gerar PDF: ' + err.message); });
-            }, 400);
+            // ── Dispara o print nativo do browser ────────────────────────
+            setTimeout(() => { window.print(); }, 200);
         };
     }
 
