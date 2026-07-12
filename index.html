@@ -254,6 +254,10 @@
         .btn-audio { background: var(--success); }
         .btn-refresh { background: var(--info); }
         .btn-sync { background: #8e44ad; }
+        .btn-recarregar { background: #27ae60; transition: all .2s; }
+        .btn-recarregar:disabled { background: #1e8449; opacity: .7; cursor: not-allowed; }
+        .btn-recarregar.girando i { animation: spin .8s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         .nested-row { display: none; background: rgba(0, 0, 0, 0.15); }
         .show-row { display: table-row !important; }
@@ -1027,6 +1031,7 @@
                     <div class="sync-box">
                         <input type="date" id="dataSync" class="input-date">
                         <button id="btnSyncUnificado" class="btn-action" onclick="sincronizarEAtualizar()" style="background:var(--info);">🔄 SINCRONIZAR</button>
+                        <button id="btnRecarregar" class="btn-action btn-recarregar" onclick="recarregarDados()" title="Recarregar dados sem sair do sistema"><i class="fas fa-sync-alt"></i> RECARREGAR</button>
                 </div>
             <span id="sync-hora" style="color:var(--slate); font-size:8px; margin-left:5px;"></span>
                 </div>
@@ -2334,6 +2339,35 @@ function carregarDadosAsync() {
         .catch(() => resolve());
     });
 }
+
+// ══════════════════════════════════════════════
+// RECARREGAR DADOS SEM RELOAD
+// ══════════════════════════════════════════════
+async function recarregarDados() {
+    const btn = document.getElementById('btnRecarregar');
+    const timeLabel = document.getElementById('update-time');
+    const horaLabel = document.getElementById('sync-hora');
+
+    btn.disabled = true;
+    btn.classList.add('girando');
+    btn.innerHTML = '<i class="fas fa-sync-alt"></i> CARREGANDO...';
+    timeLabel.innerText = '⏳ Recarregando dados...';
+    horaLabel.innerText = '';
+
+    try {
+        await carregarDadosAsync();
+        const agora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        timeLabel.innerText = '✅ Dados atualizados';
+        horaLabel.innerText = `Recarregado às ${agora}`;
+    } catch (e) {
+        timeLabel.innerText = '❌ Erro ao recarregar — tente novamente';
+    } finally {
+        btn.disabled = false;
+        btn.classList.remove('girando');
+        btn.innerHTML = '<i class="fas fa-sync-alt"></i> RECARREGAR';
+    }
+}
+
 // ══════════════════════════════════════════════
 // HISTÓRICO DE APROVEITAMENTO - GRÁFICO
 // ══════════════════════════════════════════════
