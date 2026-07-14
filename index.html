@@ -6709,30 +6709,7 @@ function renderizarTabelaPermissoes() {
     }).join('');
 }
 
-// Renderiza tabela de usuários
-// ── Cache local dos usuários vindos do Sheets ──────────────────────
-let _usuariosSheets = null;
-
-async function carregarUsuariosSheets(forcar = false) {
-    if (_usuariosSheets && !forcar) return _usuariosSheets;
-    try {
-        const resp = await fetch(URL_API_SCRIPT + '?acao=listarUsuarios');
-        const data = await resp.json();
-        _usuariosSheets = data.usuarios || [];
-    } catch(e) {
-        // fallback para ACESSO_PORTAL se Sheets falhar
-        _usuariosSheets = Object.entries(ACESSO_PORTAL).map(([u, d]) => ({
-            usuario: u, senha: d.senha, nivel: d.nivel, nome: d.nome, ativo: 'true'
-        }));
-    }
-    return _usuariosSheets;
-}
-
-async function _chamarGerenciar(params) {
-    const url = URL_API_SCRIPT + '?acao=gerenciarUsuario&' + new URLSearchParams(params).toString();
-    const resp = await fetch(url);
-    return await resp.json();
-}
+// ── Compatibilidade mantida ───────────────────────────────────────────────
 
 async function renderizarTabelaUsuarios() {
     const tbody = document.getElementById('tbody-usuarios');
@@ -7245,22 +7222,7 @@ function renderCplAssiduidadeUnificada() {
     }
 } 
 // Inicializa a aba de gestão
-function initGestaoAcessos() {
-    renderizarTabelaPermissoes();
-    renderizarTabelaUsuarios();
-    
-    // Atualiza a tabela a cada 30 segundos para mostrar status online/offline
-    if (window._gestaoInterval) clearInterval(window._gestaoInterval);
-    window._gestaoInterval = setInterval(() => {
-        const abaGestao = document.getElementById('aba-gestao');
-        if (abaGestao && abaGestao.classList.contains('active')) {
-            renderizarTabelaUsuarios();
-        } else {
-            clearInterval(window._gestaoInterval);
-        }
-    }, 30000);
-}
-     // ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
 // FILTROS DA TABELA DE IRREGULARIDADES
 // ══════════════════════════════════════════════
 
