@@ -295,6 +295,8 @@
         .btn-sync { background: #8e44ad; }
         .perm-check { display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text);cursor:pointer;padding:4px 8px;border-radius:6px;background:var(--card-bg) }
         .perm-check input { accent-color:var(--info);width:13px;height:13px }
+        .hist-novo-btn { background:var(--surface2);border:none;border-radius:6px;padding:5px 12px;color:var(--slate);font-size:10px;font-weight:700;cursor:pointer;transition:.2s }
+        .hist-novo-btn.active { background:var(--gold);color:#1a1a1a }
 
         .nested-row { display: none; background: rgba(0, 0, 0, 0.15); }
         .show-row { display: table-row !important; }
@@ -1557,19 +1559,97 @@
      BLOCO HISTÓRICO
 ══════════════════════════════════════════════════════════ -->
 <section id="aba-historico" class="content-section">
-    <div style="background:var(--card-bg);border-radius:12px;padding:20px;margin-bottom:15px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:10px">
-            <div style="font-size:14px;font-weight:700">📈 Histórico de Desempenho por Fiscal</div>
-            <button onclick="carregarHistorico()" class="btn-action" style="background:var(--gold);color:#1a1a1a"><i class="fas fa-sync-alt"></i> ATUALIZAR</button>
+    <!-- Cabeçalho -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div>
+            <div style="font-size:14px;font-weight:900">📈 Histórico de Desempenho por Fiscal</div>
+            <div style="font-size:9px;color:var(--slate);margin-top:2px">% assiduidade diária · dados da aba Historico_Fiscais</div>
         </div>
-        <div id="hist-loading" style="text-align:center;padding:40px;color:var(--slate);font-size:12px">
-            <i class="fas fa-chart-line" style="font-size:32px;margin-bottom:10px;display:block"></i>
-            Clique em ATUALIZAR para carregar o histórico
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <span id="hist-status-novo" style="font-size:9px;color:var(--slate)"></span>
+            <button onclick="carregarHistorico()" class="btn-action" style="background:var(--gold);color:#1a1a1a;font-size:10px;padding:6px 14px"><i class="fas fa-sync-alt"></i> ATUALIZAR</button>
         </div>
-        <div id="hist-content" style="display:none">
-            <canvas id="chartHistoricoUnificado" style="max-height:400px"></canvas>
-            <div id="hist-leg" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;justify-content:center"></div>
+    </div>
+
+    <!-- Filtros -->
+    <div style="background:var(--card-bg);border-radius:12px;padding:14px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+        <!-- Período rápido -->
+        <div style="display:flex;gap:4px">
+            <button class="hist-novo-btn active" id="hnBtn7"  onclick="setHistNovoPeriodo(7,this)">7d</button>
+            <button class="hist-novo-btn" id="hnBtn15" onclick="setHistNovoPeriodo(15,this)">15d</button>
+            <button class="hist-novo-btn" id="hnBtn30" onclick="setHistNovoPeriodo(30,this)">30d</button>
+            <button class="hist-novo-btn" id="hnBtnTudo" onclick="setHistNovoPeriodo(0,this)">Tudo</button>
         </div>
+
+        <!-- Período personalizado -->
+        <div style="display:flex;gap:6px;align-items:center">
+            <input type="date" id="hist-dt-ini" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px">
+            <span style="color:var(--slate);font-size:10px">até</span>
+            <input type="date" id="hist-dt-fim" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px">
+            <button onclick="aplicarPeriodoCustom()" style="background:var(--info);border:none;border-radius:6px;padding:4px 10px;color:white;font-size:10px;font-weight:700;cursor:pointer">Aplicar</button>
+        </div>
+
+        <!-- Flags -->
+        <label style="display:flex;align-items:center;gap:5px;font-size:10px;cursor:pointer">
+            <input type="checkbox" id="hist-ocultar-fds" onchange="filtrarHistoricoNovo()" style="accent-color:var(--gold)"> 🌙 Ocultar Sáb/Dom
+        </label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:10px;cursor:pointer">
+            <input type="checkbox" id="hist-ocultar-fer" onchange="filtrarHistoricoNovo()" style="accent-color:var(--gold)"> 🎉 Ocultar Feriados
+        </label>
+
+        <!-- Seleção de fiscais -->
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+            <select id="hist-sel-fiscal" multiple style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px;min-width:180px;height:60px" onchange="filtrarHistoricoNovo()"></select>
+            <div style="display:flex;flex-direction:column;gap:4px">
+                <button onclick="selecionarTodosFiscais(true)"  style="background:var(--surface2);border:none;border-radius:4px;padding:3px 8px;color:var(--text);font-size:9px;cursor:pointer">Todos</button>
+                <button onclick="selecionarTodosFiscais(false)" style="background:var(--surface2);border:none;border-radius:4px;padding:3px 8px;color:var(--text);font-size:9px;cursor:pointer">Limpar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico -->
+    <div style="background:var(--card-bg);border-radius:12px;padding:16px;margin-bottom:12px" id="hist-novo-content" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate)" id="hist-contador-novo"></div>
+            <div style="display:flex;gap:6px">
+                <button onclick="toggleTodasLinhas(true)"  style="background:var(--surface2);border:none;border-radius:6px;padding:4px 10px;color:var(--text);font-size:9px;cursor:pointer">Mostrar Todos</button>
+                <button onclick="toggleTodasLinhas(false)" style="background:var(--surface2);border:none;border-radius:6px;padding:4px 10px;color:var(--text);font-size:9px;cursor:pointer">Ocultar Todos</button>
+            </div>
+        </div>
+
+        <!-- Legenda clicável -->
+        <div id="hist-leg-novo" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
+
+        <canvas id="chartHistoricoNovo" style="max-height:380px"></canvas>
+    </div>
+
+    <!-- Dias desflagados -->
+    <div id="hist-dias-removidos" style="display:none;background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.3);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:10px">
+        <span style="color:var(--danger);font-weight:700">🗑️ Dias removidos da visualização:</span>
+        <span id="hist-dias-removidos-lista" style="color:var(--slate);margin-left:8px"></span>
+        <button onclick="restaurarDias()" style="margin-left:10px;background:transparent;border:1px solid var(--danger);color:var(--danger);border-radius:4px;padding:2px 8px;font-size:9px;cursor:pointer">Restaurar todos</button>
+    </div>
+
+    <!-- Tabela de dados -->
+    <div style="background:var(--card-bg);border-radius:12px;padding:16px" id="hist-tabela-box" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">Tabela de Dados</div>
+            <div style="display:flex;gap:6px">
+                <button onclick="exportarHistoricoCSV()" style="background:var(--surface2);border:none;border-radius:6px;padding:4px 10px;color:var(--text);font-size:9px;cursor:pointer">⬇ CSV</button>
+            </div>
+        </div>
+        <div style="overflow-x:auto;max-height:320px;overflow-y:auto">
+            <table id="hist-tabela" style="width:100%;border-collapse:collapse;font-size:10px">
+                <thead id="hist-tabela-head"></thead>
+                <tbody id="hist-tabela-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="hist-novo-loading" style="text-align:center;padding:60px;color:var(--slate)">
+        <i class="fas fa-chart-line" style="font-size:40px;margin-bottom:12px;display:block;color:var(--gold)"></i>
+        <div style="font-size:12px">Clique em <strong>ATUALIZAR</strong> para carregar o histórico</div>
     </div>
 </section>
 
@@ -2921,77 +3001,191 @@ function getNivelUsuario() {
     // ══════════════════════════════════════════════
     // HISTÓRICO
     // ══════════════════════════════════════════════
-    let chartHistUnif = null;
+    // ══ HISTÓRICO INTELIGENTE ══════════════════════
+    let _histSeriesRaw = [];
+    let _histPeriodoNovo = 7;
+    let _histDtCustomIni = null;
+    let _histDtCustomFim = null;
+    let _histDiasRemovidosSet = new Set();
+    let chartHistoricoNovo = null;
+    const HIST_CORES = ['#2ecc71','#3498db','#f1c40f','#9b59b6','#e67e22','#e74c3c','#1abc9c','#e84393','#00b894','#6c5ce7'];
 
     async function carregarHistorico() {
-        const token  = sessionStorage.getItem('token');
-        const loading = document.getElementById('hist-loading');
-        const content = document.getElementById('hist-content');
+        const token = sessionStorage.getItem('token');
+        const loading   = document.getElementById('hist-novo-loading');
+        const content   = document.getElementById('hist-novo-content');
+        const tabelaBox = document.getElementById('hist-tabela-box');
+        const statusEl  = document.getElementById('hist-status-novo');
 
-        if (loading) { loading.style.display = 'block'; loading.innerHTML = '<i class="fas fa-chart-line fa-spin" style="font-size:32px;margin-bottom:10px;display:block"></i> Carregando histórico...'; }
-        if (content) content.style.display = 'none';
+        if (loading)   { loading.style.display='block'; loading.innerHTML='<i class="fas fa-chart-line fa-spin" style="font-size:40px;margin-bottom:12px;display:block;color:var(--gold)"></i><div>Carregando histórico...</div>'; }
+        if (content)   content.style.display='none';
+        if (tabelaBox) tabelaBox.style.display='none';
+        _histDiasRemovidosSet = new Set();
+        _atualizarPainelDiasRemovidos();
 
         try {
-            const res = await fetch('/api/historico', { headers: { Authorization: 'Bearer ' + token } });
-            if (!res.ok) throw new Error('Erro ' + res.status);
+            const res = await fetch('/api/historico', { headers:{ Authorization:'Bearer '+token } });
+            if (!res.ok) throw new Error('Erro '+res.status);
             const json = await res.json();
-            if (!json.ok || !json.series) throw new Error(json.msg || 'Sem dados');
+            if (!json.ok || !json.series) throw new Error(json.msg||'Sem dados');
 
-            if (loading) loading.style.display = 'none';
-            if (content) content.style.display = 'block';
-
-            const series = json.series;
-            const todasDatas = [...new Set(series.flatMap(s => s.dados.map(d => d.data)))].sort();
-            const cores = ['#3498db','#2ecc71','#e74c3c','#f1c40f','#9b59b6','#e67e22','#1abc9c','#e91e63'];
-
-            const datasets = series.map((fiscal, i) => ({
-                label: fiscal.nome,
-                data: todasDatas.map(dt => {
-                    const d = fiscal.dados.find(x => x.data === dt);
-                    return d ? parseFloat(d.percentual) || 0 : 0;
-                }),
-                borderColor: cores[i % cores.length],
-                backgroundColor: cores[i % cores.length] + '22',
-                tension: .4, fill: false, pointRadius: 3
-            }));
-
-            const ctx = document.getElementById('chartHistoricoUnificado');
-            if (chartHistUnif) chartHistUnif.destroy();
-            chartHistUnif = new Chart(ctx, {
-                type: 'line',
-                data: { labels: todasDatas, datasets },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { min:0, max:100, ticks: { color:'#95a5a6', callback: v => v+'%' }, grid: { color:'rgba(255,255,255,.05)' } },
-                        x: { ticks: { color:'#95a5a6', maxRotation:45 }, grid: { color:'rgba(255,255,255,.05)' } }
-                    }
-                }
-            });
-
-            // Legenda manual
-            const leg = document.getElementById('hist-leg');
-            if (leg) leg.innerHTML = series.map((f, i) => `
-                <div style="display:flex;align-items:center;gap:5px;font-size:10px;cursor:pointer" onclick="toggleHistLine(${i})">
-                    <div style="width:12px;height:12px;border-radius:50%;background:${cores[i%cores.length]}"></div>
-                    <span>${f.nome}</span>
-                </div>`).join('');
+            _histSeriesRaw = json.series;
+            const sel = document.getElementById('hist-sel-fiscal');
+            if (sel) {
+                sel.innerHTML = '';
+                _histSeriesRaw.forEach(f => { const o=document.createElement('option'); o.value=f.nome; o.text=f.nome; o.selected=true; sel.appendChild(o); });
+            }
+            if (loading)   loading.style.display='none';
+            if (content)   content.style.display='block';
+            if (tabelaBox) tabelaBox.style.display='block';
+            if (statusEl)  statusEl.innerText='✅ '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+            setHistNovoPeriodo(7, document.getElementById('hnBtn7'));
 
         } catch(err) {
-            if (loading) loading.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size:32px;margin-bottom:10px;display:block;color:var(--danger)"></i> Erro: ' + err.message;
+            if (loading) loading.innerHTML='<i class="fas fa-exclamation-triangle" style="font-size:40px;margin-bottom:12px;display:block;color:var(--danger)"></i><div style="color:var(--danger)">Erro: '+err.message+'</div>';
         }
     }
 
-    function toggleHistLine(idx) {
-        if (!chartHistUnif) return;
-        const meta = chartHistUnif.getDatasetMeta(idx);
-        meta.hidden = !meta.hidden;
-        chartHistUnif.update();
+    function setHistNovoPeriodo(dias, btn) {
+        _histPeriodoNovo=dias; _histDtCustomIni=null; _histDtCustomFim=null;
+        document.querySelectorAll('.hist-novo-btn').forEach(b=>b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        filtrarHistoricoNovo();
     }
 
-    // Utilitário
-    function _setEl(id, val) { const el = document.getElementById(id); if (el) el.innerText = val; }
+    function aplicarPeriodoCustom() {
+        const ini=document.getElementById('hist-dt-ini').value;
+        const fim=document.getElementById('hist-dt-fim').value;
+        if (!ini||!fim) { alert('Selecione início e fim.'); return; }
+        _histDtCustomIni=ini; _histDtCustomFim=fim; _histPeriodoNovo=0;
+        document.querySelectorAll('.hist-novo-btn').forEach(b=>b.classList.remove('active'));
+        filtrarHistoricoNovo();
+    }
+
+    function filtrarHistoricoNovo() {
+        if (!_histSeriesRaw.length) return;
+        const ocFds = document.getElementById('hist-ocultar-fds')?.checked;
+        const ocFer = document.getElementById('hist-ocultar-fer')?.checked;
+        const sel   = document.getElementById('hist-sel-fiscal');
+        const fiscaisSel = sel ? [...sel.selectedOptions].map(o=>o.value) : _histSeriesRaw.map(s=>s.nome);
+
+        let datas = [...new Set(_histSeriesRaw.flatMap(s=>s.dados.map(d=>d.data)))].sort();
+        if (_histDtCustomIni && _histDtCustomFim) datas = datas.filter(d=>d>=_histDtCustomIni&&d<=_histDtCustomFim);
+        else if (_histPeriodoNovo>0) datas = datas.slice(-_histPeriodoNovo);
+        if (ocFds) datas = datas.filter(d=>!isWeekend(d));
+        if (ocFer) datas = datas.filter(d=>!isHoliday(d));
+        datas = datas.filter(d=>!_histDiasRemovidosSet.has(d));
+
+        const series = _histSeriesRaw.filter(s=>fiscaisSel.includes(s.nome));
+        _renderHistoricoNovo(datas, series);
+        _renderTabelaHistorico(datas, series);
+    }
+
+    function _renderHistoricoNovo(datas, series) {
+        const datasets = series.map((f,i) => ({
+            label: f.nome,
+            data: datas.map(dt => { const d=f.dados.find(x=>x.data===dt); return d?parseFloat(d.percentual)||0:null; }),
+            borderColor: HIST_CORES[i%HIST_CORES.length],
+            backgroundColor: HIST_CORES[i%HIST_CORES.length]+'22',
+            tension:.35, fill:false, pointRadius:4, pointHoverRadius:7, spanGaps:true
+        }));
+
+        const cntEl = document.getElementById('hist-contador-novo');
+        if (cntEl) cntEl.innerText=`📊 ${series.length} fiscal(is) · ${datas.length} dias`;
+
+        const legEl = document.getElementById('hist-leg-novo');
+        if (legEl) legEl.innerHTML = series.map((f,i)=>`
+            <div onclick="toggleHistNovoLinha(${i})" id="hist-leg-item-${i}"
+                style="display:flex;align-items:center;gap:5px;font-size:10px;cursor:pointer;padding:3px 8px;border-radius:6px;background:var(--bg);border:1px solid ${HIST_CORES[i%HIST_CORES.length]}44">
+                <div style="width:10px;height:10px;border-radius:50%;background:${HIST_CORES[i%HIST_CORES.length]}"></div>
+                <span>${f.nome}</span>
+            </div>`).join('');
+
+        const ctx = document.getElementById('chartHistoricoNovo');
+        if (!ctx) return;
+        if (chartHistoricoNovo) chartHistoricoNovo.destroy();
+        chartHistoricoNovo = new Chart(ctx, {
+            type:'line', data:{ labels:datas, datasets },
+            options:{
+                responsive:true, maintainAspectRatio:false,
+                plugins:{ legend:{display:false},
+                    tooltip:{ callbacks:{
+                        title: items => items[0].label+(isWeekend(items[0].label)?' 🌙':'')+(isHoliday(items[0].label)?' 🎉':''),
+                        label: item => ` ${item.dataset.label}: ${item.raw!==null?item.raw+'%':'S/D'}`
+                    }}
+                },
+                scales:{
+                    y:{ min:0,max:100, ticks:{color:'#95a5a6',callback:v=>v+'%'}, grid:{color:'rgba(255,255,255,.05)'} },
+                    x:{ ticks:{color:'#95a5a6',maxRotation:45,font:{size:9}}, grid:{color:'rgba(255,255,255,.03)'} }
+                },
+                onClick:(evt,_el,chart) => {
+                    const agora=Date.now();
+                    if (chart._ult && agora-chart._ult<400) {
+                        const pts=chart.getElementsAtEventForMode(evt,'index',{intersect:false},true);
+                        if (pts.length) removerDia(chart.data.labels[pts[0].index]);
+                    }
+                    chart._ult=agora;
+                }
+            }
+        });
+    }
+
+    function _renderTabelaHistorico(datas, series) {
+        const thead=document.getElementById('hist-tabela-head');
+        const tbody=document.getElementById('hist-tabela-body');
+        if (!thead||!tbody) return;
+        thead.innerHTML=`<tr style="background:var(--bg);position:sticky;top:0">
+            <th style="padding:6px 8px;text-align:left;font-size:10px">Fiscal</th>
+            ${datas.map(d=>`<th style="padding:6px 4px;text-align:center;font-size:9px;cursor:pointer" onclick="removerDia('${d}')" title="Remover ${d}">${d.slice(5)}${isWeekend(d)?'🌙':''}${isHoliday(d)?'🎉':''}</th>`).join('')}
+            <th style="padding:6px 8px;text-align:center;font-size:10px;color:var(--gold)">Média</th>
+        </tr>`;
+        tbody.innerHTML=series.map((f,i)=>{
+            const cor=HIST_CORES[i%HIST_CORES.length];
+            const vals=datas.map(dt=>{ const d=f.dados.find(x=>x.data===dt); return d?parseFloat(d.percentual)||0:null; });
+            const vlds=vals.filter(v=>v!==null);
+            const med=vlds.length?(vlds.reduce((a,b)=>a+b,0)/vlds.length).toFixed(1):'---';
+            const cMed=parseFloat(med)>=80?'var(--success)':parseFloat(med)>=50?'var(--warning)':'var(--danger)';
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:6px 8px;font-size:10px;font-weight:700;border-left:3px solid ${cor}">${f.nome}</td>
+                ${vals.map(v=>v===null?`<td style="padding:4px;text-align:center;font-size:9px;color:var(--slate)">—</td>`:`<td style="padding:4px;text-align:center;font-size:9px;background:${v>=80?'#b7e1cd':v>=50?'#fff2cc':'#f4cccc'}22;font-weight:700">${v}%</td>`).join('')}
+                <td style="padding:6px 8px;text-align:center;font-size:10px;font-weight:900;color:${cMed}">${med}%</td>
+            </tr>`;
+        }).join('');
+    }
+
+    function removerDia(dia) {
+        if (!confirm(`Remover ${dia} da visualização?`)) return;
+        _histDiasRemovidosSet.add(dia); _atualizarPainelDiasRemovidos(); filtrarHistoricoNovo();
+    }
+    function restaurarDias() { _histDiasRemovidosSet=new Set(); _atualizarPainelDiasRemovidos(); filtrarHistoricoNovo(); }
+    function _atualizarPainelDiasRemovidos() {
+        const p=document.getElementById('hist-dias-removidos');
+        const l=document.getElementById('hist-dias-removidos-lista');
+        if (!p||!l) return;
+        if (_histDiasRemovidosSet.size===0) { p.style.display='none'; return; }
+        p.style.display='block'; l.innerText=[..._histDiasRemovidosSet].sort().join(' · ');
+    }
+    function toggleHistNovoLinha(idx) {
+        if (!chartHistoricoNovo) return;
+        const meta=chartHistoricoNovo.getDatasetMeta(idx); meta.hidden=!meta.hidden; chartHistoricoNovo.update();
+        const it=document.getElementById('hist-leg-item-'+idx); if (it) it.style.opacity=meta.hidden?'.35':'1';
+    }
+    function toggleTodasLinhas(mostrar) {
+        if (!chartHistoricoNovo) return;
+        chartHistoricoNovo.data.datasets.forEach((_,i)=>{ chartHistoricoNovo.getDatasetMeta(i).hidden=!mostrar; });
+        chartHistoricoNovo.update();
+        document.querySelectorAll('[id^="hist-leg-item-"]').forEach(el=>el.style.opacity=mostrar?'1':'.35');
+    }
+    function selecionarTodosFiscais(sel) { const s=document.getElementById('hist-sel-fiscal'); if(!s) return; [...s.options].forEach(o=>o.selected=sel); filtrarHistoricoNovo(); }
+    function exportarHistoricoCSV() {
+        if (!_histSeriesRaw.length) return;
+        const datas=[...new Set(_histSeriesRaw.flatMap(s=>s.dados.map(d=>d.data)))].sort();
+        let csv='Fiscal,'+datas.join(',')+',Média\n';
+        _histSeriesRaw.forEach(f=>{ const v=datas.map(dt=>{ const d=f.dados.find(x=>x.data===dt); return d?d.percentual:''; }); const n=v.filter(x=>x!=='').map(Number); const m=n.length?(n.reduce((a,b)=>a+b,0)/n.length).toFixed(1):''; csv+=`"${f.nome}",${v.join(',')},${m}\n`; });
+        const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'})); a.download='historico_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+    }
+    // ── Utilitário
+    function _setEl(id, val) { const el=document.getElementById(id); if(el) el.innerText=val; }
 
     // ── Carregar dados ────────────────────────────────────────────────────────
     async function sincronizarEAtualizar() {
