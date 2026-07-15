@@ -2562,6 +2562,10 @@ function getNivelUsuario() {
             if (primeiro) primeiro.classList.add('active');
         }
 
+        // Callbacks por bloco
+        if (bloco === 'gestao') initGestaoAcessos();
+        if (bloco === 'hist')   carregarHistorico();
+
         // Aplicar permissões no bloco
         aplicarPermissoesBloco(bloco);
     }
