@@ -2282,20 +2282,8 @@
     </section>
 
  <script>
-     // Verifica se houve logout forçado
-verificarLogoutForcado();
     // ══════════════════════════════════════════════
-    // 1. BASE DE DADOS DE ACESSO
-    // ══════════════════════════════════════════════
-    const ACESSO_PORTAL = {
-    "john_petter":  { senha: "admin123",  nivel: "ADMIN",  nome: "John Petter" },
-    "diretoria":    { senha: "admin123",  nivel: "ADMIN",  nome: "Diretoria" },
-    "gestor_pi":    { senha: "gestor123", nivel: "GESTOR", nome: "Gestor Piauí" },
-    "monitor_ana":  { senha: "monitor123", nivel: "MONITOR", nome: "Ana Monitora" },  // ← NOVO
-    "fiscal_maria": { senha: "fiscal123", nivel: "FISCAL", nome: "Maria Silva" },
-    "fiscal_joao":  { senha: "fiscal123", nivel: "FISCAL", nome: "João Santos" }
-};
-
+    // 1. CONFIGURAÇÃO
     // ══════════════════════════════════════════════
     // 2. FUNÇÃO PRINCIPAL DE LOGIN
     // ══════════════════════════════════════════════
@@ -2363,9 +2351,8 @@ verificarLogoutForcado();
 // VERIFICA SE USUÁRIO PODE REGISTRAR OCORRÊNCIAS
 // ══════════════════════════════════════════════
 function podeRegistrar() {
-    const nivel = sessionStorage.getItem("nivel");
-    const permissoes = carregarPermissoes();
-    return permissoes[nivel] ? permissoes[nivel].podeRegistrar : false;
+    const perms = JSON.parse(sessionStorage.getItem("permissoes") || '{}');
+    return perms['PD_reg_alerta'] === true;
 }
 
 function getNivelUsuario() {
@@ -6589,312 +6576,11 @@ function gerarBotaoRegistro(dadosBotao, estiloExtra = '') {
 // ══════════════════════════════════════════════
 
 // Permissões padrão por nível
-const PERMISSOES_PADRAO = {
-    ADMIN: {
-        abas: ['escala', 'assiduidade', 'extras', 'compliance', 'gestao'],
-        podeRegistrar: true,
-        corBadge: 'admin'
-    },
-    GESTOR: {
-        abas: ['escala', 'assiduidade', 'extras', 'compliance'],
-        podeRegistrar: true,
-        corBadge: 'gestor'
-    },
-    MONITOR: {                              // ← NOVO NÍVEL
-        abas: ['escala', 'assiduidade', 'compliance'],
-        podeRegistrar: false,
-        corBadge: 'monitor'
-    },
-    FISCAL: {
-        abas: ['escala', 'assiduidade'],
-        podeRegistrar: false,
-        corBadge: 'fiscal'
-    }
-};
-
-// Carrega permissões salvas ou usa padrão
-function carregarPermissoes() {
-    try {
-        const saved = localStorage.getItem('bi_permissoes');
-        return saved ? JSON.parse(saved) : PERMISSOES_PADRAO;
-    } catch(e) {
-        return PERMISSOES_PADRAO;
-    }
-}
-
-// Salva permissões
-function salvarPermissoes() {
-    const permissoes = carregarPermissoes();
-    const niveis = ['FISCAL', 'MONITOR', 'GESTOR', 'ADMIN'];
-    
-    niveis.forEach(nivel => {
-        permissoes[nivel].podeRegistrar = document.getElementById(`perm-registrar-${nivel}`).checked;
-        ['escala', 'assiduidade', 'extras', 'compliance', 'gestao'].forEach(aba => {
-            const checkbox = document.getElementById(`perm-${aba}-${nivel}`);
-            if (checkbox) {
-                if (checkbox.checked && !permissoes[nivel].abas.includes(aba)) {
-                    permissoes[nivel].abas.push(aba);
-                } else if (!checkbox.checked && permissoes[nivel].abas.includes(aba)) {
-                    permissoes[nivel].abas = permissoes[nivel].abas.filter(a => a !== aba);
-                }
-            }
-        });
-    });
-    
-    localStorage.setItem('bi_permissoes', JSON.stringify(permissoes));
-    alert('✅ Permissões salvas com sucesso! As mudanças serão aplicadas no próximo login.');
-}
-
-// Carrega usuários (do ACESSO_PORTAL + localStorage)
-function carregarUsuarios() {
-    try {
-        const saved = localStorage.getItem('bi_usuarios_extra');
-        const extras = saved ? JSON.parse(saved) : {};
-        return { ...ACESSO_PORTAL, ...extras };
-    } catch(e) {
-        return { ...ACESSO_PORTAL };
-    }
-}
-
-// Salva usuários extras no localStorage
-function salvarUsuariosExtras(usuarios) {
-    const extras = {};
-    Object.entries(usuarios).forEach(([key, valor]) => {
-        if (!ACESSO_PORTAL[key]) {
-            extras[key] = valor;
-        }
-    });
-    localStorage.setItem('bi_usuarios_extra', JSON.stringify(extras));
-}
-
-// Renderiza tabela de permissões
-function renderizarTabelaPermissoes() {
-    const permissoes = carregarPermissoes();
-    const tbody = document.getElementById('tbody-permissoes');
-    if (!tbody) return;
-    
-    const niveis = ['FISCAL', 'MONITOR', 'GESTOR', 'ADMIN'];
-    const abas = [
-        { id: 'escala', nome: '📡 Dados Escala' },
-        { id: 'assiduidade', nome: '⏱️ Assiduidade' },
-        { id: 'extras', nome: '🚀 Rotas Extras' },
-        { id: 'compliance', nome: '🛡️ Compliance' },
-        { id: 'gestao', nome: '🔐 Gestão' }
-    ];
-    
-    tbody.innerHTML = niveis.map(nivel => {
-        const p = permissoes[nivel] || PERMISSOES_PADRAO[nivel];
-        const cor = nivel === 'ADMIN' ? '#e74c3c' : nivel === 'GESTOR' ? '#f39c12' : '#3498db';
-        
-        const checkboxesAbas = abas.map(aba => {
-            const checked = p.abas.includes(aba.id) ? 'checked' : '';
-            const disabled = nivel === 'ADMIN' && aba.id === 'escala' ? 'disabled' : '';
-            return `<td style="text-align:center;">
-                <input type="checkbox" id="perm-${aba.id}-${nivel}" ${checked} ${disabled}
-                    style="accent-color:${cor}; width:16px; height:16px; cursor:pointer;">
-            </td>`;
-        }).join('');
-        
-        return `<tr>
-            <td><span class="cpl-score-pill" style="background:${cor}22; color:${cor}; border:1px solid ${cor}44;">${nivel}</span></td>
-            ${checkboxesAbas}
-            <td style="text-align:center;">
-                <input type="checkbox" id="perm-registrar-${nivel}" ${p.podeRegistrar ? 'checked' : ''}
-                    style="accent-color:${cor}; width:16px; height:16px; cursor:pointer;">
-            </td>
-            <td style="text-align:center; color:var(--slate); font-size:9px;">
-                ${nivel === 'ADMIN' ? '🔒 Fixo' : '⚙️ Configurável'}
-            </td>
-        </tr>`;
-    }).join('');
-}
-
-// ── Compatibilidade mantida ───────────────────────────────────────────────
-
-async function renderizarTabelaUsuarios() {
-    const tbody = document.getElementById('tbody-usuarios');
-    if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--slate);padding:16px;">⏳ Carregando...</td></tr>';
-
-    const usuarios = await carregarUsuariosSheets(true);
-    const usuarioAtual = sessionStorage.getItem("usuario");
-
-    tbody.innerHTML = usuarios.map(u => {
-        const corNivel = u.nivel === 'ADMIN' ? '#e74c3c' : u.nivel === 'GESTOR' ? '#f39c12' :
-                         u.nivel === 'MONITOR' ? '#9b59b6' : '#3498db';
-        const ativo = u.ativo !== 'false';
-        const acesso = getDadosAcesso(u.usuario);
-        const isOnline = acesso.online && u.usuario !== usuarioAtual;
-        const isProprio = u.usuario === usuarioAtual;
-        const ultimoAcesso = acesso.ultimoAcesso || 'Nunca';
-        const uid = u.usuario.replace(/[^a-zA-Z0-9]/g,'_');
-
-        return `<tr style="opacity:${ativo ? 1 : 0.5};">
-            <td>
-                <input type="text" value="${u.usuario}" id="user-login-${uid}"
-                    style="background:var(--bg);color:#fff;border:1px solid var(--border);padding:4px 8px;border-radius:4px;width:120px;font-size:10px;font-weight:bold;"
-                    ${isProprio ? 'title="Seu próprio usuário"' : ''}>
-            </td>
-            <td><input type="text" value="${u.nome || ''}" id="user-nome-${uid}"
-                style="background:var(--bg);color:white;border:1px solid var(--border);padding:4px 8px;border-radius:4px;width:130px;font-size:10px;" placeholder="Nome completo"></td>
-            <td><span class="cpl-score-pill" style="background:${corNivel}22;color:${corNivel};border:1px solid ${corNivel}44;">${u.nivel}</span></td>
-            <td><input type="text" value="${u.senha || ''}" id="user-senha-${uid}"
-                style="background:var(--bg);color:white;border:1px solid var(--border);padding:4px 8px;border-radius:4px;width:95px;font-size:10px;"></td>
-            <td>
-                <span style="font-size:10px;">${isOnline ? '🟢 Online' : (isProprio ? '🟡 Você' : '⚫ Offline')}</span>
-                <br><span style="font-size:8px;color:var(--slate);">Último: ${ultimoAcesso.substring(0,16)}</span>
-            </td>
-            <td style="white-space:nowrap;">
-                <select id="user-nivel-${uid}" style="width:auto;min-width:90px;font-size:10px;padding:3px;">
-                    <option value="FISCAL"  ${u.nivel==='FISCAL'  ? 'selected':''}>FISCAL</option>
-                    <option value="MONITOR" ${u.nivel==='MONITOR' ? 'selected':''}>MONITOR</option>
-                    <option value="GESTOR"  ${u.nivel==='GESTOR'  ? 'selected':''}>GESTOR</option>
-                    <option value="ADMIN"   ${u.nivel==='ADMIN'   ? 'selected':''}>ADMIN</option>
-                </select>
-                <button onclick="salvarUsuarioSheets('${u.usuario}','${uid}')"
-                    style="margin-left:4px;padding:4px 10px;background:var(--info);color:#fff;border:none;border-radius:4px;font-size:9px;cursor:pointer;" title="Salvar">💾</button>
-                ${isOnline ? `<button onclick="forcarLogout('${u.usuario}')" class="btn-deslogar">🚫</button>` : ''}
-                <button onclick="toggleAtivoUsuario('${u.usuario}','${!ativo}')"
-                    style="margin-left:2px;padding:4px 8px;background:${ativo?'#f39c12':'#2ecc71'};color:#fff;border:none;border-radius:4px;font-size:9px;cursor:pointer;"
-                    title="${ativo ? 'Desativar acesso' : 'Reativar acesso'}">${ativo ? '🔒' : '🔓'}</button>
-                ${!isProprio ? `<button onclick="excluirUsuarioSheets('${u.usuario}')"
-                    style="margin-left:2px;padding:4px 8px;background:var(--danger);color:#fff;border:none;border-radius:4px;font-size:9px;cursor:pointer;" title="Excluir">🗑️</button>` : ''}
-            </td>
-        </tr>`;
-    }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--slate);padding:16px;">Nenhum usuário encontrado.</td></tr>';
-}
-
-async function salvarUsuarioSheets(usernameOriginal, uid) {
-    const novoLogin = document.getElementById(`user-login-${uid}`)?.value.trim();
-    const novoNome  = document.getElementById(`user-nome-${uid}`)?.value.trim();
-    const novaSenha = document.getElementById(`user-senha-${uid}`)?.value.trim();
-    const novoNivel = document.getElementById(`user-nivel-${uid}`)?.value;
-
-    if (!novaSenha) { alert('⚠️ A senha não pode ficar em branco!'); return; }
-    if (!novoLogin) { alert('⚠️ O usuário (login) não pode ficar em branco!'); return; }
-
-    const btn = document.querySelector(`button[onclick="salvarUsuarioSheets('${usernameOriginal}','${uid}')"]`);
-    if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
-
-    const res = await _chamarGerenciar({
-        op: 'editar',
-        username_original: usernameOriginal,
-        usuario: novoLogin,
-        nome: novoNome,
-        senha: novaSenha,
-        nivel: novoNivel
-    });
-    if (btn) { btn.textContent = '💾'; btn.disabled = false; }
-    if (res.ok) {
-        _usuariosSheets = null;
-        alert(`✅ Usuário atualizado!
-
-Novo login: ${novoLogin}
-Nível: ${novoNivel}
-
-⚠️ O usuário precisará fazer login novamente se o nome de acesso foi alterado.`);
-        renderizarTabelaUsuarios();
-    } else {
-        alert('❌ Erro: ' + res.msg);
-    }
-}
-
-async function toggleAtivoUsuario(username, novoAtivo) {
-    const acao = novoAtivo === 'true' ? 'reativar' : 'desativar';
-    if (!confirm(`Tem certeza que deseja ${acao} o acesso de "${username}"?`)) return;
-    const res = await _chamarGerenciar({ op: 'editar', username_original: username, ativo: novoAtivo });
-    if (res.ok) {
-        _usuariosSheets = null;
-        renderizarTabelaUsuarios();
-    } else {
-        alert('❌ Erro: ' + res.msg);
-    }
-}
-
-async function excluirUsuarioSheets(username) {
-    if (!confirm(`⚠️ Excluir permanentemente o usuário "${username}"?
-
-Esta ação não pode ser desfeita.`)) return;
-    const res = await _chamarGerenciar({ op: 'excluir', usuario: username });
-    if (res.ok) {
-        _usuariosSheets = null;
-        alert(`✅ Usuário "${username}" excluído.`);
-        renderizarTabelaUsuarios();
-    } else {
-        alert('❌ Erro: ' + res.msg);
-    }
-}
-
-async function adicionarNovoUsuarioSheets() {
-    const username = prompt('👤 Login (nome de acesso):');
-    if (!username?.trim()) return;
-    const nome   = prompt('📛 Nome completo:') || username;
-    const senha  = prompt('🔑 Senha:');
-    if (!senha?.trim()) { alert('⚠️ Senha obrigatória.'); return; }
-    const nivel  = prompt('🎖️ Nível (FISCAL / MONITOR / GESTOR / ADMIN):')?.toUpperCase() || 'FISCAL';
-    if (!['FISCAL','MONITOR','GESTOR','ADMIN'].includes(nivel)) {
-        alert('⚠️ Nível inválido.'); return;
-    }
-    const res = await _chamarGerenciar({ op: 'criar', usuario: username.trim(), nome, senha: senha.trim(), nivel });
-    if (res.ok) {
-        _usuariosSheets = null;
-        alert(`✅ Usuário "${username}" criado com sucesso!`);
-        renderizarTabelaUsuarios();
-    } else {
-        alert('❌ Erro: ' + res.msg);
-    }
-}
-
-// Mantém compatibilidade com chamadas antigas
-function salvarAlteracoesUsuario(username) { renderizarTabelaUsuarios(); }
-function excluirUsuario(username) { excluirUsuarioSheets(username); }
-function adicionarNovoUsuario() { adicionarNovoUsuarioSheets(); }
-
-// Adiciona novo usuário
-function adicionarNovoUsuario() {
-    const username = prompt('👤 Nome de usuário (login):');
-    if (!username || username.trim() === '') return;
-    
-    const usuarios = carregarUsuarios();
-    if (usuarios[username.trim()]) {
-        alert('⚠️ Este usuário já existe!');
-        return;
-    }
-    
-    const nome = prompt('📝 Nome completo:');
-    if (!nome || nome.trim() === '') return;
-    
-    const senha = prompt('🔑 Senha:');
-    if (!senha || senha.trim() === '') return;
-    
-    const nivel = prompt('🏷️ Nível (FISCAL, MONITOR, GESTOR, ADMIN):', 'FISCAL');
-if (!nivel || !['FISCAL', 'MONITOR', 'GESTOR', 'ADMIN'].includes(nivel.toUpperCase())) {
-    alert('⚠️ Nível inválido! Use: FISCAL, MONITOR, GESTOR ou ADMIN');;
-        return;
-    }
-    
-    usuarios[username.trim()] = {
-        senha: senha.trim(),
-        nivel: nivel.toUpperCase(),
-        nome: nome.trim()
-    };
-    
-    salvarUsuariosExtras(usuarios);
-    alert(`✅ Usuário "${username}" adicionado com sucesso!`);
-    renderizarTabelaUsuarios();
-}
-     // ══════════════════════════════════════════════
-// REGISTRO DE ACESSOS
-// ══════════════════════════════════════════════
-
+// ── Registro de acessos (mantido para compatibilidade) ───────────────────
 function registrarAcesso(username, dataHora) {
     try {
         const acessos = JSON.parse(localStorage.getItem('bi_acessos') || '{}');
-        acessos[username] = {
-            ultimoAcesso: dataHora,
-            online: true,
-            sessaoIniciada: dataHora
-        };
+        acessos[username] = { ultimoAcesso: dataHora, online: true };
         localStorage.setItem('bi_acessos', JSON.stringify(acessos));
     } catch(e) {}
 }
@@ -6902,32 +6588,14 @@ function registrarAcesso(username, dataHora) {
 function marcarOffline(username) {
     try {
         const acessos = JSON.parse(localStorage.getItem('bi_acessos') || '{}');
-        if (acessos[username]) {
-            acessos[username].online = false;
-            localStorage.setItem('bi_acessos', JSON.stringify(acessos));
-        }
+        if (acessos[username]) { acessos[username].online = false; localStorage.setItem('bi_acessos', JSON.stringify(acessos)); }
     } catch(e) {}
 }
 
-function forcarLogout(username) {
-    if (confirm('Tem certeza que deseja forcar o logout de "' + username + '"?\n\nO usuario sera desconectado na proxima acao.')) {
-        try {
-            marcarOffline(username);
-            var sessoesAtivas = JSON.parse(localStorage.getItem('bi_sessoes_ativas') || '{}');
-            sessoesAtivas[username] = false;
-            localStorage.setItem('bi_sessoes_ativas', JSON.stringify(sessoesAtivas));
-            localStorage.setItem('bi_logout_forcado_' + username, Date.now().toString());
-            alert('Logout forcado para "' + username + '" realizado!');
-            renderizarTabelaUsuarios();
-        } catch(e) {
-            alert('Erro ao forcar logout.');
-        }
-    }
+function getDadosAcesso(username) {
+    try { return JSON.parse(localStorage.getItem('bi_acessos') || '{}')[username] || { ultimoAcesso:'Nunca', online:false }; }
+    catch(e) { return { ultimoAcesso:'Nunca', online:false }; }
 }
-
-function verificarLogoutForcado() {
-    var usuario = sessionStorage.getItem("usuario");
-    if (!usuario) return;
     
     var foiForcado = localStorage.getItem('bi_logout_forcado_' + usuario);
     if (foiForcado) {
