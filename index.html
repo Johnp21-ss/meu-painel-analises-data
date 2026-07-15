@@ -6596,24 +6596,6 @@ function getDadosAcesso(username) {
     try { return JSON.parse(localStorage.getItem('bi_acessos') || '{}')[username] || { ultimoAcesso:'Nunca', online:false }; }
     catch(e) { return { ultimoAcesso:'Nunca', online:false }; }
 }
-    
-    var foiForcado = localStorage.getItem('bi_logout_forcado_' + usuario);
-    if (foiForcado) {
-        localStorage.removeItem('bi_logout_forcado_' + usuario);
-        sessionStorage.clear();
-        alert('Sua sessao foi encerrada por um administrador.');
-        location.reload();
-    }
-}
-
-function getDadosAcesso(username) {
-    try {
-        var acessos = JSON.parse(localStorage.getItem('bi_acessos') || '{}');
-        return acessos[username] || { ultimoAcesso: 'Nunca', online: false };
-    } catch(e) {
-        return { ultimoAcesso: 'Nunca', online: false };
-    }
-}
 // ══════════════════════════════════════════════
 // OFENSORES HIERÁRQUICO - Fiscal > GRE > Cidade > Motorista
 // ══════════════════════════════════════════════
