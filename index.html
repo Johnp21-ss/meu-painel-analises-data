@@ -3125,12 +3125,15 @@ function getNivelUsuario() {
                 },
                 scales:{
                     y:{ min:0,max:100, ticks:{color:'#95a5a6',callback:v=>v+'%'}, grid:{color:'rgba(255,255,255,.05)'} },
-                    x:{ ticks:{
-                        color:'#95a5a6', maxRotation:45, font:{size:9},
-                        callback: function(val, idx) {
-                            return _formatarDataHist(this.getLabelForValue(val));
-                        }
-                    }, grid:{color:'rgba(255,255,255,.03)'} }
+                    x:{ 
+                        ticks:{
+                            color:'#95a5a6', maxRotation:60, font:{size:8},
+                            maxTicksLimit: 999,
+                            autoSkip: false,
+                            callback: function(val, idx) {
+                                return _formatarDataHist(this.getLabelForValue(val));
+                            }
+                        }, grid:{color:'rgba(255,255,255,.03)'} }
                 },
                 onClick:(evt,_el,chart) => {
                     const agora=Date.now();
