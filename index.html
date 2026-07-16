@@ -3001,7 +3001,16 @@ function getNivelUsuario() {
     // ══════════════════════════════════════════════
     // HISTÓRICO
     // ══════════════════════════════════════════════
-    // ══ HISTÓRICO INTELIGENTE ══════════════════════
+    function _formatarDataHist(dt) {
+        if (!dt) return '';
+        // Suporta formato ISO (2026-06-15) e Date object
+        const str = dt.toString().substring(0, 10);
+        if (!str.match(/^\d{4}-\d{2}-\d{2}$/)) return str;
+        const [ano, mes, dia] = str.split('-');
+        const d = new Date(parseInt(ano), parseInt(mes)-1, parseInt(dia));
+        const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+        return dias[d.getDay()] + ' ' + dia + '/' + mes;
+    }
     let _histSeriesRaw = [];
     let _histPeriodoNovo = 7;
     let _histDtCustomIni = null;
@@ -3110,7 +3119,7 @@ function getNivelUsuario() {
                 responsive:true, maintainAspectRatio:false,
                 plugins:{ legend:{display:false},
                     tooltip:{ callbacks:{
-                        title: items => items[0].label+(isWeekend(items[0].label)?' 🌙':'')+(isHoliday(items[0].label)?' 🎉':''),
+                        title: items => _formatarDataHist(items[0].label)+(isWeekend(items[0].label)?' 🌙':'')+(isHoliday(items[0].label)?' 🎉':''),
                         label: item => ` ${item.dataset.label}: ${item.raw!==null?item.raw+'%':'S/D'}`
                     }}
                 },
@@ -3119,11 +3128,7 @@ function getNivelUsuario() {
                     x:{ ticks:{
                         color:'#95a5a6', maxRotation:45, font:{size:9},
                         callback: function(val, idx) {
-                            const dt = this.getLabelForValue(val);
-                            if (!dt) return '';
-                            const d = new Date(dt + 'T12:00:00');
-                            const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-                            return dias[d.getDay()] + ' ' + dt.slice(8,10) + '/' + dt.slice(5,7);
+                            return _formatarDataHist(this.getLabelForValue(val));
                         }
                     }, grid:{color:'rgba(255,255,255,.03)'} }
                 },
@@ -3145,7 +3150,7 @@ function getNivelUsuario() {
         if (!thead||!tbody) return;
         thead.innerHTML=`<tr style="background:var(--bg);position:sticky;top:0">
             <th style="padding:6px 8px;text-align:left;font-size:10px">Fiscal</th>
-            ${datas.map(d=>`<th style="padding:6px 4px;text-align:center;font-size:9px;cursor:pointer" onclick="removerDia('${d}')" title="Remover ${d}">${d.slice(5)}${isWeekend(d)?'🌙':''}${isHoliday(d)?'🎉':''}</th>`).join('')}
+            ${datas.map(d=>`<th style="padding:6px 6px;text-align:center;font-size:9px;cursor:pointer;white-space:nowrap" onclick="removerDia('${d}')" title="Clique para remover ${d} da análise">${_formatarDataHist(d)}${isWeekend(d)?'🌙':''}${isHoliday(d)?'🎉':''}<br><span style="font-size:8px;color:var(--danger);opacity:.6">✕</span></th>`).join('')}
             <th style="padding:6px 8px;text-align:center;font-size:10px;color:var(--gold)">Média</th>
         </tr>`;
         tbody.innerHTML=series.map((f,i)=>{
