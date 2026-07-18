@@ -1563,8 +1563,8 @@
     <!-- Cabeçalho -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
         <div>
-            <div style="font-size:14px;font-weight:900">📈 Histórico de Desempenho por Fiscal</div>
-            <div style="font-size:9px;color:var(--slate);margin-top:2px">% assiduidade diária · dados da aba Historico_Fiscais</div>
+            <div style="font-size:14px;font-weight:900">📊 Análise Diária por Fiscal</div>
+            <div style="font-size:9px;color:var(--slate);margin-top:2px">% assiduidade · ponto a ponto por dia · dados da aba Historico_Fiscais</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <span id="hist-status-novo" style="font-size:9px;color:var(--slate)"></span>
@@ -1608,7 +1608,7 @@
     </div>
 
     <!-- Gráfico -->
-    <div style="background:var(--card-bg);border-radius:12px;padding:16px;margin-bottom:12px" id="hist-novo-content" style="display:none">
+    <div style="background:var(--card-bg);border-radius:12px;padding:16px;margin-bottom:12px" id="hist-novo-content">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
             <div style="font-size:11px;font-weight:700;color:var(--slate)" id="hist-contador-novo"></div>
             <div style="display:flex;gap:6px">
@@ -1631,7 +1631,7 @@
     </div>
 
     <!-- Tabela de dados -->
-    <div style="background:var(--card-bg);border-radius:12px;padding:16px" id="hist-tabela-box" style="display:none">
+    <div style="background:var(--card-bg);border-radius:12px;padding:16px" id="hist-tabela-box">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
             <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">Tabela de Dados</div>
             <div style="display:flex;gap:6px">
@@ -1689,7 +1689,7 @@
     </div>
 
     <!-- Gráfico -->
-    <div style="background:var(--card-bg);border-radius:12px;padding:16px;margin-bottom:12px" id="hs-content" style="display:none">
+    <div style="background:var(--card-bg);border-radius:12px;padding:16px;margin-bottom:12px" id="hs-content">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
             <div style="font-size:11px;font-weight:700;color:var(--slate)" id="hs-contador"></div>
             <div style="display:flex;gap:6px">
@@ -1701,7 +1701,21 @@
         <canvas id="chartHistoricoSemanal" style="max-height:380px"></canvas>
     </div>
 
-    <div id="hs-loading" style="text-align:center;padding:60px;color:var(--slate)">
+    <!-- Tabela de dados semanal -->
+    <div style="background:var(--card-bg);border-radius:12px;padding:16px;margin-bottom:12px" id="hs-tabela-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">Tabela de Dados — Média Semanal</div>
+            <button onclick="exportarHistoricoSemanalCSV()" style="background:var(--surface2);border:none;border-radius:6px;padding:4px 10px;color:var(--text);font-size:9px;cursor:pointer">⬇ CSV</button>
+        </div>
+        <div style="overflow-x:auto;max-height:320px;overflow-y:auto">
+            <table id="hs-tabela" style="width:100%;border-collapse:collapse;font-size:10px">
+                <thead id="hs-tabela-head"></thead>
+                <tbody id="hs-tabela-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="hs-loading" style="text-align:center;padding:60px;color:var(--slate);display:none">
         <i class="fas fa-chart-line" style="font-size:40px;margin-bottom:12px;display:block;color:var(--gold)"></i>
         <div style="font-size:12px">Clique em <strong>ATUALIZAR</strong> para carregar</div>
     </div>
@@ -3262,18 +3276,73 @@ function getNivelUsuario() {
     // ══ ANÁLISE SEMANAL ════════════════════════════
     let _histSemPeriodo = 0;
     let chartHistSemanal = null;
+    let _semSeriesAgrupadas = []; // cache das séries já agrupadas por semana
+
+    // ── Retorna a chave da semana ISO: "2026-W27" ──────────────────────────
+    function _semanaISO(dateStr) {
+        if (!dateStr) return '';
+        const [ano, mes, dia] = dateStr.split('-').map(Number);
+        const d = new Date(ano, mes - 1, dia);
+        // Dia da semana: 0=Dom → ajusta para Seg=0
+        const dow = (d.getDay() + 6) % 7;
+        const quinta = new Date(d); quinta.setDate(d.getDate() - dow + 3);
+        const primQuinta = new Date(quinta.getFullYear(), 0, 4);
+        const semNum = 1 + Math.round(((quinta - primQuinta) / 86400000 - 3 + (primQuinta.getDay() + 6) % 7) / 7);
+        return `${quinta.getFullYear()}-W${String(semNum).padStart(2,'0')}`;
+    }
+
+    // ── Label legível da semana: "Sem 27 (30/06)" ────────────────────────
+    function _labelSemana(chave) {
+        // chave = "2026-W27"
+        const [ano, wPart] = chave.split('-W');
+        const numSem = parseInt(wPart);
+        // Calcula a segunda-feira da semana
+        const jan4 = new Date(parseInt(ano), 0, 4);
+        const dow4 = (jan4.getDay() + 6) % 7;
+        const seg = new Date(jan4);
+        seg.setDate(jan4.getDate() - dow4 + (numSem - 1) * 7);
+        const dd = String(seg.getDate()).padStart(2,'0');
+        const mm = String(seg.getMonth()+1).padStart(2,'0');
+        return `Sem ${numSem} (${dd}/${mm})`;
+    }
+
+    // ── Agrupa série diária em médias semanais ────────────────────────────
+    function _agruparPorSemana(series, datasDisponiveis) {
+        // Monta mapa: semanaISO → lista de datas
+        const semanasMap = {};
+        datasDisponiveis.forEach(dt => {
+            const chave = _semanaISO(dt);
+            if (!semanasMap[chave]) semanasMap[chave] = [];
+            semanasMap[chave].push(dt);
+        });
+        const semanasOrd = Object.keys(semanasMap).sort();
+
+        const seriesAgrup = series.map(f => ({
+            nome: f.nome,
+            dados: semanasOrd.map(chave => {
+                const diasSem = semanasMap[chave];
+                const vals = diasSem
+                    .map(dt => { const d = f.dados.find(x => x.data === dt); return d ? parseFloat(d.percentual) : null; })
+                    .filter(v => v !== null && !isNaN(v));
+                const media = vals.length ? parseFloat((vals.reduce((a,b)=>a+b,0) / vals.length).toFixed(1)) : null;
+                return { semana: chave, label: _labelSemana(chave), percentual: media };
+            })
+        }));
+        return { semanasOrd, seriesAgrup };
+    }
 
     async function carregarHistoricoSemanal() {
         const token = sessionStorage.getItem('token');
         const loading = document.getElementById('hs-loading');
         const content = document.getElementById('hs-content');
+        const tabelaBox = document.getElementById('hs-tabela-box');
         const statusEl = document.getElementById('hist-sem-status');
 
-        if (loading) { loading.style.display='block'; loading.innerHTML='<i class="fas fa-chart-line fa-spin" style="font-size:40px;margin-bottom:12px;display:block;color:var(--gold)"></i><div>Carregando...</div>'; }
-        if (content) content.style.display='none';
+        if (loading)    { loading.style.display='block'; loading.innerHTML='<i class="fas fa-chart-line fa-spin" style="font-size:40px;margin-bottom:12px;display:block;color:var(--gold)"></i><div>Carregando...</div>'; }
+        if (content)    content.style.display='none';
+        if (tabelaBox)  tabelaBox.style.display='none';
 
         try {
-            // Reutiliza dados já carregados se disponíveis
             if (!_histSeriesRaw.length) {
                 const res = await fetch('/api/historico', { headers:{ Authorization:'Bearer '+token } });
                 if (!res.ok) throw new Error('Erro '+res.status);
@@ -3288,9 +3357,10 @@ function getNivelUsuario() {
                 _histSeriesRaw.forEach(f => { const o=document.createElement('option'); o.value=f.nome; o.text=f.nome; o.selected=true; sel.appendChild(o); });
             }
 
-            if (loading) loading.style.display='none';
-            if (content) content.style.display='block';
-            if (statusEl) statusEl.innerText='✅ '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+            if (loading)   loading.style.display='none';
+            if (content)   content.style.display='block';
+            if (tabelaBox) tabelaBox.style.display='block';
+            if (statusEl)  statusEl.innerText='✅ '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
             setHistSemPeriodo(0, document.getElementById('hsBtnTudo'));
 
         } catch(err) {
@@ -3307,37 +3377,42 @@ function getNivelUsuario() {
 
     function filtrarHistoricoSemanal() {
         if (!_histSeriesRaw.length) return;
-        const ocFds = document.getElementById('hs-ocultar-fds')?.checked;
-        const ocFer = document.getElementById('hs-ocultar-fer')?.checked;
-        const sel   = document.getElementById('hs-sel-fiscal');
+        const sel = document.getElementById('hs-sel-fiscal');
         const fiscaisSel = sel ? [...sel.selectedOptions].map(o=>o.value) : _histSeriesRaw.map(s=>s.nome);
 
+        // Pega todas as datas disponíveis, aplica corte de período (em dias)
         let datas = [...new Set(_histSeriesRaw.flatMap(s=>s.dados.map(d=>d.data)))].sort();
         if (_histSemPeriodo > 0) datas = datas.slice(-_histSemPeriodo);
-        if (ocFds) datas = datas.filter(d=>!isWeekend(d));
-        if (ocFer) datas = datas.filter(d=>!isHoliday(d));
 
         const series = _histSeriesRaw.filter(s=>fiscaisSel.includes(s.nome));
-        _renderHistoricoSemanal(datas, series);
+
+        // Agrupa por semana no front
+        const { semanasOrd, seriesAgrup } = _agruparPorSemana(series, datas);
+        _semSeriesAgrupadas = seriesAgrup;
+
+        _renderHistoricoSemanal(semanasOrd, seriesAgrup);
+        _renderTabelaSemanal(semanasOrd, seriesAgrup);
     }
 
-    function _renderHistoricoSemanal(datas, series) {
-        // Análise SEMANAL — suavizado, agrupamento automático do Chart.js
-        const datasets = series.map((f,i) => ({
+    function _renderHistoricoSemanal(semanasOrd, seriesAgrup) {
+        const labels = semanasOrd.map(s => _labelSemana(s));
+
+        const datasets = seriesAgrup.map((f,i) => ({
             label: f.nome,
-            data: datas.map(dt => { const d=f.dados.find(x=>x.data===dt); return d?parseFloat(d.percentual)||0:null; }),
+            data: f.dados.map(d => d.percentual),
             borderColor: HIST_CORES[i%HIST_CORES.length],
             backgroundColor: HIST_CORES[i%HIST_CORES.length]+'22',
-            tension: .4, fill:false, pointRadius:3, pointHoverRadius:6, spanGaps:true
+            tension: .4, fill:false, pointRadius:4, pointHoverRadius:8, spanGaps:true,
+            borderWidth: 2.5
         }));
 
         const cntEl = document.getElementById('hs-contador');
-        if (cntEl) cntEl.innerText=`📊 ${series.length} fiscal(is) · ${datas.length} dias`;
+        if (cntEl) cntEl.innerText=`📊 ${seriesAgrup.length} fiscal(is) · ${semanasOrd.length} semanas`;
 
         const legEl = document.getElementById('hs-leg');
-        if (legEl) legEl.innerHTML = series.map((f,i)=>`
+        if (legEl) legEl.innerHTML = seriesAgrup.map((f,i)=>`
             <div onclick="toggleHistSemLinha(${i})" id="hs-leg-item-${i}"
-                style="display:flex;align-items:center;gap:5px;font-size:10px;cursor:pointer;padding:3px 8px;border-radius:6px;background:var(--bg);border:1px solid ${HIST_CORES[i%HIST_CORES.length]}44">
+                style="display:flex;align-items:center;gap:5px;font-size:10px;cursor:pointer;padding:3px 8px;border-radius:6px;background:var(--bg);border:1px solid ${HIST_CORES[i%HIST_CORES.length]}44;transition:opacity .2s;">
                 <div style="width:10px;height:10px;border-radius:50%;background:${HIST_CORES[i%HIST_CORES.length]}"></div>
                 <span>${f.nome}</span>
             </div>`).join('');
@@ -3346,23 +3421,66 @@ function getNivelUsuario() {
         if (!ctx) return;
         if (chartHistSemanal) chartHistSemanal.destroy();
         chartHistSemanal = new Chart(ctx, {
-            type:'line', data:{ labels:datas, datasets },
+            type:'line', data:{ labels, datasets },
             options:{
                 responsive:true, maintainAspectRatio:false,
+                interaction:{ mode:'index', intersect:false },
                 plugins:{ legend:{display:false},
                     tooltip:{ callbacks:{
-                        title: items => _formatarDataHist(items[0].label)+(isWeekend(items[0].label)?' 🌙':'')+(isHoliday(items[0].label)?' 🎉':''),
+                        title: items => items[0].label,
                         label: item => ` ${item.dataset.label}: ${item.raw!==null?item.raw+'%':'S/D'}`
                     }}
                 },
                 scales:{
-                    y:{ min:0,max:100, ticks:{color:'#95a5a6',callback:v=>v+'%'}, grid:{color:'rgba(255,255,255,.05)'} },
-                    x:{ ticks:{ color:'#95a5a6', maxRotation:45, font:{size:9},
-                        callback: function(val) { return _formatarDataHist(this.getLabelForValue(val)); }
-                    }, grid:{color:'rgba(255,255,255,.03)'} }
+                    y:{ min:0, max:100, ticks:{color:'#95a5a6',callback:v=>v+'%'}, grid:{color:'rgba(255,255,255,.05)'} },
+                    x:{ ticks:{ color:'#95a5a6', maxRotation:45, font:{size:9} }, grid:{color:'rgba(255,255,255,.03)'} }
                 }
             }
         });
+    }
+
+    function _renderTabelaSemanal(semanasOrd, seriesAgrup) {
+        const thead = document.getElementById('hs-tabela-head');
+        const tbody = document.getElementById('hs-tabela-body');
+        if (!thead || !tbody) return;
+
+        thead.innerHTML = `<tr style="background:var(--bg);position:sticky;top:0">
+            <th style="padding:6px 8px;text-align:left;font-size:10px">Fiscal</th>
+            ${semanasOrd.map(s=>`<th style="padding:6px 6px;text-align:center;font-size:9px;white-space:nowrap">${_labelSemana(s)}</th>`).join('')}
+            <th style="padding:6px 8px;text-align:center;font-size:10px;color:var(--gold)">Média</th>
+        </tr>`;
+
+        tbody.innerHTML = seriesAgrup.map((f,i) => {
+            const cor = HIST_CORES[i%HIST_CORES.length];
+            const vals = f.dados.map(d => d.percentual);
+            const vlds = vals.filter(v => v !== null);
+            const med = vlds.length ? (vlds.reduce((a,b)=>a+b,0)/vlds.length).toFixed(1) : '---';
+            const cMed = parseFloat(med)>=80?'var(--success)':parseFloat(med)>=50?'var(--warning)':'var(--danger)';
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:6px 8px;font-size:10px;font-weight:700;border-left:3px solid ${cor}">${f.nome}</td>
+                ${vals.map(v => v===null
+                    ? `<td style="padding:4px;text-align:center;font-size:9px;color:var(--slate)">—</td>`
+                    : `<td style="padding:4px;text-align:center;font-size:9px;background:${v>=80?'#b7e1cd':v>=50?'#fff2cc':'#f4cccc'}22;font-weight:700">${v}%</td>`
+                ).join('')}
+                <td style="padding:6px 8px;text-align:center;font-size:10px;font-weight:900;color:${cMed}">${med}%</td>
+            </tr>`;
+        }).join('');
+    }
+
+    function exportarHistoricoSemanalCSV() {
+        if (!_semSeriesAgrupadas.length) return;
+        const semanas = _semSeriesAgrupadas[0].dados.map(d=>d.label);
+        let csv = 'Fiscal,' + semanas.join(',') + ',Média\n';
+        _semSeriesAgrupadas.forEach(f => {
+            const vals = f.dados.map(d => d.percentual !== null ? d.percentual : '');
+            const nums = vals.filter(v=>v!=='');
+            const med = nums.length ? (nums.reduce((a,b)=>a+b,0)/nums.length).toFixed(1) : '';
+            csv += `"${f.nome}",${vals.join(',')},${med}\n`;
+        });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+        a.download = 'historico_semanal_'+new Date().toISOString().slice(0,10)+'.csv';
+        a.click();
     }
 
     function toggleHistSemLinha(idx) {
