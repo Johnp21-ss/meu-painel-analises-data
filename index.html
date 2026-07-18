@@ -1673,15 +1673,25 @@
             <button class="hist-novo-btn" id="hsBtn60" onclick="setHistSemPeriodo(60,this)">60d</button>
             <button class="hist-novo-btn" id="hsBtn30" onclick="setHistSemPeriodo(30,this)">30d</button>
         </div>
-        <label style="display:flex;align-items:center;gap:5px;font-size:10px;cursor:pointer">
-            <input type="checkbox" id="hs-ocultar-fds" onchange="filtrarHistoricoSemanal()" style="accent-color:var(--gold)"> 🌙 Ocultar Sáb/Dom
-        </label>
-        <label style="display:flex;align-items:center;gap:5px;font-size:10px;cursor:pointer">
-            <input type="checkbox" id="hs-ocultar-fer" onchange="filtrarHistoricoSemanal()" style="accent-color:var(--gold)"> 🎉 Ocultar Feriados
-        </label>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-            <select id="hs-sel-fiscal" multiple style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px;min-width:180px;height:60px" onchange="filtrarHistoricoSemanal()"></select>
-            <div style="display:flex;flex-direction:column;gap:4px">
+        <!-- 🆕 Período personalizado (igual ao da Análise Diária) -->
+    <div style="display:flex;gap:6px;align-items:center">
+        <input type="date" id="hs-dt-ini" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px">
+        <span style="color:var(--slate);font-size:10px">até</span>
+        <input type="date" id="hs-dt-fim" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px">
+        <button onclick="aplicarPeriodoCustomSemanal()" style="background:var(--info);border:none;border-radius:6px;padding:4px 10px;color:white;font-size:10px;font-weight:700;cursor:pointer">Aplicar</button>
+    </div>
+
+    <label style="display:flex;align-items:center;gap:5px;font-size:10px;cursor:pointer">
+        <input type="checkbox" id="hs-ocultar-fds" onchange="filtrarHistoricoSemanal()" style="accent-color:var(--gold)"> 🌙 Ocultar Sáb/Dom
+    </label>
+    <label style="display:flex;align-items:center;gap:5px;font-size:10px;cursor:pointer">
+        <input type="checkbox" id="hs-ocultar-fer" onchange="filtrarHistoricoSemanal()" style="accent-color:var(--gold)"> 🎉 Ocultar Feriados
+    </label>
+
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+        <select id="hs-sel-fiscal" multiple style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px;min-width:180px;height:60px" onchange="filtrarHistoricoSemanal()"></select>
+        <div style="display:flex;flex-direction:column;gap:4px">
+
                 <button onclick="selecionarTodosFiscaisSem(true)"  style="background:var(--surface2);border:none;border-radius:4px;padding:3px 8px;color:var(--text);font-size:9px;cursor:pointer">Todos</button>
                 <button onclick="selecionarTodosFiscaisSem(false)" style="background:var(--surface2);border:none;border-radius:4px;padding:3px 8px;color:var(--text);font-size:9px;cursor:pointer">Limpar</button>
             </div>
@@ -3066,6 +3076,25 @@ function getNivelUsuario() {
         link.click();
     }
 
+     // ══════════════════════════════════════════════
+// PERÍODO PERSONALIZADO — ANÁLISE SEMANAL
+// ══════════════════════════════════════════════
+function aplicarPeriodoCustomSemanal() {
+    const ini = document.getElementById('hs-dt-ini').value;
+    const fim = document.getElementById('hs-dt-fim').value;
+    if (!ini || !fim) {
+        alert('⚠️ Selecione a data de início e fim.');
+        return;
+    }
+    // Armazena as datas personalizadas
+    window._hsDtCustomIni = ini;
+    window._hsDtCustomFim = fim;
+    // Remove a classe active dos botões de período rápido
+    document.querySelectorAll('#aba-historico-semanal .hist-novo-btn').forEach(b => b.classList.remove('active'));
+    // Aplica o filtro
+    filtrarHistoricoSemanal();
+}
+
     // ══════════════════════════════════════════════
     // HISTÓRICO
     // ══════════════════════════════════════════════
@@ -3369,20 +3398,29 @@ function getNivelUsuario() {
     }
 
     function setHistSemPeriodo(dias, btn) {
-        _histSemPeriodo = dias;
-        document.querySelectorAll('.hist-novo-btn').forEach(b=>b.classList.remove('active'));
-        if (btn) btn.classList.add('active');
-        filtrarHistoricoSemanal();
-    }
+    _histSemPeriodo = dias;
+    // Limpa período personalizado
+    window._hsDtCustomIni = null;
+    window._hsDtCustomFim = null;
+    document.querySelectorAll('.hist-novo-btn').forEach(b=>b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    filtrarHistoricoSemanal();
+}
 
     function filtrarHistoricoSemanal() {
         if (!_histSeriesRaw.length) return;
         const sel = document.getElementById('hs-sel-fiscal');
         const fiscaisSel = sel ? [...sel.selectedOptions].map(o=>o.value) : _histSeriesRaw.map(s=>s.nome);
 
-        // Pega todas as datas disponíveis, aplica corte de período (em dias)
-        let datas = [...new Set(_histSeriesRaw.flatMap(s=>s.dados.map(d=>d.data)))].sort();
-        if (_histSemPeriodo > 0) datas = datas.slice(-_histSemPeriodo);
+        // Pega todas as datas disponíveis
+let datas = [...new Set(_histSeriesRaw.flatMap(s=>s.dados.map(d=>d.data)))].sort();
+
+// Verifica se há período personalizado
+if (window._hsDtCustomIni && window._hsDtCustomFim) {
+    datas = datas.filter(d => d >= window._hsDtCustomIni && d <= window._hsDtCustomFim);
+} else if (_histSemPeriodo > 0) {
+    datas = datas.slice(-_histSemPeriodo);
+}
 
         const series = _histSeriesRaw.filter(s=>fiscaisSel.includes(s.nome));
 
