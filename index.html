@@ -4628,24 +4628,16 @@ function limparFiltroFiscal() {
 
             // KM executado — acumula para todos os filtros
             const km = parseFloat((d.km_executada || '0').toString().replace(',', '.')) || 0;
-            const cid = d.cidade || 'SEM CIDADE';
-            const gre = d.gre || 'SEM GRE';
             if (isConcl) {
                 kmExecTotal += km;
+                const cid = d.cidade || 'SEM CIDADE';
+                const gre = d.gre || 'SEM GRE';
                 cidadeKmMap[cid] = (cidadeKmMap[cid] || 0) + km;
-                greKmMap[gre]    = (greKmMap[gre]    || 0) + km;
+                greKmMap[gre] = (greKmMap[gre] || 0) + km;
                 cidadeConclMap[cid] = (cidadeConclMap[cid] || 0) + 1;
-            } else if (isOk) {
-                // rota em andamento — conta no mapa de cidade/GRE mas sem KM
-                cidadeKmMap[cid] = cidadeKmMap[cid] || 0;
-                greKmMap[gre]    = greKmMap[gre]    || 0;
-                cidadeConclMap[cid] = cidadeConclMap[cid] || 0;
             }
-            // garante que cidade e GRE aparecem no mapa mesmo sem rotas ok
-            if (!cidadeKmMap[cid] && cidadeKmMap[cid] !== 0) cidadeKmMap[cid] = 0;
-            if (!greKmMap[gre]    && greKmMap[gre]    !== 0) greKmMap[gre]    = 0;
-            if (!cidadeConclMap[cid]) cidadeConclMap[cid] = cidadeConclMap[cid] || 0;
 
+            const cid = d.cidade || "SEM CIDADE";
             if (!cidadeMap[cid]) cidadeMap[cid] = { t: 0, c: 0, mot: {} };
             cidadeMap[cid].t++;
             if (isOk) cidadeMap[cid].c++;
@@ -5074,12 +5066,11 @@ function limparFiltroFiscal() {
     }
 
     function renderCardsKm(cidadeKmMap, greKmMap, cidadeConclMap) {
-        const fmt = v => v > 0 ? (v >= 1000 ? (v/1000).toFixed(1) + ' mil km' : v.toFixed(1) + ' km') : '---';
+        const fmt = v => v >= 1000 ? (v/1000).toFixed(1) + ' mil km' : v.toFixed(1) + ' km';
 
         const tGre = document.querySelector('#tKmGre tbody');
         if (tGre) {
-            const entries = Object.entries(greKmMap);
-            const sorted = entries.sort((a,b) => b[1]-a[1]);
+            const sorted = Object.entries(greKmMap).sort((a,b) => b[1]-a[1]);
             tGre.innerHTML = sorted.length ? sorted.map(([gre, km], i) =>
                 `<tr><td style="color:var(--slate)">${i+1}º</td><td>${gre}</td><td style="text-align:right;color:#9b59b6;font-weight:bold">${fmt(km)}</td></tr>`
             ).join('') : '<tr><td colspan="3" style="color:var(--slate);text-align:center">Sem dados</td></tr>';
@@ -5087,8 +5078,7 @@ function limparFiltroFiscal() {
 
         const tCid = document.querySelector('#tKmCidade tbody');
         if (tCid) {
-            const entries = Object.entries(cidadeKmMap);
-            const sorted = entries.sort((a,b) => b[1]-a[1]);
+            const sorted = Object.entries(cidadeKmMap).sort((a,b) => b[1]-a[1]);
             tCid.innerHTML = sorted.length ? sorted.map(([cid, km], i) =>
                 `<tr><td style="color:var(--slate)">${i+1}º</td><td>${cid}</td><td style="text-align:right;color:#1abc9c;font-weight:bold">${fmt(km)}</td></tr>`
             ).join('') : '<tr><td colspan="3" style="color:var(--slate);text-align:center">Sem dados</td></tr>';
@@ -5096,8 +5086,7 @@ function limparFiltroFiscal() {
 
         const tConcl = document.querySelector('#tConclCidade tbody');
         if (tConcl) {
-            const entries = Object.entries(cidadeConclMap);
-            const sorted = entries.sort((a,b) => b[1]-a[1]);
+            const sorted = Object.entries(cidadeConclMap).sort((a,b) => b[1]-a[1]);
             tConcl.innerHTML = sorted.length ? sorted.map(([cid, n], i) =>
                 `<tr><td style="color:var(--slate)">${i+1}º</td><td>${cid}</td><td style="text-align:right;color:#e74c3c;font-weight:bold">${n}</td></tr>`
             ).join('') : '<tr><td colspan="3" style="color:var(--slate);text-align:center">Sem dados</td></tr>';
@@ -5373,9 +5362,7 @@ function limparFiltroFiscal() {
         <td class="col-abertura">${percAbertGeral}%</td>
     </tr>`;
     
-    document.getElementById('tbodyTecnologia').innerHTML = totalGeralMots > 0
-        ? resumoHTML + html
-        : "<tr><td colspan='7' style='color:var(--slate);text-align:center;padding:20px'>Sem dados para o período.</td></tr>";
+    document.getElementById('tbodyTecnologia').innerHTML = resumoHTML + (html || "<tr><td colspan='7'>Sem dados.</td></tr>");
     }
 
     // ═════════════════════════════════════════════════════════════════════════
