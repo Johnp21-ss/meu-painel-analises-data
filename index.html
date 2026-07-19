@@ -1436,7 +1436,7 @@
     <div class="header-controls">
         <div>
             <h2 style="margin:0;font-size:14px;">🚛 Panorama da Frota</h2>
-            <span id="frota-update-time" style="color:var(--orange);font-size:9px;font-weight:bold;">Carregando...</span>
+            <span id="frota-update-time" style="color:var(--orange);font-size:9px;font-weight:bold;">Clique em ATUALIZAR</span>
         </div>
         <select id="frota-fDivisao" onchange="processarFrota()">
             <option value="TODOS">DIVISÃO: TODAS</option>
@@ -1452,45 +1452,47 @@
             <option value="Em Uso">Em Uso</option>
             <option value="Disponível">Disponível</option>
             <option value="Manutenção">Manutenção</option>
+            <option value="Não Disponível">Não Disponível</option>
         </select>
         <button class="btn-action" onclick="carregarFrota()" style="background:var(--orange)"><i class="fas fa-sync-alt"></i> ATUALIZAR</button>
     </div>
 
-    <!-- KPIs Frota — 6 cards -->
-    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:15px">
+    <!-- KPIs — 6 cards -->
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px">
         <div style="background:var(--card-bg);border-radius:10px;padding:12px;text-align:center;border-left:3px solid var(--orange)">
-            <div style="font-size:26px;font-weight:900;color:var(--orange)" id="frota-kpi-total">0</div>
+            <div style="font-size:26px;font-weight:900;color:var(--orange)" id="frota-kpi-total">—</div>
             <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Total</div>
         </div>
         <div style="background:var(--card-bg);border-radius:10px;padding:12px;text-align:center;border-left:3px solid var(--success)">
-            <div style="font-size:26px;font-weight:900;color:var(--success)" id="frota-kpi-ativo">0</div>
+            <div style="font-size:26px;font-weight:900;color:var(--success)" id="frota-kpi-ativo">—</div>
             <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Ativos</div>
         </div>
         <div style="background:var(--card-bg);border-radius:10px;padding:12px;text-align:center;border-left:3px solid var(--danger)">
-            <div style="font-size:26px;font-weight:900;color:var(--danger)" id="frota-kpi-inativo">0</div>
+            <div style="font-size:26px;font-weight:900;color:var(--danger)" id="frota-kpi-inativo">—</div>
             <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Inativos</div>
         </div>
         <div style="background:var(--card-bg);border-radius:10px;padding:12px;text-align:center;border-left:3px solid var(--info)">
-            <div style="font-size:26px;font-weight:900;color:var(--info)" id="frota-kpi-emuso">0</div>
+            <div style="font-size:26px;font-weight:900;color:var(--info)" id="frota-kpi-emuso">—</div>
             <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Em Uso</div>
         </div>
         <div style="background:var(--card-bg);border-radius:10px;padding:12px;text-align:center;border-left:3px solid var(--gold)">
-            <div style="font-size:26px;font-weight:900;color:var(--gold)" id="frota-kpi-disponivel">0</div>
+            <div style="font-size:26px;font-weight:900;color:var(--gold)" id="frota-kpi-disponivel">—</div>
             <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Disponíveis</div>
         </div>
         <div style="background:var(--card-bg);border-radius:10px;padding:12px;text-align:center;border-left:3px solid var(--extra)">
-            <div style="font-size:26px;font-weight:900;color:var(--extra)" id="frota-kpi-manutencao">0</div>
+            <div style="font-size:26px;font-weight:900;color:var(--extra)" id="frota-kpi-manutencao">—</div>
             <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Manutenção</div>
         </div>
     </div>
 
     <!-- Cards intermediários: Composição GRE + Situação GRE + Fornecedor -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
-
-        <!-- Composição por GRE -->
         <div style="background:var(--card-bg);border-radius:12px;padding:14px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">🏛️ Composição por GRE</div>
-            <div style="overflow-y:auto;max-height:260px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">🏛️ Composição por GRE</div>
+                <button onclick="exportarCardCSV('tbodyFrotaComposicaoGre','composicao_gre')" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 7px;cursor:pointer">⬇</button>
+            </div>
+            <div style="overflow-y:auto;max-height:240px">
                 <table style="width:100%;border-collapse:collapse;font-size:10px">
                     <thead><tr style="background:var(--bg);color:var(--slate)">
                         <th style="padding:5px;text-align:left">GRE</th>
@@ -1505,10 +1507,12 @@
             </div>
         </div>
 
-        <!-- Situação Operacional por GRE -->
         <div style="background:var(--card-bg);border-radius:12px;padding:14px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">⚙️ Situação por GRE</div>
-            <div style="overflow-y:auto;max-height:260px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">⚙️ Situação por GRE</div>
+                <button onclick="exportarCardCSV('tbodyFrotaSituacaoGre','situacao_gre')" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 7px;cursor:pointer">⬇</button>
+            </div>
+            <div style="overflow-y:auto;max-height:240px">
                 <table style="width:100%;border-collapse:collapse;font-size:10px">
                     <thead><tr style="background:var(--bg);color:var(--slate)">
                         <th style="padding:5px;text-align:left">GRE</th>
@@ -1522,10 +1526,12 @@
             </div>
         </div>
 
-        <!-- Por Fornecedor -->
         <div style="background:var(--card-bg);border-radius:12px;padding:14px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">🏢 Por Fornecedor</div>
-            <div style="overflow-y:auto;max-height:260px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">🏢 Por Fornecedor</div>
+                <button onclick="exportarCardCSV('tbodyFrotaFornecedor','fornecedor')" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 7px;cursor:pointer">⬇</button>
+            </div>
+            <div style="overflow-y:auto;max-height:240px">
                 <table style="width:100%;border-collapse:collapse;font-size:10px">
                     <thead><tr style="background:var(--bg);color:var(--slate)">
                         <th style="padding:5px;text-align:left">Fornecedor</th>
@@ -1539,13 +1545,14 @@
         </div>
     </div>
 
-    <!-- Cards: Oficinas + Disponíveis sem uso -->
+    <!-- Cards: Oficinas + Disponíveis -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-
-        <!-- Oficinas Top 10 -->
         <div style="background:var(--card-bg);border-radius:12px;padding:14px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">🔧 Oficinas (veículos em manutenção)</div>
-            <div style="overflow-y:auto;max-height:220px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">🔧 Oficinas com O.S. ativa</div>
+                <button onclick="exportarCardCSV('tbodyFrotaOficinas','oficinas')" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 7px;cursor:pointer">⬇</button>
+            </div>
+            <div style="overflow-y:auto;max-height:200px">
                 <table style="width:100%;border-collapse:collapse;font-size:10px">
                     <thead><tr style="background:var(--bg);color:var(--slate)">
                         <th style="padding:5px;text-align:left">Oficina</th>
@@ -1557,10 +1564,12 @@
             </div>
         </div>
 
-        <!-- Disponíveis sem uso -->
         <div style="background:var(--card-bg);border-radius:12px;padding:14px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">✅ Disponíveis sem uso</div>
-            <div style="overflow-y:auto;max-height:220px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">✅ Disponíveis com GRE ativa</div>
+                <button onclick="exportarCardCSV('tbodyFrotaDisponiveis','disponiveis_gre')" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 7px;cursor:pointer">⬇</button>
+            </div>
+            <div style="overflow-y:auto;max-height:200px">
                 <table style="width:100%;border-collapse:collapse;font-size:10px">
                     <thead><tr style="background:var(--bg);color:var(--slate)">
                         <th style="padding:5px;text-align:left">Placa</th>
@@ -1574,27 +1583,27 @@
         </div>
     </div>
 
-    <!-- Tabela Frota completa -->
+    <!-- Tabela completa -->
     <div style="background:var(--card-bg);border-radius:12px;padding:15px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <div style="font-size:12px;font-weight:700;color:var(--slate);text-transform:uppercase">Todos os Veículos</div>
-            <button onclick="exportarFrotaCSV()" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 10px;cursor:pointer">⬇ Exportar CSV</button>
+            <div style="font-size:12px;font-weight:700;color:var(--slate);text-transform:uppercase">Todos os Veículos <span id="frota-tabela-count" style="color:var(--orange);font-weight:900"></span></div>
+            <button onclick="exportarFrotaCSV()" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 10px;cursor:pointer">⬇ Exportar Excel</button>
         </div>
-        <div style="overflow-x:auto">
-            <table id="tabelaFrota" style="width:100%;border-collapse:collapse;font-size:11px">
-                <thead>
+        <div style="overflow-x:auto;max-height:420px;overflow-y:auto">
+            <table id="tabelaFrota" style="width:100%;border-collapse:collapse;font-size:10px">
+                <thead style="position:sticky;top:0">
                     <tr style="background:var(--bg);color:var(--slate)">
-                        <th style="padding:8px;text-align:left">Placa</th>
-                        <th style="padding:8px">GRE</th>
-                        <th style="padding:8px">Cidade</th>
-                        <th style="padding:8px">Fornecedor</th>
-                        <th style="padding:8px">Divisão</th>
-                        <th style="padding:8px">Modelo</th>
-                        <th style="padding:8px">Status</th>
-                        <th style="padding:8px">Situação</th>
-                        <th style="padding:8px">Oficina</th>
-                        <th style="padding:8px">Previsão Entrega</th>
-                        <th style="padding:8px">Observação</th>
+                        <th style="padding:7px;text-align:left">Placa</th>
+                        <th style="padding:7px">GRE</th>
+                        <th style="padding:7px">Cidade</th>
+                        <th style="padding:7px">Fornecedor</th>
+                        <th style="padding:7px">Divisão</th>
+                        <th style="padding:7px">Modelo</th>
+                        <th style="padding:7px">Status</th>
+                        <th style="padding:7px">Situação</th>
+                        <th style="padding:7px">Oficina</th>
+                        <th style="padding:7px">Prev. Entrega</th>
+                        <th style="padding:7px">Nº Chamado</th>
                     </tr>
                 </thead>
                 <tbody id="tbodyFrota"></tbody>
@@ -1607,16 +1616,14 @@
     </div>
 </section>
 
-<!-- ══════════════════════════════════════════════════════════
-     FROTA — COMPLIANCE
-══════════════════════════════════════════════════════════ -->
+<!-- ══ FROTA: COMPLIANCE ══════════════════════════════════════ -->
 <section id="aba-frota-compliance" class="content-section">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
         <div>
             <div style="font-size:14px;font-weight:900">🛡️ Compliance de Frota</div>
-            <div style="font-size:9px;color:var(--slate);margin-top:2px">Veículos disponíveis · Manutenção prolongada · Comunicados</div>
+            <div style="font-size:9px;color:var(--slate);margin-top:2px">Alertas operacionais · Manutenção · Indisponibilidade · Comunicados</div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <select id="cpl-frota-divisao" onchange="processarFrotaCompliance()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px">
                 <option value="TODOS">DIVISÃO: TODAS</option>
                 <option value="PROPRIO">PRÓPRIO</option>
@@ -1624,87 +1631,153 @@
                 <option value="LOCADO">LOCADO</option>
                 <option value="TERCEIRO">TERCEIRO</option>
             </select>
-            <select id="cpl-frota-modelo" onchange="processarFrotaCompliance()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px">
-                <option value="TODOS">MODELO: TODOS</option>
-            </select>
             <select id="cpl-frota-gre" onchange="processarFrotaCompliance()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px">
                 <option value="TODOS">GRE: TODAS</option>
             </select>
+            <select id="cpl-frota-modelo" onchange="processarFrotaCompliance()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px">
+                <option value="TODOS">MODELO: TODOS</option>
+            </select>
         </div>
     </div>
 
-    <!-- Veículos disponíveis -->
-    <div style="background:var(--card-bg);border-radius:12px;padding:14px;margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <div style="font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase">✅ Veículos Disponíveis <span id="cpl-frota-disp-count" style="color:var(--gold)"></span></div>
-            <button onclick="exportarDispCSV()" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 10px;cursor:pointer">⬇ CSV</button>
+    <!-- KPIs de Alerta -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+        <div style="background:var(--card-bg);border-radius:10px;padding:12px;text-align:center;border-left:3px solid var(--danger)">
+            <div style="font-size:24px;font-weight:900;color:var(--danger)" id="cpl-kpi-manut15">—</div>
+            <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Manut. &gt; 15 dias</div>
         </div>
-        <div style="overflow-x:auto">
-            <table style="width:100%;border-collapse:collapse;font-size:10px">
-                <thead><tr style="background:var(--bg);color:var(--slate)">
-                    <th style="padding:6px;text-align:left">Placa</th>
-                    <th style="padding:6px">Modelo</th>
-                    <th style="padding:6px">Divisão</th>
-                    <th style="padding:6px">GRE</th>
-                    <th style="padding:6px">Cidade</th>
-                    <th style="padding:6px">Fornecedor</th>
-                </tr></thead>
-                <tbody id="tbodyCplDisponiveis"></tbody>
-            </table>
+        <div style="background:var(--card-bg);border-radius:10px;padding:12px;text-align:center;border-left:3px solid var(--warning)">
+            <div style="font-size:24px;font-weight:900;color:var(--warning)" id="cpl-kpi-prevvencida">—</div>
+            <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Prev. Entrega Vencida</div>
+        </div>
+        <div style="background:var(--card-bg);border-radius:10px;padding:12px;text-align:center;border-left:3px solid var(--extra)">
+            <div style="font-size:24px;font-weight:900;color:var(--extra)" id="cpl-kpi-inativosgre">—</div>
+            <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Inativos com GRE</div>
+        </div>
+        <div style="background:var(--card-bg);border-radius:10px;padding:12px;text-align:center;border-left:3px solid var(--info)">
+            <div style="font-size:24px;font-weight:900;color:var(--info)" id="cpl-kpi-semgre">—</div>
+            <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Ativos sem GRE</div>
         </div>
     </div>
 
-    <!-- Veículos em manutenção com alerta de dias -->
+    <!-- Alertas: Manutenção prolongada -->
     <div style="background:var(--card-bg);border-radius:12px;padding:14px;margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <div style="font-size:11px;font-weight:700;color:var(--extra);text-transform:uppercase">🔧 Veículos em Manutenção <span id="cpl-frota-manut-count" style="color:var(--extra)"></span></div>
-            <div style="display:flex;gap:6px;align-items:center">
-                <span style="font-size:9px;padding:2px 8px;border-radius:10px;background:#b7e1cd;color:#1a1a1a">< 7 dias</span>
-                <span style="font-size:9px;padding:2px 8px;border-radius:10px;background:#fff2cc;color:#1a1a1a">7-15 dias</span>
-                <span style="font-size:9px;padding:2px 8px;border-radius:10px;background:#f4cccc;color:#1a1a1a">> 15 dias</span>
-                <button onclick="gerarComunicadoManutencao()" style="font-size:9px;background:var(--orange);border:none;color:white;border-radius:6px;padding:4px 10px;cursor:pointer;font-weight:700">📨 Gerar Comunicado</button>
+            <div style="font-size:11px;font-weight:700;color:var(--extra);text-transform:uppercase">🔧 Manutenção Prolongada
+                <span id="cpl-manut-count" style="color:var(--slate);font-weight:400"></span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+                <span style="font-size:9px;padding:2px 8px;border-radius:10px;background:#b7e1cd;color:#1a1a1a">≤ 7d</span>
+                <span style="font-size:9px;padding:2px 8px;border-radius:10px;background:#fff2cc;color:#1a1a1a">8–15d</span>
+                <span style="font-size:9px;padding:2px 8px;border-radius:10px;background:#f4cccc;color:#1a1a1a">&gt; 15d</span>
+                <button onclick="gerarComunicadoManutencao()" style="font-size:9px;background:var(--orange);border:none;color:white;border-radius:6px;padding:4px 12px;cursor:pointer;font-weight:700">📨 Gerar Comunicado</button>
+                <button onclick="exportarCardCSV('tbodyCplManutencao','manutencao')" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 7px;cursor:pointer">⬇</button>
             </div>
         </div>
-        <div style="overflow-x:auto">
+        <div style="overflow-x:auto;max-height:280px;overflow-y:auto">
             <table style="width:100%;border-collapse:collapse;font-size:10px">
-                <thead><tr style="background:var(--bg);color:var(--slate)">
+                <thead style="position:sticky;top:0"><tr style="background:var(--bg);color:var(--slate)">
                     <th style="padding:6px;text-align:left">Placa</th>
                     <th style="padding:6px">Modelo</th>
                     <th style="padding:6px">Divisão</th>
                     <th style="padding:6px">GRE</th>
                     <th style="padding:6px">Oficina</th>
-                    <th style="padding:6px">Data Solicitação</th>
+                    <th style="padding:6px">Entrada</th>
                     <th style="padding:6px">Dias</th>
-                    <th style="padding:6px">Previsão Entrega</th>
-                    <th style="padding:6px">Status Chamado</th>
+                    <th style="padding:6px">Prev. Entrega</th>
+                    <th style="padding:6px">Status O.S.</th>
+                    <th style="padding:6px">Nº Chamado</th>
                 </tr></thead>
                 <tbody id="tbodyCplManutencao"></tbody>
             </table>
         </div>
     </div>
 
-    <!-- Área do comunicado gerado -->
+    <!-- Alertas: Previsão vencida -->
+    <div style="background:var(--card-bg);border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="font-size:11px;font-weight:700;color:var(--warning);text-transform:uppercase">⚠️ Previsão de Entrega Vencida
+                <span id="cpl-prev-count" style="color:var(--slate);font-weight:400"></span>
+            </div>
+            <button onclick="exportarCardCSV('tbodyCplPrevVencida','prev_vencida')" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 7px;cursor:pointer">⬇</button>
+        </div>
+        <div style="overflow-x:auto;max-height:200px;overflow-y:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:10px">
+                <thead style="position:sticky;top:0"><tr style="background:var(--bg);color:var(--slate)">
+                    <th style="padding:6px;text-align:left">Placa</th>
+                    <th style="padding:6px">Modelo</th>
+                    <th style="padding:6px">GRE</th>
+                    <th style="padding:6px">Oficina</th>
+                    <th style="padding:6px">Previsão</th>
+                    <th style="padding:6px">Dias Atrasado</th>
+                    <th style="padding:6px">Status O.S.</th>
+                </tr></thead>
+                <tbody id="tbodyCplPrevVencida"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Ranking fornecedores por indisponibilidade -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">📊 % Indisponibilidade por Fornecedor</div>
+                <button onclick="exportarCardCSV('tbodyCplFornIndispon','indispon_forn')" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 7px;cursor:pointer">⬇</button>
+            </div>
+            <div style="overflow-y:auto;max-height:220px">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg);color:var(--slate)">
+                        <th style="padding:5px;text-align:left">Fornecedor</th>
+                        <th style="padding:5px;text-align:center">Total</th>
+                        <th style="padding:5px;text-align:center">Indispon.</th>
+                        <th style="padding:5px;text-align:center">%</th>
+                    </tr></thead>
+                    <tbody id="tbodyCplFornIndispon"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">🚫 Inativos com GRE / Ativos sem GRE</div>
+                <button onclick="exportarCardCSV('tbodyCplAnomalias','anomalias')" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 7px;cursor:pointer">⬇</button>
+            </div>
+            <div style="overflow-y:auto;max-height:220px">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg);color:var(--slate)">
+                        <th style="padding:5px;text-align:left">Placa</th>
+                        <th style="padding:5px">Modelo</th>
+                        <th style="padding:5px">GRE</th>
+                        <th style="padding:5px">Status</th>
+                        <th style="padding:5px">Situação</th>
+                        <th style="padding:5px">Anomalia</th>
+                    </tr></thead>
+                    <tbody id="tbodyCplAnomalias"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comunicado gerado -->
     <div id="cpl-comunicado-box" style="background:var(--card-bg);border-radius:12px;padding:14px;display:none">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
             <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">📨 Comunicado Gerado</div>
             <button onclick="copiarComunicado()" style="font-size:9px;background:var(--success);border:none;color:white;border-radius:6px;padding:4px 10px;cursor:pointer;font-weight:700">📋 Copiar</button>
         </div>
-        <textarea id="cpl-comunicado-texto" style="width:100%;height:200px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:11px;padding:12px;resize:vertical;font-family:monospace"></textarea>
+        <textarea id="cpl-comunicado-texto" style="width:100%;height:200px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:11px;padding:12px;resize:vertical;font-family:monospace;box-sizing:border-box"></textarea>
     </div>
 </section>
 
-<!-- ══════════════════════════════════════════════════════════
-     FROTA — HISTÓRICO
-══════════════════════════════════════════════════════════ -->
+<!-- ══ FROTA: HISTÓRICO ═══════════════════════════════════════ -->
 <section id="aba-frota-historico" class="content-section">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
         <div>
             <div style="font-size:14px;font-weight:900">📋 Histórico de Frota</div>
             <div style="font-size:9px;color:var(--slate);margin-top:2px">Evolução por placa · alterações de GRE, situação, oficina e divisão</div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center">
-            <input type="text" id="hist-frota-placa" placeholder="Buscar placa..." style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px;width:130px">
-            <select id="hist-frota-divisao" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input type="text" id="hist-frota-placa" placeholder="Buscar placa..." onkeyup="filtrarHistoricoFrota()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px;width:130px">
+            <select id="hist-frota-divisao" onchange="filtrarHistoricoFrota()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px">
                 <option value="TODOS">DIVISÃO: TODAS</option>
                 <option value="PROPRIO">PRÓPRIO</option>
                 <option value="PARCEIRO">PARCEIRO</option>
@@ -1715,15 +1788,13 @@
                 <input type="checkbox" id="hist-frota-delta" onchange="filtrarHistoricoFrota()" style="accent-color:var(--orange)"> Só alterações
             </label>
             <button onclick="carregarHistoricoFrota()" class="btn-action" style="background:var(--orange)"><i class="fas fa-sync-alt"></i> ATUALIZAR</button>
+            <button onclick="exportarHistFrotaCSV()" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 10px;cursor:pointer">⬇ Excel</button>
         </div>
     </div>
 
     <div style="background:var(--card-bg);border-radius:12px;padding:14px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate)" id="hist-frota-contador"></div>
-            <button onclick="exportarHistFrotaCSV()" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 10px;cursor:pointer">⬇ CSV</button>
-        </div>
-        <div style="overflow-x:auto;max-height:480px;overflow-y:auto">
+        <div style="font-size:11px;font-weight:700;color:var(--slate);margin-bottom:10px" id="hist-frota-contador"></div>
+        <div style="overflow-x:auto;max-height:520px;overflow-y:auto">
             <table style="width:100%;border-collapse:collapse;font-size:10px">
                 <thead id="hist-frota-thead" style="position:sticky;top:0"></thead>
                 <tbody id="hist-frota-tbody"></tbody>
@@ -2869,8 +2940,7 @@ function getNivelUsuario() {
     const BLOCOS = {
         rt:    { sub: 'sub-rt',    primeiraAba: 'aba-rt-escala' },
         data:  { sub: 'sub-data',  primeiraAba: 'aba-escala'    },
-        frota: { sub: 'sub-frota', primeiraAba: 'aba-frota',
-                 extras: ['aba-frota-compliance','aba-frota-historico'] },
+        frota: { sub: 'sub-frota', primeiraAba: 'aba-frota'     },
         hist:  { sub: 'sub-hist',  primeiraAba: 'aba-historico' },
         gestao:{ sub: 'sub-gestao',primeiraAba: 'aba-gestao'    }
     };
@@ -2932,6 +3002,8 @@ function getNivelUsuario() {
         if (tabId === 'aba-rt-assid')       renderRTAssid();
         if (tabId === 'aba-rt-extras')      renderRTExtras();
         if (tabId === 'aba-rt-compliance')  renderRTCompliance();
+        if (tabId === 'aba-frota-compliance') processarFrotaCompliance();
+        if (tabId === 'aba-frota-historico')  { if (!_dadosHistFrota.length) carregarHistoricoFrota(); else filtrarHistoricoFrota(); }
     }
 
     // ══════════════════════════════════════════════
@@ -3189,378 +3261,62 @@ function getNivelUsuario() {
     }
 
     function processarFrota() {
-        const fDiv    = (document.getElementById('frota-fDivisao')  || {}).value || 'TODOS';
-        const fStatus = (document.getElementById('frota-fStatus')   || {}).value || 'TODOS';
-        const fGre    = (document.getElementById('frota-fGre')      || {}).value || 'TODOS';
-        const fSit    = (document.getElementById('frota-fSituacao') || {}).value || 'TODOS';
-
-        const divKey = r => (r['Divisão'] || r.divisao || '').toUpperCase();
-        const sitKey = r => (r.situacao || '').trim();
+        const fDiv    = (document.getElementById('frota-fDivisao') || {}).value || 'TODOS';
+        const fStatus = (document.getElementById('frota-fStatus')  || {}).value || 'TODOS';
+        const fGre    = (document.getElementById('frota-fGre')     || {}).value || 'TODOS';
 
         let dados = dadosFrota.filter(r => {
-            if (fDiv    !== 'TODOS' && divKey(r) !== fDiv) return false;
+            if (fDiv    !== 'TODOS' && (r['Divisão']||r.divisao_veiculo||'').toUpperCase() !== fDiv) return false;
             if (fStatus !== 'TODOS' && (r.status||'').toUpperCase() !== fStatus.toUpperCase()) return false;
             if (fGre    !== 'TODOS' && (r.gre||'').toUpperCase().indexOf(fGre) === -1) return false;
-            if (fSit    !== 'TODOS' && sitKey(r) !== fSit) return false;
             return true;
         });
 
-        // ── KPIs ──────────────────────────────────────────────
-        const total       = dados.length;
-        const ativos      = dados.filter(r => (r.status||'').toUpperCase() === 'A').length;
-        const inativos    = dados.filter(r => (r.status||'').toUpperCase() === 'I').length;
-        const emUso       = dados.filter(r => sitKey(r).includes('Em Uso')).length;
-        const disponivel  = dados.filter(r => sitKey(r).includes('Disponível')).length;
-        const manutencao  = dados.filter(r => sitKey(r).includes('Manutenção') || sitKey(r).includes('Não Disponível')).length;
+        // KPIs
+        const total    = dados.length;
+        const proprio  = dados.filter(r => (r['Divisão']||r.divisao_veiculo||'').toUpperCase() === 'PROPRIO').length;
+        const parceiro = dados.filter(r => (r['Divisão']||r.divisao_veiculo||'').toUpperCase() === 'PARCEIRO').length;
+        const outros   = total - proprio - parceiro;
 
-        _setEl('frota-kpi-total',      total);
-        _setEl('frota-kpi-ativo',      ativos);
-        _setEl('frota-kpi-inativo',    inativos);
-        _setEl('frota-kpi-emuso',      emUso);
-        _setEl('frota-kpi-disponivel', disponivel);
-        _setEl('frota-kpi-manutencao', manutencao);
+        _setEl('frota-total',    total);
+        _setEl('frota-proprio',  proprio);
+        _setEl('frota-parceiro', parceiro);
+        _setEl('frota-terceiro', outros);
 
-        // ── Preencher filtros dinâmicos ───────────────────────
-        const _popularSelect = (id, valores) => {
-            const sel = document.getElementById(id);
-            if (sel && sel.options.length <= 1)
-                valores.forEach(v => { const o = document.createElement('option'); o.value = v; o.text = v; sel.appendChild(o); });
-        };
-        _popularSelect('frota-fStatus',   [...new Set(dadosFrota.map(r => r.status).filter(Boolean))].sort());
-        _popularSelect('frota-fGre',      [...new Set(dadosFrota.map(r => r.gre).filter(Boolean))].sort());
-        _popularSelect('cpl-frota-gre',   [...new Set(dadosFrota.map(r => r.gre).filter(Boolean))].sort());
-        _popularSelect('cpl-frota-modelo',[...new Set(dadosFrota.map(r => r.modelo).filter(Boolean))].sort());
+        // Preencher filtros dinâmicos
+        if (dadosFrota.length > 0) {
+            const selStatus = document.getElementById('frota-fStatus');
+            if (selStatus && selStatus.options.length <= 1) {
+                const sts = [...new Set(dadosFrota.map(r => r.status).filter(Boolean))].sort();
+                sts.forEach(s => { const o = document.createElement('option'); o.value = s; o.text = s; selStatus.appendChild(o); });
+            }
+            const selGre = document.getElementById('frota-fGre');
+            if (selGre && selGre.options.length <= 1) {
+                const gres = [...new Set(dadosFrota.map(r => r.gre).filter(Boolean))].sort();
+                gres.forEach(g => { const o = document.createElement('option'); o.value = g; o.text = g; selGre.appendChild(o); });
+            }
+        }
 
-        // ── Composição por GRE ────────────────────────────────
-        const greComp = {};
-        dados.forEach(r => {
-            const gre = r.gre || 'S/GRE';
-            const div = divKey(r) || 'OUTRO';
-            if (!greComp[gre]) greComp[gre] = { PROPRIO:0, PARCEIRO:0, LOCADO:0, TERCEIRO:0, OUTRO:0 };
-            greComp[gre][div] = (greComp[gre][div] || 0) + 1;
-        });
-        const tbComp = document.getElementById('tbodyFrotaComposicaoGre');
-        if (tbComp) tbComp.innerHTML = Object.entries(greComp).sort().map(([gre, c]) =>
-            `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:5px;font-weight:700;font-size:10px">${gre}</td>
-                <td style="padding:5px;text-align:center;color:#2ecc71">${c.PROPRIO||0}</td>
-                <td style="padding:5px;text-align:center;color:#3498db">${c.PARCEIRO||0}</td>
-                <td style="padding:5px;text-align:center;color:#f1c40f">${c.LOCADO||0}</td>
-                <td style="padding:5px;text-align:center;color:#e74c3c">${c.TERCEIRO||0}</td>
-                <td style="padding:5px;text-align:center;font-weight:700">${(c.PROPRIO||0)+(c.PARCEIRO||0)+(c.LOCADO||0)+(c.TERCEIRO||0)+(c.OUTRO||0)}</td>
-            </tr>`
-        ).join('') || '<tr><td colspan="6" style="color:var(--slate);text-align:center;padding:10px">Sem dados</td></tr>';
-
-        // ── Situação por GRE ──────────────────────────────────
-        const greSit = {};
-        dados.forEach(r => {
-            const gre = r.gre || 'S/GRE';
-            const sit = sitKey(r);
-            if (!greSit[gre]) greSit[gre] = { uso:0, disp:0, manut:0 };
-            if (sit.includes('Em Uso'))          greSit[gre].uso++;
-            else if (sit.includes('Disponível')) greSit[gre].disp++;
-            else                                  greSit[gre].manut++;
-        });
-        const tbSit = document.getElementById('tbodyFrotaSituacaoGre');
-        if (tbSit) tbSit.innerHTML = Object.entries(greSit).sort().map(([gre, s]) =>
-            `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:5px;font-weight:700;font-size:10px">${gre}</td>
-                <td style="padding:5px;text-align:center;color:var(--info)">${s.uso}</td>
-                <td style="padding:5px;text-align:center;color:var(--gold)">${s.disp}</td>
-                <td style="padding:5px;text-align:center;color:var(--extra)">${s.manut}</td>
-                <td style="padding:5px;text-align:center;font-weight:700">${s.uso+s.disp+s.manut}</td>
-            </tr>`
-        ).join('') || '<tr><td colspan="5" style="color:var(--slate);text-align:center;padding:10px">Sem dados</td></tr>';
-
-        // ── Por Fornecedor ────────────────────────────────────
-        const fornMap = {};
-        dados.forEach(r => {
-            const fn = r.fornecedor_nome || 'NÃO IDENTIFICADO';
-            if (!fornMap[fn]) fornMap[fn] = { ativo:0, inativo:0 };
-            if ((r.status||'').toUpperCase() === 'A') fornMap[fn].ativo++;
-            else                                       fornMap[fn].inativo++;
-        });
-        const tbForn = document.getElementById('tbodyFrotaFornecedor');
-        if (tbForn) tbForn.innerHTML = Object.entries(fornMap)
-            .sort((a,b) => (b[1].ativo+b[1].inativo)-(a[1].ativo+a[1].inativo))
-            .map(([fn, f]) =>
-                `<tr style="border-bottom:1px solid var(--border)">
-                    <td style="padding:5px;font-size:10px">${fn}</td>
-                    <td style="padding:5px;text-align:center;color:var(--success)">${f.ativo}</td>
-                    <td style="padding:5px;text-align:center;color:var(--danger)">${f.inativo}</td>
-                    <td style="padding:5px;text-align:center;font-weight:700">${f.ativo+f.inativo}</td>
-                </tr>`
-            ).join('') || '<tr><td colspan="4" style="color:var(--slate);text-align:center;padding:10px">Sem dados</td></tr>';
-
-        // ── Oficinas Top 10 ───────────────────────────────────
-        const ofMap = {};
-        const hoje = new Date();
-        dados.filter(r => sitKey(r).includes('Manutenção') || sitKey(r).includes('Não Disponível')).forEach(r => {
-            const of = r.oficina || 'SEM OFICINA';
-            const dtSol = r.data_solicitacao ? new Date(r.data_solicitacao.split('/').reverse().join('-')) : null;
-            const dias  = dtSol && !isNaN(dtSol) ? Math.floor((hoje - dtSol) / 86400000) : 0;
-            if (!ofMap[of]) ofMap[of] = { veic:0, totalDias:0 };
-            ofMap[of].veic++;
-            ofMap[of].totalDias += dias;
-        });
-        const tbOf = document.getElementById('tbodyFrotaOficinas');
-        if (tbOf) tbOf.innerHTML = Object.entries(ofMap)
-            .sort((a,b) => b[1].veic - a[1].veic).slice(0,10)
-            .map(([of, o]) => {
-                const med = o.veic ? Math.round(o.totalDias/o.veic) : 0;
-                const cor = med > 15 ? 'var(--danger)' : med > 7 ? 'var(--warning)' : 'var(--success)';
-                return `<tr style="border-bottom:1px solid var(--border)">
-                    <td style="padding:5px;font-size:10px">${of}</td>
-                    <td style="padding:5px;text-align:center;font-weight:700;color:var(--extra)">${o.veic}</td>
-                    <td style="padding:5px;text-align:center;font-weight:700;color:${cor}">${med}d</td>
-                </tr>`;
-            }).join('') || '<tr><td colspan="3" style="color:var(--slate);text-align:center;padding:10px">Nenhum veículo em manutenção</td></tr>';
-
-        // ── Disponíveis sem uso ───────────────────────────────
-        const disponiveis = dados.filter(r => sitKey(r).includes('Disponível'));
-        const tbDisp = document.getElementById('tbodyFrotaDisponiveis');
-        if (tbDisp) tbDisp.innerHTML = disponiveis.map(r => {
-            const div = divKey(r);
-            const cor = {PROPRIO:'#b7e1cd',PARCEIRO:'#cfe2f3',LOCADO:'#fff2cc',TERCEIRO:'#f4cccc'}[div]||'transparent';
-            return `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:5px;font-weight:700">${r.placa||''}</td>
-                <td style="padding:5px;font-size:10px">${r.modelo||''}</td>
-                <td style="padding:5px;text-align:center"><span style="background:${cor};color:#1a1a1a;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700">${div}</span></td>
-                <td style="padding:5px;font-size:10px">${r.gre||''}</td>
-            </tr>`;
-        }).join('') || '<tr><td colspan="4" style="color:var(--slate);text-align:center;padding:10px">Nenhum disponível</td></tr>';
-
-        // ── Tabela completa ───────────────────────────────────
+        // Cores de divisão
         const coresDivisao = { PROPRIO:'#b7e1cd', PARCEIRO:'#cfe2f3', LOCADO:'#fff2cc', TERCEIRO:'#f4cccc' };
+
         const tbody = document.getElementById('tbodyFrota');
-        if (tbody) tbody.innerHTML = dados.map(r => {
-            const div    = divKey(r);
-            const sit    = sitKey(r);
+        if (!tbody) return;
+        tbody.innerHTML = dados.map(r => {
+            const div = (r['Divisão']||r.divisao_veiculo||'').toUpperCase();
             const corDiv = coresDivisao[div] || 'transparent';
-            const corSit = sit.includes('Em Uso') ? '#cfe2f3' : sit.includes('Disponível') ? '#b7e1cd' : '#f4cccc';
             return `<tr style="border-bottom:1px solid var(--border)">
                 <td style="padding:7px;font-weight:700;font-size:11px">${r.placa||''}</td>
                 <td style="padding:7px;font-size:10px;text-align:center">${r.gre||''}</td>
-                <td style="padding:7px;font-size:10px">${r.cidade||''}</td>
+                <td style="padding:7px;font-size:10px;text-align:center">${r.cidade||''}</td>
                 <td style="padding:7px;font-size:10px">${r.fornecedor_nome||''}</td>
                 <td style="padding:7px;text-align:center"><span style="background:${corDiv};color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700">${div}</span></td>
                 <td style="padding:7px;font-size:10px">${r.modelo||''}</td>
                 <td style="padding:7px;font-size:10px;text-align:center">${r.status||''}</td>
-                <td style="padding:7px;text-align:center"><span style="background:${corSit};color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700">${sit}</span></td>
-                <td style="padding:7px;font-size:10px;color:var(--slate)">${r.oficina||''}</td>
-                <td style="padding:7px;font-size:10px;text-align:center">${r.previsao_entrega||''}</td>
+                <td style="padding:7px;font-size:10px;text-align:center">${r.situacao||''}</td>
                 <td style="padding:7px;font-size:10px;color:var(--slate)">${r.observacao||''}</td>
             </tr>`;
         }).join('');
-
-        // Atualiza compliance também se estiver carregado
-        processarFrotaCompliance();
-    }
-
-    // ── Compliance de Frota ───────────────────────────────────
-    function processarFrotaCompliance() {
-        if (!dadosFrota.length) return;
-        const fDiv    = (document.getElementById('cpl-frota-divisao') || {}).value || 'TODOS';
-        const fModelo = (document.getElementById('cpl-frota-modelo')  || {}).value || 'TODOS';
-        const fGre    = (document.getElementById('cpl-frota-gre')     || {}).value || 'TODOS';
-
-        const divKey = r => (r['Divisão'] || r.divisao || '').toUpperCase();
-        const sitKey = r => (r.situacao || '').trim();
-
-        let dados = dadosFrota.filter(r => {
-            if (fDiv    !== 'TODOS' && divKey(r) !== fDiv) return false;
-            if (fModelo !== 'TODOS' && (r.modelo||'') !== fModelo) return false;
-            if (fGre    !== 'TODOS' && (r.gre||'') !== fGre) return false;
-            return true;
-        });
-
-        const hoje = new Date();
-        const coresDivisao = { PROPRIO:'#b7e1cd', PARCEIRO:'#cfe2f3', LOCADO:'#fff2cc', TERCEIRO:'#f4cccc' };
-
-        // Disponíveis
-        const disponiveis = dados.filter(r => sitKey(r).includes('Disponível'));
-        const elDispCount = document.getElementById('cpl-frota-disp-count');
-        if (elDispCount) elDispCount.innerText = `(${disponiveis.length})`;
-        const tbDisp = document.getElementById('tbodyCplDisponiveis');
-        if (tbDisp) tbDisp.innerHTML = disponiveis.map(r => {
-            const div = divKey(r);
-            const cor = coresDivisao[div] || 'transparent';
-            return `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:6px;font-weight:700">${r.placa||''}</td>
-                <td style="padding:6px;font-size:10px">${r.modelo||''}</td>
-                <td style="padding:6px;text-align:center"><span style="background:${cor};color:#1a1a1a;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700">${div}</span></td>
-                <td style="padding:6px;font-size:10px">${r.gre||''}</td>
-                <td style="padding:6px;font-size:10px">${r.cidade||''}</td>
-                <td style="padding:6px;font-size:10px">${r.fornecedor_nome||''}</td>
-            </tr>`;
-        }).join('') || '<tr><td colspan="6" style="color:var(--slate);text-align:center;padding:10px">Nenhum disponível</td></tr>';
-
-        // Manutenção com alerta de dias
-        const emManut = dados.filter(r => sitKey(r).includes('Manutenção') || sitKey(r).includes('Não Disponível'));
-        const elManutCount = document.getElementById('cpl-frota-manut-count');
-        if (elManutCount) elManutCount.innerText = `(${emManut.length})`;
-
-        const tbManut = document.getElementById('tbodyCplManutencao');
-        if (tbManut) tbManut.innerHTML = emManut.map(r => {
-            const dtSol = r.data_solicitacao ? new Date(r.data_solicitacao.split('/').reverse().join('-')) : null;
-            const dias  = dtSol && !isNaN(dtSol) ? Math.floor((hoje - dtSol) / 86400000) : null;
-            const corDias = dias === null ? 'transparent' : dias > 15 ? '#f4cccc' : dias > 7 ? '#fff2cc' : '#b7e1cd';
-            const div  = divKey(r);
-            const cor  = coresDivisao[div] || 'transparent';
-            return `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:6px;font-weight:700">${r.placa||''}</td>
-                <td style="padding:6px;font-size:10px">${r.modelo||''}</td>
-                <td style="padding:6px;text-align:center"><span style="background:${cor};color:#1a1a1a;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700">${div}</span></td>
-                <td style="padding:6px;font-size:10px">${r.gre||''}</td>
-                <td style="padding:6px;font-size:10px">${r.oficina||'—'}</td>
-                <td style="padding:6px;font-size:10px;text-align:center">${r.data_solicitacao||'—'}</td>
-                <td style="padding:6px;text-align:center;font-weight:700;background:${corDias};color:#1a1a1a">${dias !== null ? dias+'d' : '—'}</td>
-                <td style="padding:6px;font-size:10px;text-align:center">${r.previsao_entrega||'—'}</td>
-                <td style="padding:6px;font-size:10px">${r.status_chamado||'—'}</td>
-            </tr>`;
-        }).join('') || '<tr><td colspan="9" style="color:var(--slate);text-align:center;padding:10px">Nenhum em manutenção</td></tr>';
-    }
-
-    function gerarComunicadoManutencao() {
-        const hoje  = new Date().toLocaleDateString('pt-BR');
-        const tbManut = document.getElementById('tbodyCplManutencao');
-        if (!tbManut || !tbManut.rows.length) return;
-
-        const emManut = dadosFrota.filter(r => {
-            const sit = (r.situacao||'').trim();
-            return sit.includes('Manutenção') || sit.includes('Não Disponível');
-        });
-
-        let texto = `📋 COMUNICADO — VEÍCULOS EM MANUTENÇÃO\n`;
-        texto += `Data: ${hoje}\n`;
-        texto += `Gestor de Oficina,\n\n`;
-        texto += `Segue relação dos veículos em manutenção sob responsabilidade da SEDUC/PI:\n\n`;
-
-        const hoje2 = new Date();
-        emManut.forEach((r, i) => {
-            const dtSol = r.data_solicitacao ? new Date(r.data_solicitacao.split('/').reverse().join('-')) : null;
-            const dias  = dtSol && !isNaN(dtSol) ? Math.floor((hoje2 - dtSol) / 86400000) : null;
-            texto += `${i+1}. Placa: ${r.placa||'—'} | Modelo: ${r.modelo||'—'} | GRE: ${r.gre||'—'}\n`;
-            texto += `   Oficina: ${r.oficina||'—'} | Entrada: ${r.data_solicitacao||'—'}`;
-            if (dias !== null) texto += ` (${dias} dias)`;
-            texto += `\n   Previsão de entrega: ${r.previsao_entrega||'NÃO INFORMADA'}\n`;
-            texto += `   Status do chamado: ${r.status_chamado||'—'}\n\n`;
-        });
-
-        texto += `Solicitamos confirmação dos prazos de entrega dos veículos acima.\n`;
-        texto += `\nAtenciosamente,\nMonitoramento de Transporte Escolar — SEDUC/PI`;
-
-        const box   = document.getElementById('cpl-comunicado-box');
-        const field = document.getElementById('cpl-comunicado-texto');
-        if (box)   box.style.display = 'block';
-        if (field) field.value = texto;
-    }
-
-    function copiarComunicado() {
-        const field = document.getElementById('cpl-comunicado-texto');
-        if (!field) return;
-        navigator.clipboard.writeText(field.value).then(() => {
-            const btn = event.target;
-            btn.innerText = '✅ Copiado!';
-            setTimeout(() => btn.innerHTML = '📋 Copiar', 2000);
-        });
-    }
-
-    function exportarDispCSV() {
-        const disp = dadosFrota.filter(r => (r.situacao||'').includes('Disponível'));
-        if (!disp.length) return;
-        const cols = ['placa','modelo','Divisão','gre','cidade','fornecedor_nome'];
-        let csv = cols.join(',') + '\n';
-        disp.forEach(r => { csv += cols.map(c => `"${(r[c]||'').replace(/"/g,'""')}"`).join(',') + '\n'; });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'}));
-        a.download = 'frota_disponiveis_'+new Date().toISOString().slice(0,10)+'.csv';
-        a.click();
-    }
-
-    // ── Histórico de Frota ────────────────────────────────────
-    let _dadosHistFrota = [];
-
-    async function carregarHistoricoFrota() {
-        const token   = sessionStorage.getItem('token');
-        const loading = document.getElementById('hist-frota-loading');
-        const cont    = document.getElementById('hist-frota-tbody');
-        if (loading) { loading.style.display='block'; loading.innerHTML='<i class="fas fa-history fa-spin" style="font-size:40px;margin-bottom:12px;display:block;color:var(--orange)"></i><div>Carregando histórico...</div>'; }
-
-        try {
-            const res  = await fetch('/api/historico_frota', { headers:{ Authorization:'Bearer '+token } });
-            if (!res.ok) throw new Error('Erro '+res.status);
-            const json = await res.json();
-            if (!json.ok) throw new Error(json.error||'Sem dados');
-            _dadosHistFrota = json.registros || [];
-            if (loading) loading.style.display='none';
-            filtrarHistoricoFrota();
-        } catch(err) {
-            if (loading) loading.innerHTML=`<i class="fas fa-exclamation-triangle" style="font-size:40px;margin-bottom:12px;display:block;color:var(--danger)"></i><div style="color:var(--danger)">Erro: ${err.message}</div>`;
-        }
-    }
-
-    function filtrarHistoricoFrota() {
-        const placa  = (document.getElementById('hist-frota-placa')   ||{}).value.trim().toUpperCase();
-        const div    = (document.getElementById('hist-frota-divisao')  ||{}).value || 'TODOS';
-        const soDelta= (document.getElementById('hist-frota-delta')    ||{}).checked;
-
-        let dados = _dadosHistFrota.filter(r => {
-            if (placa && !(r.placa||'').includes(placa)) return false;
-            if (div !== 'TODOS' && (r.divisao||'').toUpperCase() !== div) return false;
-            if (soDelta && r.alterado !== 'SIM') return false;
-            return true;
-        });
-
-        const cnt = document.getElementById('hist-frota-contador');
-        if (cnt) cnt.innerText = `📋 ${dados.length} registros`;
-
-        const thead = document.getElementById('hist-frota-thead');
-        const tbody = document.getElementById('hist-frota-tbody');
-        if (!thead || !tbody) return;
-
-        thead.innerHTML = `<tr style="background:var(--bg);color:var(--slate)">
-            <th style="padding:6px;text-align:left">Data</th>
-            <th style="padding:6px">Placa</th>
-            <th style="padding:6px">GRE</th>
-            <th style="padding:6px">Cidade</th>
-            <th style="padding:6px">Status</th>
-            <th style="padding:6px">Situação</th>
-            <th style="padding:6px">Oficina</th>
-            <th style="padding:6px">Divisão</th>
-            <th style="padding:6px">Alterado</th>
-            <th style="padding:6px">Campos Alterados</th>
-        </tr>`;
-
-        const coresDivisao = { PROPRIO:'#b7e1cd', PARCEIRO:'#cfe2f3', LOCADO:'#fff2cc', TERCEIRO:'#f4cccc' };
-        tbody.innerHTML = dados.map(r => {
-            const corAlt = r.alterado==='SIM' ? '#f4cccc' : r.alterado==='NOVO' ? '#cfe2f3' : '#b7e1cd';
-            const div    = (r.divisao||'').toUpperCase();
-            const corDiv = coresDivisao[div] || 'transparent';
-            return `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:6px;font-size:10px;white-space:nowrap">${r.data_registro||''}</td>
-                <td style="padding:6px;font-weight:700">${r.placa||''}</td>
-                <td style="padding:6px;font-size:10px">${r.gre||''}</td>
-                <td style="padding:6px;font-size:10px">${r.cidade||''}</td>
-                <td style="padding:6px;text-align:center;font-size:10px">${r.status||''}</td>
-                <td style="padding:6px;font-size:10px">${r.situacao||''}</td>
-                <td style="padding:6px;font-size:10px">${r.oficina||'—'}</td>
-                <td style="padding:6px;text-align:center"><span style="background:${corDiv};color:#1a1a1a;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700">${div}</span></td>
-                <td style="padding:6px;text-align:center"><span style="background:${corAlt};color:#1a1a1a;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700">${r.alterado||''}</span></td>
-                <td style="padding:6px;font-size:10px;color:var(--slate)">${r.campos_alterados||''}</td>
-            </tr>`;
-        }).join('') || '<tr><td colspan="10" style="color:var(--slate);text-align:center;padding:20px">Sem registros</td></tr>';
-    }
-
-    function exportarHistFrotaCSV() {
-        if (!_dadosHistFrota.length) return;
-        const cols = ['data_registro','placa','gre','cidade','status','situacao','oficina','divisao','fornecedor_nome','previsao_entrega','alterado','campos_alterados'];
-        let csv = cols.join(',') + '\n';
-        _dadosHistFrota.forEach(r => { csv += cols.map(c => `"${(r[c]||'').replace(/"/g,'""')}"`).join(',') + '\n'; });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'}));
-        a.download = 'historico_frota_'+new Date().toISOString().slice(0,10)+'.csv';
-        a.click();
     }
 
     function exportarFrotaCSV() {
