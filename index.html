@@ -3261,72 +3261,402 @@ function getNivelUsuario() {
     }
 
     function processarFrota() {
-        const fDiv    = (document.getElementById('frota-fDivisao') || {}).value || 'TODOS';
-        const fStatus = (document.getElementById('frota-fStatus')  || {}).value || 'TODOS';
-        const fGre    = (document.getElementById('frota-fGre')     || {}).value || 'TODOS';
+        if (!dadosFrota.length) return;
+        const fDiv    = (document.getElementById('frota-fDivisao')  ||{}).value || 'TODOS';
+        const fStatus = (document.getElementById('frota-fStatus')   ||{}).value || 'TODOS';
+        const fGre    = (document.getElementById('frota-fGre')      ||{}).value || 'TODOS';
+        const fSit    = (document.getElementById('frota-fSituacao') ||{}).value || 'TODOS';
+
+        const divKey = r => (r['Divisão'] || r.divisao || '').toUpperCase();
+        const sitKey = r => (r.situacao || '').trim();
 
         let dados = dadosFrota.filter(r => {
-            if (fDiv    !== 'TODOS' && (r['Divisão']||r.divisao_veiculo||'').toUpperCase() !== fDiv) return false;
-            if (fStatus !== 'TODOS' && (r.status||'').toUpperCase() !== fStatus.toUpperCase()) return false;
-            if (fGre    !== 'TODOS' && (r.gre||'').toUpperCase().indexOf(fGre) === -1) return false;
+            if (fDiv    !== 'TODOS' && divKey(r) !== fDiv) return false;
+            if (fStatus !== 'TODOS' && (r.status||'').toUpperCase() !== fStatus) return false;
+            if (fGre    !== 'TODOS' && (r.gre||'') !== fGre) return false;
+            if (fSit    !== 'TODOS' && !sitKey(r).includes(fSit)) return false;
             return true;
         });
 
-        // KPIs
-        const total    = dados.length;
-        const proprio  = dados.filter(r => (r['Divisão']||r.divisao_veiculo||'').toUpperCase() === 'PROPRIO').length;
-        const parceiro = dados.filter(r => (r['Divisão']||r.divisao_veiculo||'').toUpperCase() === 'PARCEIRO').length;
-        const outros   = total - proprio - parceiro;
+        // ── KPIs ──────────────────────────────────────────────
+        _setEl('frota-kpi-total',      dados.length);
+        _setEl('frota-kpi-ativo',      dados.filter(r=>(r.status||'').toUpperCase()==='A').length);
+        _setEl('frota-kpi-inativo',    dados.filter(r=>(r.status||'').toUpperCase()==='I').length);
+        _setEl('frota-kpi-emuso',      dados.filter(r=>sitKey(r).includes('Em Uso')).length);
+        _setEl('frota-kpi-disponivel', dados.filter(r=>sitKey(r).includes('Disponível')).length);
+        _setEl('frota-kpi-manutencao', dados.filter(r=>sitKey(r).includes('Manutenção')||sitKey(r).includes('Não Disponível')).length);
 
-        _setEl('frota-total',    total);
-        _setEl('frota-proprio',  proprio);
-        _setEl('frota-parceiro', parceiro);
-        _setEl('frota-terceiro', outros);
+        // ── Filtros dinâmicos ─────────────────────────────────
+        const _popular = (id, vals) => {
+            const sel = document.getElementById(id);
+            if (sel && sel.options.length <= 1)
+                vals.forEach(v => { const o=document.createElement('option'); o.value=v; o.text=v; sel.appendChild(o); });
+        };
+        _popular('frota-fStatus',    [...new Set(dadosFrota.map(r=>r.status).filter(Boolean))].sort());
+        _popular('frota-fGre',       [...new Set(dadosFrota.map(r=>r.gre).filter(Boolean))].sort());
+        _popular('cpl-frota-gre',    [...new Set(dadosFrota.map(r=>r.gre).filter(Boolean))].sort());
+        _popular('cpl-frota-modelo', [...new Set(dadosFrota.map(r=>r.modelo).filter(Boolean))].sort());
 
-        // Preencher filtros dinâmicos
-        if (dadosFrota.length > 0) {
-            const selStatus = document.getElementById('frota-fStatus');
-            if (selStatus && selStatus.options.length <= 1) {
-                const sts = [...new Set(dadosFrota.map(r => r.status).filter(Boolean))].sort();
-                sts.forEach(s => { const o = document.createElement('option'); o.value = s; o.text = s; selStatus.appendChild(o); });
-            }
-            const selGre = document.getElementById('frota-fGre');
-            if (selGre && selGre.options.length <= 1) {
-                const gres = [...new Set(dadosFrota.map(r => r.gre).filter(Boolean))].sort();
-                gres.forEach(g => { const o = document.createElement('option'); o.value = g; o.text = g; selGre.appendChild(o); });
-            }
-        }
+        const hoje = new Date();
+        const coresDiv = {PROPRIO:'#b7e1cd',PARCEIRO:'#cfe2f3',LOCADO:'#fff2cc',TERCEIRO:'#f4cccc'};
 
-        // Cores de divisão
-        const coresDivisao = { PROPRIO:'#b7e1cd', PARCEIRO:'#cfe2f3', LOCADO:'#fff2cc', TERCEIRO:'#f4cccc' };
+        // ── Composição por GRE ────────────────────────────────
+        const greComp = {};
+        dados.forEach(r => {
+            const gre = r.gre||'S/GRE'; const div = divKey(r)||'OUTRO';
+            if (!greComp[gre]) greComp[gre]={PROPRIO:0,PARCEIRO:0,LOCADO:0,TERCEIRO:0,OUTRO:0};
+            greComp[gre][div] = (greComp[gre][div]||0)+1;
+        });
+        const tbComp = document.getElementById('tbodyFrotaComposicaoGre');
+        if (tbComp) tbComp.innerHTML = Object.entries(greComp).sort().map(([gre,c])=>
+            `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px;font-weight:700">${gre}</td>
+                <td style="padding:5px;text-align:center;color:#2ecc71">${c.PROPRIO||0}</td>
+                <td style="padding:5px;text-align:center;color:#3498db">${c.PARCEIRO||0}</td>
+                <td style="padding:5px;text-align:center;color:#f1c40f">${c.LOCADO||0}</td>
+                <td style="padding:5px;text-align:center;color:#e74c3c">${c.TERCEIRO||0}</td>
+                <td style="padding:5px;text-align:center;font-weight:700">${(c.PROPRIO||0)+(c.PARCEIRO||0)+(c.LOCADO||0)+(c.TERCEIRO||0)+(c.OUTRO||0)}</td>
+            </tr>`).join('') || '<tr><td colspan="6" style="color:var(--slate);text-align:center;padding:10px">Sem dados</td></tr>';
 
-        const tbody = document.getElementById('tbodyFrota');
-        if (!tbody) return;
-        tbody.innerHTML = dados.map(r => {
-            const div = (r['Divisão']||r.divisao_veiculo||'').toUpperCase();
-            const corDiv = coresDivisao[div] || 'transparent';
+        // ── Situação por GRE ──────────────────────────────────
+        const greSit = {};
+        dados.forEach(r => {
+            const gre=r.gre||'S/GRE'; const sit=sitKey(r);
+            if (!greSit[gre]) greSit[gre]={uso:0,disp:0,manut:0};
+            if (sit.includes('Em Uso'))          greSit[gre].uso++;
+            else if (sit.includes('Disponível')) greSit[gre].disp++;
+            else                                  greSit[gre].manut++;
+        });
+        const tbSit = document.getElementById('tbodyFrotaSituacaoGre');
+        if (tbSit) tbSit.innerHTML = Object.entries(greSit).sort().map(([gre,s])=>
+            `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px;font-weight:700">${gre}</td>
+                <td style="padding:5px;text-align:center;color:var(--info)">${s.uso}</td>
+                <td style="padding:5px;text-align:center;color:var(--gold)">${s.disp}</td>
+                <td style="padding:5px;text-align:center;color:var(--extra)">${s.manut}</td>
+                <td style="padding:5px;text-align:center;font-weight:700">${s.uso+s.disp+s.manut}</td>
+            </tr>`).join('') || '<tr><td colspan="5" style="color:var(--slate);text-align:center;padding:10px">Sem dados</td></tr>';
+
+        // ── Por Fornecedor ────────────────────────────────────
+        const fornMap = {};
+        dados.forEach(r => {
+            const fn=r.fornecedor_nome||'NÃO IDENTIFICADO';
+            if (!fornMap[fn]) fornMap[fn]={ativo:0,inativo:0};
+            (r.status||'').toUpperCase()==='A' ? fornMap[fn].ativo++ : fornMap[fn].inativo++;
+        });
+        const tbForn = document.getElementById('tbodyFrotaFornecedor');
+        if (tbForn) tbForn.innerHTML = Object.entries(fornMap)
+            .sort((a,b)=>(b[1].ativo+b[1].inativo)-(a[1].ativo+a[1].inativo))
+            .map(([fn,f])=>`<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px">${fn}</td>
+                <td style="padding:5px;text-align:center;color:var(--success)">${f.ativo}</td>
+                <td style="padding:5px;text-align:center;color:var(--danger)">${f.inativo}</td>
+                <td style="padding:5px;text-align:center;font-weight:700">${f.ativo+f.inativo}</td>
+            </tr>`).join('') || '<tr><td colspan="4" style="color:var(--slate);text-align:center;padding:10px">Sem dados</td></tr>';
+
+        // ── Oficinas com O.S. ativa (só com oficina preenchida e em manutenção) ──
+        const ofMap = {};
+        dados.filter(r=>(sitKey(r).includes('Manutenção')||sitKey(r).includes('Não Disponível'))&&(r.oficina||'').trim()&&(r.oficina||'').trim()!=='---').forEach(r => {
+            const of=r.oficina.trim();
+            const dtSol = r.data_solicitacao ? new Date(r.data_solicitacao.split('/').reverse().join('-')) : null;
+            const dias  = dtSol&&!isNaN(dtSol) ? Math.floor((hoje-dtSol)/86400000) : 0;
+            if (!ofMap[of]) ofMap[of]={veic:0,totalDias:0};
+            ofMap[of].veic++; ofMap[of].totalDias+=dias;
+        });
+        const tbOf = document.getElementById('tbodyFrotaOficinas');
+        if (tbOf) tbOf.innerHTML = Object.entries(ofMap).sort((a,b)=>b[1].veic-a[1].veic).slice(0,10)
+            .map(([of,o])=>{
+                const med=o.veic?Math.round(o.totalDias/o.veic):0;
+                const cor=med>15?'var(--danger)':med>7?'var(--warning)':'var(--success)';
+                return `<tr style="border-bottom:1px solid var(--border)">
+                    <td style="padding:5px">${of}</td>
+                    <td style="padding:5px;text-align:center;font-weight:700;color:var(--extra)">${o.veic}</td>
+                    <td style="padding:5px;text-align:center;font-weight:700;color:${cor}">${med}d</td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="3" style="color:var(--slate);text-align:center;padding:10px">Nenhum veículo em manutenção com O.S.</td></tr>';
+
+        // ── Disponíveis com GRE ativa ─────────────────────────
+        const dispGre = dados.filter(r=>sitKey(r).includes('Disponível')&&(r.gre||'').trim()&&r.gre!=='---'&&(r.status||'').toUpperCase()==='A');
+        const tbDisp = document.getElementById('tbodyFrotaDisponiveis');
+        if (tbDisp) tbDisp.innerHTML = dispGre.map(r=>{
+            const div=divKey(r); const cor=coresDiv[div]||'transparent';
             return `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:7px;font-weight:700;font-size:11px">${r.placa||''}</td>
-                <td style="padding:7px;font-size:10px;text-align:center">${r.gre||''}</td>
-                <td style="padding:7px;font-size:10px;text-align:center">${r.cidade||''}</td>
-                <td style="padding:7px;font-size:10px">${r.fornecedor_nome||''}</td>
-                <td style="padding:7px;text-align:center"><span style="background:${corDiv};color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700">${div}</span></td>
-                <td style="padding:7px;font-size:10px">${r.modelo||''}</td>
-                <td style="padding:7px;font-size:10px;text-align:center">${r.status||''}</td>
-                <td style="padding:7px;font-size:10px;text-align:center">${r.situacao||''}</td>
-                <td style="padding:7px;font-size:10px;color:var(--slate)">${r.observacao||''}</td>
+                <td style="padding:5px;font-weight:700">${r.placa||''}</td>
+                <td style="padding:5px">${r.modelo||''}</td>
+                <td style="padding:5px;text-align:center"><span style="background:${cor};color:#1a1a1a;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700">${div}</span></td>
+                <td style="padding:5px">${r.gre||''}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="4" style="color:var(--slate);text-align:center;padding:10px">Nenhum disponível com GRE</td></tr>';
+
+        // ── Tabela completa ───────────────────────────────────
+        const cntEl = document.getElementById('frota-tabela-count');
+        if (cntEl) cntEl.innerText = `(${dados.length})`;
+        const tbody = document.getElementById('tbodyFrota');
+        const loading = document.getElementById('frota-loading');
+        if (loading) loading.style.display='none';
+        if (tbody) tbody.innerHTML = dados.map(r=>{
+            const div=divKey(r); const sit=sitKey(r);
+            const cDiv=coresDiv[div]||'transparent';
+            const cSit=sit.includes('Em Uso')?'#cfe2f3':sit.includes('Disponível')?'#b7e1cd':'#f4cccc';
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:6px;font-weight:700">${r.placa||''}</td>
+                <td style="padding:6px;font-size:10px">${r.gre||''}</td>
+                <td style="padding:6px;font-size:10px">${r.cidade||''}</td>
+                <td style="padding:6px;font-size:10px">${r.fornecedor_nome||''}</td>
+                <td style="padding:6px;text-align:center"><span style="background:${cDiv};color:#1a1a1a;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700">${div}</span></td>
+                <td style="padding:6px;font-size:10px">${r.modelo||''}</td>
+                <td style="padding:6px;text-align:center;font-size:10px">${r.status||''}</td>
+                <td style="padding:6px;text-align:center"><span style="background:${cSit};color:#1a1a1a;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700">${sit||''}</span></td>
+                <td style="padding:6px;font-size:10px">${r.oficina||''}</td>
+                <td style="padding:6px;font-size:10px;text-align:center">${r.previsao_entrega||''}</td>
+                <td style="padding:6px;font-size:10px">${r.numero_chamado||''}</td>
             </tr>`;
         }).join('');
+
+        processarFrotaCompliance();
     }
 
     function exportarFrotaCSV() {
-        if (!dadosFrota.length) { alert('Carregue os dados da frota primeiro.'); return; }
+        if (!dadosFrota.length) return;
         const csv = Papa.unparse(dadosFrota);
-        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'frota_' + new Date().toISOString().slice(0,10) + '.csv';
-        link.click();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+        a.download = 'frota_'+new Date().toISOString().slice(0,10)+'.csv';
+        a.click();
+    }
+
+    function exportarCardCSV(tbodyId, nome) {
+        const tb = document.getElementById(tbodyId);
+        if (!tb) return;
+        const rows = [...tb.querySelectorAll('tr')];
+        if (!rows.length) return;
+        const linhas = rows.map(tr => [...tr.querySelectorAll('td')].map(td=>'"'+td.innerText.replace(/"/g,'""')+'"').join(','));
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob(['\uFEFF'+linhas.join('\n')],{type:'text/csv;charset=utf-8'}));
+        a.download = nome+'_'+new Date().toISOString().slice(0,10)+'.csv';
+        a.click();
+    }
+
+    function processarFrotaCompliance() {
+        if (!dadosFrota.length) return;
+        const fDiv    = (document.getElementById('cpl-frota-divisao')||{}).value||'TODOS';
+        const fGre    = (document.getElementById('cpl-frota-gre')    ||{}).value||'TODOS';
+        const fModelo = (document.getElementById('cpl-frota-modelo') ||{}).value||'TODOS';
+        const divKey  = r=>(r['Divisão']||r.divisao||'').toUpperCase();
+        const sitKey  = r=>(r.situacao||'').trim();
+        const hoje    = new Date();
+        const coresDiv= {PROPRIO:'#b7e1cd',PARCEIRO:'#cfe2f3',LOCADO:'#fff2cc',TERCEIRO:'#f4cccc'};
+
+        let dados = dadosFrota.filter(r=>{
+            if (fDiv    !=='TODOS'&&divKey(r)!==fDiv) return false;
+            if (fGre    !=='TODOS'&&(r.gre||'')!==fGre) return false;
+            if (fModelo !=='TODOS'&&(r.modelo||'')!==fModelo) return false;
+            return true;
+        });
+
+        // ── Manutenção prolongada (com oficina preenchida) ────
+        const emManut = dados.filter(r=>(sitKey(r).includes('Manutenção')||sitKey(r).includes('Não Disponível'))&&(r.oficina||'').trim()&&r.oficina!=='---');
+        const _dias = r => { const d=r.data_solicitacao?new Date(r.data_solicitacao.split('/').reverse().join('-')):null; return d&&!isNaN(d)?Math.floor((hoje-d)/86400000):null; };
+
+        const manut15 = emManut.filter(r=>{ const d=_dias(r); return d!==null&&d>15; }).length;
+        _setEl('cpl-kpi-manut15', manut15);
+        const elManutCnt = document.getElementById('cpl-manut-count');
+        if (elManutCnt) elManutCnt.innerText = `(${emManut.length} total)`;
+
+        const tbManut = document.getElementById('tbodyCplManutencao');
+        if (tbManut) tbManut.innerHTML = emManut.sort((a,b)=>(_dias(b)||0)-(_dias(a)||0)).map(r=>{
+            const d=_dias(r); const div=divKey(r);
+            const cDias=d===null?'transparent':d>15?'#f4cccc':d>7?'#fff2cc':'#b7e1cd';
+            const cDiv=coresDiv[div]||'transparent';
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px;font-weight:700">${r.placa||''}</td>
+                <td style="padding:5px;font-size:10px">${r.modelo||''}</td>
+                <td style="padding:5px;text-align:center"><span style="background:${cDiv};color:#1a1a1a;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700">${div}</span></td>
+                <td style="padding:5px;font-size:10px">${r.gre||''}</td>
+                <td style="padding:5px;font-size:10px">${r.oficina||'—'}</td>
+                <td style="padding:5px;text-align:center;font-size:10px">${r.data_solicitacao||'—'}</td>
+                <td style="padding:5px;text-align:center;font-weight:700;background:${cDias};color:#1a1a1a">${d!==null?d+'d':'—'}</td>
+                <td style="padding:5px;text-align:center;font-size:10px">${r.previsao_entrega||'—'}</td>
+                <td style="padding:5px;font-size:10px">${r.status_chamado||'—'}</td>
+                <td style="padding:5px;font-size:10px">${r.numero_chamado||'—'}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="10" style="color:var(--slate);text-align:center;padding:10px">Nenhum</td></tr>';
+
+        // ── Previsão de entrega vencida ───────────────────────
+        const prevVencida = emManut.filter(r=>{
+            if (!r.previsao_entrega||r.previsao_entrega==='---') return false;
+            const dtPrev = new Date(r.previsao_entrega.split('/').reverse().join('-'));
+            return !isNaN(dtPrev) && dtPrev < hoje;
+        });
+        _setEl('cpl-kpi-prevvencida', prevVencida.length);
+        const elPrevCnt = document.getElementById('cpl-prev-count');
+        if (elPrevCnt) elPrevCnt.innerText = `(${prevVencida.length})`;
+        const tbPrev = document.getElementById('tbodyCplPrevVencida');
+        if (tbPrev) tbPrev.innerHTML = prevVencida.map(r=>{
+            const dtPrev=new Date(r.previsao_entrega.split('/').reverse().join('-'));
+            const atr=Math.floor((hoje-dtPrev)/86400000);
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px;font-weight:700">${r.placa||''}</td>
+                <td style="padding:5px;font-size:10px">${r.modelo||''}</td>
+                <td style="padding:5px;font-size:10px">${r.gre||''}</td>
+                <td style="padding:5px;font-size:10px">${r.oficina||'—'}</td>
+                <td style="padding:5px;text-align:center;font-size:10px">${r.previsao_entrega}</td>
+                <td style="padding:5px;text-align:center;font-weight:700;color:var(--danger)">${atr}d</td>
+                <td style="padding:5px;font-size:10px">${r.status_chamado||'—'}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="7" style="color:var(--slate);text-align:center;padding:10px">Nenhuma previsão vencida ✅</td></tr>';
+
+        // ── % Indisponibilidade por fornecedor ────────────────
+        const fornIndis = {};
+        dados.forEach(r=>{
+            const fn=r.fornecedor_nome||'NÃO IDENTIFICADO';
+            const sit=sitKey(r);
+            if (!fornIndis[fn]) fornIndis[fn]={total:0,indis:0};
+            fornIndis[fn].total++;
+            if (!sit.includes('Em Uso')&&!sit.includes('Disponível')) fornIndis[fn].indis++;
+        });
+        const tbFornI = document.getElementById('tbodyCplFornIndispon');
+        if (tbFornI) tbFornI.innerHTML = Object.entries(fornIndis)
+            .filter(([,f])=>f.total>0)
+            .sort((a,b)=>(b[1].indis/b[1].total)-(a[1].indis/a[1].total))
+            .map(([fn,f])=>{
+                const pct=(f.indis/f.total*100).toFixed(1);
+                const cor=parseFloat(pct)>30?'var(--danger)':parseFloat(pct)>15?'var(--warning)':'var(--success)';
+                return `<tr style="border-bottom:1px solid var(--border)">
+                    <td style="padding:5px;font-size:10px">${fn}</td>
+                    <td style="padding:5px;text-align:center">${f.total}</td>
+                    <td style="padding:5px;text-align:center;color:var(--danger)">${f.indis}</td>
+                    <td style="padding:5px;text-align:center;font-weight:700;color:${cor}">${pct}%</td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="4" style="color:var(--slate);text-align:center;padding:10px">Sem dados</td></tr>';
+
+        // ── Anomalias: inativos com GRE / ativos sem GRE ─────
+        const inatGre  = dados.filter(r=>(r.status||'').toUpperCase()==='I'&&(r.gre||'').trim()&&r.gre!=='---');
+        const ativSGre = dados.filter(r=>(r.status||'').toUpperCase()==='A'&&(!(r.gre||'').trim()||r.gre==='---'));
+        _setEl('cpl-kpi-inativosgre', inatGre.length);
+        _setEl('cpl-kpi-semgre',      ativSGre.length);
+        const anomalias = [...inatGre.map(r=>({...r,_anomalia:'Inativo c/ GRE'})), ...ativSGre.map(r=>({...r,_anomalia:'Ativo s/ GRE'}))];
+        const tbAnom = document.getElementById('tbodyCplAnomalias');
+        if (tbAnom) tbAnom.innerHTML = anomalias.map(r=>{
+            const div=divKey(r); const cor=coresDiv[div]||'transparent';
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px;font-weight:700">${r.placa||''}</td>
+                <td style="padding:5px;font-size:10px">${r.modelo||''}</td>
+                <td style="padding:5px;font-size:10px">${r.gre||'—'}</td>
+                <td style="padding:5px;text-align:center">${r.status||''}</td>
+                <td style="padding:5px;font-size:10px">${r.situacao||''}</td>
+                <td style="padding:5px;text-align:center"><span style="background:#f4cccc;color:#1a1a1a;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700">${r._anomalia}</span></td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="6" style="color:var(--slate);text-align:center;padding:10px">Nenhuma anomalia ✅</td></tr>';
+    }
+
+    function gerarComunicadoManutencao() {
+        const emManut = dadosFrota.filter(r=>{
+            const sit=(r.situacao||'').trim();
+            return (sit.includes('Manutenção')||sit.includes('Não Disponível'))&&(r.oficina||'').trim()&&r.oficina!=='---';
+        });
+        if (!emManut.length) return;
+        const hoje = new Date();
+        const dtHoje = hoje.toLocaleDateString('pt-BR');
+        const _dias = r => { const d=r.data_solicitacao?new Date(r.data_solicitacao.split('/').reverse().join('-')):null; return d&&!isNaN(d)?Math.floor((hoje-d)/86400000):null; };
+
+        let txt = `📋 COMUNICADO — VEÍCULOS EM MANUTENÇÃO\nData: ${dtHoje}\n\nGestor de Oficina,\n\n`;
+        txt += `Segue relação dos veículos escolares em manutenção sob acompanhamento da SEDUC/PI:\n\n`;
+        emManut.sort((a,b)=>(_dias(b)||0)-(_dias(a)||0)).forEach((r,i)=>{
+            const d=_dias(r);
+            txt += `${i+1}. Placa: ${r.placa||'—'} | ${r.modelo||'—'} | GRE: ${r.gre||'—'}\n`;
+            txt += `   Oficina: ${r.oficina} | Entrada: ${r.data_solicitacao||'—'}`;
+            if (d!==null) txt += ` (${d} dias em manutenção)`;
+            txt += `\n   Previsão de entrega: ${r.previsao_entrega||'NÃO INFORMADA'} | Chamado: ${r.numero_chamado||'—'}\n\n`;
+        });
+        txt += `Solicitamos confirmação ou atualização dos prazos de entrega.\n\nAtenciosamente,\nMonitoramento de Transporte Escolar — SEDUC/PI`;
+
+        const box=document.getElementById('cpl-comunicado-box');
+        const fld=document.getElementById('cpl-comunicado-texto');
+        if (box) box.style.display='block';
+        if (fld) fld.value=txt;
+        box.scrollIntoView({behavior:'smooth'});
+    }
+
+    function copiarComunicado() {
+        const fld=document.getElementById('cpl-comunicado-texto');
+        if (!fld) return;
+        navigator.clipboard.writeText(fld.value).then(()=>{
+            const btn=event.target; btn.innerText='✅ Copiado!';
+            setTimeout(()=>btn.innerHTML='📋 Copiar',2000);
+        });
+    }
+
+    // ── Histórico de Frota ────────────────────────────────────
+    let _dadosHistFrota = [];
+
+    async function carregarHistoricoFrota() {
+        const token=sessionStorage.getItem('token');
+        const loading=document.getElementById('hist-frota-loading');
+        if (loading){loading.style.display='block';loading.innerHTML='<i class="fas fa-history fa-spin" style="font-size:40px;margin-bottom:12px;display:block;color:var(--orange)"></i><div>Carregando histórico...</div>';}
+        try {
+            const res=await fetch('/api/historico_frota',{headers:{Authorization:'Bearer '+token}});
+            if (!res.ok) throw new Error('Erro '+res.status);
+            const json=await res.json();
+            if (!json.ok) throw new Error(json.error||'Sem dados');
+            _dadosHistFrota=json.registros||[];
+            if (loading) loading.style.display='none';
+            filtrarHistoricoFrota();
+        } catch(err){
+            if (loading) loading.innerHTML=`<i class="fas fa-exclamation-triangle" style="font-size:40px;margin-bottom:12px;display:block;color:var(--danger)"></i><div style="color:var(--danger)">Erro: ${err.message}</div>`;
+        }
+    }
+
+    function filtrarHistoricoFrota() {
+        const placa=(document.getElementById('hist-frota-placa')||{}).value.trim().toUpperCase();
+        const div=(document.getElementById('hist-frota-divisao')||{}).value||'TODOS';
+        const soDelta=(document.getElementById('hist-frota-delta')||{}).checked;
+        let dados=_dadosHistFrota.filter(r=>{
+            if (placa&&!(r.placa||'').includes(placa)) return false;
+            if (div!=='TODOS'&&(r.divisao||'').toUpperCase()!==div) return false;
+            if (soDelta&&r.alterado!=='SIM') return false;
+            return true;
+        });
+        const cnt=document.getElementById('hist-frota-contador');
+        if (cnt) cnt.innerText=`📋 ${dados.length} registros`;
+        const thead=document.getElementById('hist-frota-thead');
+        const tbody=document.getElementById('hist-frota-tbody');
+        if (thead) thead.innerHTML=`<tr style="background:var(--bg);color:var(--slate)">
+            <th style="padding:6px;text-align:left">Data</th><th style="padding:6px">Placa</th>
+            <th style="padding:6px">GRE</th><th style="padding:6px">Cidade</th>
+            <th style="padding:6px">Status</th><th style="padding:6px">Situação</th>
+            <th style="padding:6px">Oficina</th><th style="padding:6px">Divisão</th>
+            <th style="padding:6px">Alterado</th><th style="padding:6px">Campos Alterados</th>
+        </tr>`;
+        const coresDiv={PROPRIO:'#b7e1cd',PARCEIRO:'#cfe2f3',LOCADO:'#fff2cc',TERCEIRO:'#f4cccc'};
+        if (tbody) tbody.innerHTML=dados.map(r=>{
+            const cAlt=r.alterado==='SIM'?'#f4cccc':r.alterado==='NOVO'?'#cfe2f3':'#b7e1cd';
+            const div=(r.divisao||'').toUpperCase();
+            const cDiv=coresDiv[div]||'transparent';
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:6px;font-size:10px;white-space:nowrap">${r.data_registro||''}</td>
+                <td style="padding:6px;font-weight:700">${r.placa||''}</td>
+                <td style="padding:6px;font-size:10px">${r.gre||''}</td>
+                <td style="padding:6px;font-size:10px">${r.cidade||''}</td>
+                <td style="padding:6px;text-align:center;font-size:10px">${r.status||''}</td>
+                <td style="padding:6px;font-size:10px">${r.situacao||''}</td>
+                <td style="padding:6px;font-size:10px">${r.oficina||'—'}</td>
+                <td style="padding:6px;text-align:center"><span style="background:${cDiv};color:#1a1a1a;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700">${div}</span></td>
+                <td style="padding:6px;text-align:center"><span style="background:${cAlt};color:#1a1a1a;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700">${r.alterado||''}</span></td>
+                <td style="padding:6px;font-size:10px;color:var(--slate)">${r.campos_alterados||''}</td>
+            </tr>`;
+        }).join('')||'<tr><td colspan="10" style="color:var(--slate);text-align:center;padding:20px">Sem registros</td></tr>';
+    }
+
+    function exportarHistFrotaCSV() {
+        if (!_dadosHistFrota.length) return;
+        const cols=['data_registro','placa','gre','cidade','status','situacao','oficina','divisao','fornecedor_nome','previsao_entrega','alterado','campos_alterados'];
+        let csv=cols.join(',')+'\n';
+        _dadosHistFrota.forEach(r=>{csv+=cols.map(c=>`"${(r[c]||'').replace(/"/g,'""')}"`).join(',')+'\n';});
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+        a.download='historico_frota_'+new Date().toISOString().slice(0,10)+'.csv';
+        a.click();
     }
 
      // ══════════════════════════════════════════════
