@@ -1280,7 +1280,7 @@
                 <div class="scroll-area">
                     <table id="tComposicaoFrota">
                         <thead><tr><th>Categoria / Regional</th><th style="text-align:center" width="50">Rotas</th><th style="text-align:center" width="50">Vei.</th></tr></thead>
-                        <tbody id="tbodyTipologiaFrota"></tbody>
+                        <tbody id="tbodyFrota"></tbody>
                     </table>
                 </div>
             </div>
@@ -1535,10 +1535,8 @@
                 <table style="width:100%;border-collapse:collapse;font-size:10px">
                     <thead><tr style="background:var(--bg);color:var(--slate)">
                         <th style="padding:5px;text-align:left">Fornecedor</th>
-                        <th style="padding:5px;text-align:center" title="Em Uso">Uso</th>
-                        <th style="padding:5px;text-align:center" title="Disponível">Disp.</th>
-                        <th style="padding:5px;text-align:center" title="Manutenção">Manut.</th>
-                        <th style="padding:5px;text-align:center" title="Inativo">Inat.</th>
+                        <th style="padding:5px;text-align:center">Ativo</th>
+                        <th style="padding:5px;text-align:center">Inativo</th>
                         <th style="padding:5px;text-align:center">Total</th>
                     </tr></thead>
                     <tbody id="tbodyFrotaFornecedor"></tbody>
@@ -1547,48 +1545,76 @@
         </div>
     </div>
 
-    <!-- Card Oficinas (só) -->
-    <div style="background:var(--card-bg);border-radius:12px;padding:14px;margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">🔧 Oficinas com O.S. ativa</div>
-            <button onclick="exportarCardCSV('tbodyFrotaOficinas','oficinas')" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 7px;cursor:pointer">⬇</button>
-        </div>
-        <div style="overflow-y:auto;max-height:200px">
-            <table style="width:100%;border-collapse:collapse;font-size:10px">
-                <thead><tr style="background:var(--bg);color:var(--slate)">
-                    <th style="padding:5px;text-align:left">Oficina</th>
-                    <th style="padding:5px;text-align:center">Veículos</th>
-                </tr></thead>
-                <tbody id="tbodyFrotaOficinas"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Loading -->
-    <div id="frota-loading" style="text-align:center;padding:40px;color:var(--slate);font-size:12px">
-        <i class="fas fa-truck" style="font-size:32px;margin-bottom:10px;display:block"></i>
-        Clique em ATUALIZAR para carregar os dados da frota
-    </div>
-</section>
-
-<!-- Modal de detalhes de frota -->
-<div id="modal-frota-detalhe" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center">
-    <div style="background:var(--card-bg);border-radius:14px;padding:20px;width:90%;max-width:900px;max-height:85vh;display:flex;flex-direction:column;gap:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-size:13px;font-weight:900" id="modal-frota-titulo">Detalhes</div>
-            <div style="display:flex;gap:8px">
-                <button onclick="exportarModalFrotaCSV()" style="font-size:9px;background:var(--success);border:none;color:white;border-radius:6px;padding:4px 10px;cursor:pointer;font-weight:700">⬇ Exportar CSV</button>
-                <button onclick="fecharModalFrota()" style="background:var(--danger);border:none;color:white;border-radius:6px;padding:4px 10px;cursor:pointer;font-weight:700">✕ Fechar</button>
+    <!-- Cards: Oficinas + Disponíveis -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">🔧 Oficinas com O.S. ativa</div>
+                <button onclick="exportarCardCSV('tbodyFrotaOficinas','oficinas')" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 7px;cursor:pointer">⬇</button>
+            </div>
+            <div style="overflow-y:auto;max-height:200px">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg);color:var(--slate)">
+                        <th style="padding:5px;text-align:left">Oficina</th>
+                        <th style="padding:5px;text-align:center">Veículos</th>
+                        <th style="padding:5px;text-align:center">Média Dias</th>
+                    </tr></thead>
+                    <tbody id="tbodyFrotaOficinas"></tbody>
+                </table>
             </div>
         </div>
-        <div style="overflow:auto;flex:1">
-            <table style="width:100%;border-collapse:collapse;font-size:10px">
-                <thead id="modal-frota-thead" style="position:sticky;top:0"></thead>
-                <tbody id="modal-frota-tbody"></tbody>
-            </table>
+
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">✅ Disponíveis com GRE ativa</div>
+                <button onclick="exportarCardCSV('tbodyFrotaDisponiveis','disponiveis_gre')" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 7px;cursor:pointer">⬇</button>
+            </div>
+            <div style="overflow-y:auto;max-height:200px">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg);color:var(--slate)">
+                        <th style="padding:5px;text-align:left">Placa</th>
+                        <th style="padding:5px">Modelo</th>
+                        <th style="padding:5px">Divisão</th>
+                        <th style="padding:5px">GRE</th>
+                    </tr></thead>
+                    <tbody id="tbodyFrotaDisponiveis"></tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
+
+    <!-- Tabela completa -->
+    <div style="background:var(--card-bg);border-radius:12px;padding:15px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="font-size:12px;font-weight:700;color:var(--slate);text-transform:uppercase">Todos os Veículos <span id="frota-tabela-count" style="color:var(--orange);font-weight:900"></span></div>
+            <button onclick="exportarFrotaCSV()" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 10px;cursor:pointer">⬇ Exportar Excel</button>
+        </div>
+        <div style="overflow-x:auto;max-height:420px;overflow-y:auto">
+            <table id="tabelaFrota" style="width:100%;border-collapse:collapse;font-size:10px">
+                <thead style="position:sticky;top:0">
+                    <tr style="background:var(--bg);color:var(--slate)">
+                        <th style="padding:7px;text-align:left">Placa</th>
+                        <th style="padding:7px">GRE</th>
+                        <th style="padding:7px">Cidade</th>
+                        <th style="padding:7px">Fornecedor</th>
+                        <th style="padding:7px">Divisão</th>
+                        <th style="padding:7px">Modelo</th>
+                        <th style="padding:7px">Status</th>
+                        <th style="padding:7px">Situação</th>
+                        <th style="padding:7px">Oficina</th>
+                        <th style="padding:7px">Prev. Entrega</th>
+                        <th style="padding:7px">Nº Chamado</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyFrota"></tbody>
+            </table>
+        </div>
+        <div id="frota-loading" style="text-align:center;padding:40px;color:var(--slate);font-size:12px">
+            <i class="fas fa-truck" style="font-size:32px;margin-bottom:10px;display:block"></i>
+            Clique em ATUALIZAR para carregar os dados da frota
+        </div>
+    </div>
+</section>
 
 <!-- ══ FROTA: COMPLIANCE ══════════════════════════════════════ -->
 <section id="aba-frota-compliance" class="content-section">
@@ -1695,18 +1721,16 @@
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
         <div style="background:var(--card-bg);border-radius:12px;padding:14px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">📊 Situação por Fornecedor</div>
-                <button onclick="exportarCardCSV('tbodyCplFornIndispon','situacao_forn')" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 7px;cursor:pointer">⬇</button>
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">📊 % Indisponibilidade por Fornecedor</div>
+                <button onclick="exportarCardCSV('tbodyCplFornIndispon','indispon_forn')" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 7px;cursor:pointer">⬇</button>
             </div>
             <div style="overflow-y:auto;max-height:220px">
                 <table style="width:100%;border-collapse:collapse;font-size:10px">
                     <thead><tr style="background:var(--bg);color:var(--slate)">
                         <th style="padding:5px;text-align:left">Fornecedor</th>
                         <th style="padding:5px;text-align:center">Total</th>
-                        <th style="padding:5px;text-align:center;color:var(--success)">Ativo</th>
-                        <th style="padding:5px;text-align:center;color:var(--danger)">Inativo</th>
-                        <th style="padding:5px;text-align:center;color:var(--extra)">Manut.</th>
-                        <th style="padding:5px;text-align:center">% Indisp.</th>
+                        <th style="padding:5px;text-align:center">Indispon.</th>
+                        <th style="padding:5px;text-align:center">%</th>
                     </tr></thead>
                     <tbody id="tbodyCplFornIndispon"></tbody>
                 </table>
@@ -1716,15 +1740,7 @@
         <div style="background:var(--card-bg);border-radius:12px;padding:14px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
                 <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">🚫 Inativos com GRE / Ativos sem GRE</div>
-                <div style="display:flex;gap:6px;align-items:center">
-                    <select id="cpl-anom-filtro" onchange="filtrarAnomalias()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px 6px;color:var(--text);font-size:9px">
-                        <option value="TODOS">TODOS</option>
-                        <option value="INAT_GRE">Inativos c/ GRE</option>
-                        <option value="ATIV_SGRE">Ativos s/ GRE</option>
-                        <option value="MANUT">Com O.S. aberta (Manut.)</option>
-                    </select>
-                    <button onclick="exportarCardCSV('tbodyCplAnomalias','anomalias')" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 7px;cursor:pointer">⬇</button>
-                </div>
+                <button onclick="exportarCardCSV('tbodyCplAnomalias','anomalias')" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 7px;cursor:pointer">⬇</button>
             </div>
             <div style="overflow-y:auto;max-height:220px">
                 <table style="width:100%;border-collapse:collapse;font-size:10px">
@@ -1760,7 +1776,7 @@
             <div style="font-size:9px;color:var(--slate);margin-top:2px">Evolução por placa · alterações de GRE, situação, oficina e divisão</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <input type="text" id="hist-frota-placa" placeholder="Buscar placa..." onkeyup="filtrarHistoricoFrota()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px;width:110px">
+            <input type="text" id="hist-frota-placa" placeholder="Buscar placa..." onkeyup="filtrarHistoricoFrota()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px;width:130px">
             <select id="hist-frota-divisao" onchange="filtrarHistoricoFrota()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px">
                 <option value="TODOS">DIVISÃO: TODAS</option>
                 <option value="PROPRIO">PRÓPRIO</option>
@@ -1768,23 +1784,6 @@
                 <option value="LOCADO">LOCADO</option>
                 <option value="TERCEIRO">TERCEIRO</option>
             </select>
-            <select id="hist-frota-status" onchange="filtrarHistoricoFrota()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px">
-                <option value="TODOS">STATUS: TODOS</option>
-                <option value="A">Ativo (A)</option>
-                <option value="I">Inativo (I)</option>
-            </select>
-            <select id="hist-frota-situacao" onchange="filtrarHistoricoFrota()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px">
-                <option value="TODOS">SITUAÇÃO: TODAS</option>
-                <option value="Em Uso">Em Uso</option>
-                <option value="Disponível">Disponível</option>
-                <option value="Manutenção">Manutenção</option>
-                <option value="Não Disponível">Não Disponível</option>
-            </select>
-            <select id="hist-frota-fornecedor" onchange="filtrarHistoricoFrota()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px;max-width:180px">
-                <option value="TODOS">FORNECEDOR: TODOS</option>
-            </select>
-            <input type="date" id="hist-frota-dt-ini" onchange="filtrarHistoricoFrota()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px">
-            <input type="date" id="hist-frota-dt-fim" onchange="filtrarHistoricoFrota()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px">
             <label style="display:flex;align-items:center;gap:5px;font-size:10px;cursor:pointer">
                 <input type="checkbox" id="hist-frota-delta" onchange="filtrarHistoricoFrota()" style="accent-color:var(--orange)"> Só alterações
             </label>
@@ -3339,21 +3338,22 @@ function getNivelUsuario() {
             </tr>`).join('') || '<tr><td colspan="5" style="color:var(--slate);text-align:center;padding:10px">Sem dados</td></tr>';
 
         // ── Por Fornecedor (Uso/Disp/Manut/Inat + clique) ────
-        const fornMap = {}; window._frotaFornMap = {};
+        window._frotaFornMap = {};
+        const fornMap2 = {};
         dados.forEach(r=>{
             const fn=r.fornecedor_nome||'NÃO IDENTIFICADO';
             const sit=sitKey(r); const st=(r.status||'').toUpperCase();
-            if (!fornMap[fn]) { fornMap[fn]={uso:0,disp:0,manut:0,inat:0}; window._frotaFornMap[fn]=[]; }
-            if (sit.includes('Em Uso'))           fornMap[fn].uso++;
-            else if (sit.includes('Disponível'))  fornMap[fn].disp++;
-            else if (sit.includes('Manutenção')||sit.includes('Não Disponível')) fornMap[fn].manut++;
-            if (st==='I') fornMap[fn].inat++;
+            if (!fornMap2[fn]) { fornMap2[fn]={uso:0,disp:0,manut:0,inat:0}; window._frotaFornMap[fn]=[]; }
+            if (sit.includes('Em Uso'))           fornMap2[fn].uso++;
+            else if (sit.includes('Disponível'))  fornMap2[fn].disp++;
+            else if (sit.includes('Manutenção')||sit.includes('Não Disponível')) fornMap2[fn].manut++;
+            if (st==='I') fornMap2[fn].inat++;
             window._frotaFornMap[fn].push(r);
         });
         const tbForn = document.getElementById('tbodyFrotaFornecedor');
-        if (tbForn) tbForn.innerHTML = Object.entries(fornMap)
-            .sort((a,b)=>(b[1].uso+b[1].disp+b[1].manut)-(a[1].uso+a[1].disp+a[1].manut))
-            .map(([fn,f])=>`<tr style="border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="abrirModalFrota('forn',${JSON.stringify(fn)})" title="Ver placas">
+        if (tbForn) tbForn.innerHTML = Object.entries(fornMap2)
+            .sort((a,b)=>(b[1].uso+b[1].disp+b[1].manut+b[1].inat)-(a[1].uso+a[1].disp+a[1].manut+a[1].inat))
+            .map(([fn,f])=>`<tr style="border-bottom:1px solid var(--border);cursor:pointer" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" data-fn="${fn.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}" onclick="abrirModalFrota('forn',this.dataset.fn)" title="Ver placas">
                 <td style="padding:5px">${fn}</td>
                 <td style="padding:5px;text-align:center;color:var(--info)">${f.uso}</td>
                 <td style="padding:5px;text-align:center;color:var(--gold)">${f.disp}</td>
@@ -3363,26 +3363,25 @@ function getNivelUsuario() {
             </tr>`).join('') || '<tr><td colspan="6" style="color:var(--slate);text-align:center;padding:10px">Sem dados</td></tr>';
 
         // ── Composição GRE com clique ─────────────────────────
-        window._frotaGreComp = greComp; // salva para modal
-        const tbCompFinal = document.getElementById('tbodyFrotaComposicaoGre');
-        if (tbCompFinal) tbCompFinal.querySelectorAll('tr').forEach(tr => {
-            const gre = tr.cells[0]?.innerText;
-            if (gre) { tr.style.cursor='pointer'; tr.title='Ver placas';
-                tr.onmouseover=()=>tr.style.background='var(--bg)';
-                tr.onmouseout=()=>tr.style.background='';
-                tr.onclick=()=>abrirModalFrota('gre', gre); }
-        });
-
-        // ── Situação GRE com clique ───────────────────────────
-        window._frotaGreSit = greSit;
-        const tbSitFinal = document.getElementById('tbodyFrotaSituacaoGre');
-        if (tbSitFinal) tbSitFinal.querySelectorAll('tr').forEach(tr => {
-            const gre = tr.cells[0]?.innerText;
-            if (gre) { tr.style.cursor='pointer'; tr.title='Ver placas';
-                tr.onmouseover=()=>tr.style.background='var(--bg)';
-                tr.onmouseout=()=>tr.style.background='';
-                tr.onclick=()=>abrirModalFrota('gre', gre); }
-        });
+        window._frotaDados = dados;
+        setTimeout(()=>{
+            const tbCompEl = document.getElementById('tbodyFrotaComposicaoGre');
+            if (tbCompEl) tbCompEl.querySelectorAll('tr').forEach(tr=>{
+                const gre=tr.cells[0]?.innerText?.trim();
+                if (gre){tr.style.cursor='pointer';tr.title='Ver placas da GRE';
+                    tr.onmouseover=()=>tr.style.background='var(--bg)';
+                    tr.onmouseout=()=>tr.style.background='';
+                    tr.onclick=()=>abrirModalFrota('gre',gre);}
+            });
+            const tbSitEl = document.getElementById('tbodyFrotaSituacaoGre');
+            if (tbSitEl) tbSitEl.querySelectorAll('tr').forEach(tr=>{
+                const gre=tr.cells[0]?.innerText?.trim();
+                if (gre){tr.style.cursor='pointer';tr.title='Ver placas da GRE';
+                    tr.onmouseover=()=>tr.style.background='var(--bg)';
+                    tr.onmouseout=()=>tr.style.background='';
+                    tr.onclick=()=>abrirModalFrota('gre',gre);}
+            });
+        },100);
 
         // ── Oficinas (sem Média Dias) ─────────────────────────
         const ofMap = {};
@@ -3398,110 +3397,85 @@ function getNivelUsuario() {
                 <td style="padding:5px;text-align:center;font-weight:700;color:var(--extra)">${v}</td>
             </tr>`).join('') || '<tr><td colspan="2" style="color:var(--slate);text-align:center;padding:10px">Nenhum com O.S.</td></tr>';
 
-        // ── KPI Disponíveis clicável ──────────────────────────
-        window._frotaDados = dados;
-        const kpiDisp = document.getElementById('frota-kpi-disponivel');
-        if (kpiDisp) { kpiDisp.style.cursor='pointer'; kpiDisp.title='Ver disponíveis por fornecedor';
-            kpiDisp.onclick=()=>abrirModalFrota('disponivel',''); }
+        // ── KPI Disponíveis → só ativos, clicável ────────────
+        const dispAtivos = dados.filter(r=>sitKey(r).includes('Disponível')&&(r.status||'').toUpperCase()==='A');
+        _setEl('frota-kpi-disponivel', dispAtivos.length);
+        const kpiDisp=document.getElementById('frota-kpi-disponivel');
+        if (kpiDisp){kpiDisp.style.cursor='pointer';kpiDisp.title='Ver disponíveis por fornecedor';
+            kpiDisp.onclick=()=>abrirModalFrota('disponivel','');}
 
-        const loading = document.getElementById('frota-loading');
+        const loading=document.getElementById('frota-loading');
         if (loading) loading.style.display='none';
 
         processarFrotaCompliance();
     }
 
-    // ── Modal de detalhes ─────────────────────────────────────
+    // ── Modal de detalhes de frota ────────────────────────────
     let _modalFrotaLinhas = [];
     function abrirModalFrota(tipo, chave) {
-        const modal = document.getElementById('modal-frota-detalhe');
-        const titulo = document.getElementById('modal-frota-titulo');
-        const thead = document.getElementById('modal-frota-thead');
-        const tbody = document.getElementById('modal-frota-tbody');
-        const coresDiv = {PROPRIO:'#b7e1cd',PARCEIRO:'#cfe2f3',LOCADO:'#fff2cc',TERCEIRO:'#f4cccc'};
-        const divKey = r=>(r['Divisão']||r.divisao||'').toUpperCase();
-        const sitKey = r=>(r.situacao||'').trim();
-        let linhas = [];
+        const modal=document.getElementById('modal-frota-detalhe');
+        const titulo=document.getElementById('modal-frota-titulo');
+        const thead=document.getElementById('modal-frota-thead');
+        const tbody=document.getElementById('modal-frota-tbody');
+        if (!modal) return;
+        const coresDiv={PROPRIO:'#b7e1cd',PARCEIRO:'#cfe2f3',LOCADO:'#fff2cc',TERCEIRO:'#f4cccc'};
+        const divKey=r=>(r['Divisão']||r.divisao||'').toUpperCase();
+        const sitKey=r=>(r.situacao||'').trim();
+        let linhas=[];
 
         if (tipo==='forn') {
-            linhas = (window._frotaFornMap||{})[chave] || [];
-            if (titulo) titulo.innerText = `🏢 Fornecedor: ${chave} (${linhas.length} veículos)`;
+            linhas=(window._frotaFornMap||{})[chave]||[];
+            if (titulo) titulo.innerText=`🏢 ${chave} (${linhas.length} veículos)`;
         } else if (tipo==='gre') {
-            linhas = (window._frotaDados||[]).filter(r=>(r.gre||'')=== chave);
-            if (titulo) titulo.innerText = `🏛️ GRE: ${chave} (${linhas.length} veículos)`;
+            linhas=(window._frotaDados||[]).filter(r=>(r.gre||'')===chave);
+            if (titulo) titulo.innerText=`🏛️ GRE: ${chave} (${linhas.length} veículos)`;
         } else if (tipo==='disponivel') {
-            linhas = (window._frotaDados||[]).filter(r=>sitKey(r).includes('Disponível'));
-            if (titulo) titulo.innerText = `✅ Veículos Disponíveis (${linhas.length})`;
+            linhas=(window._frotaDados||[]).filter(r=>sitKey(r).includes('Disponível')&&(r.status||'').toUpperCase()==='A');
+            if (titulo) titulo.innerText=`✅ Disponíveis Ativos (${linhas.length}) — por fornecedor`;
         }
 
-        _modalFrotaLinhas = linhas;
-
-        thead.innerHTML = `<tr style="background:var(--bg);color:var(--slate)">
-            <th style="padding:6px;text-align:left">Placa</th>
-            <th style="padding:6px">Modelo</th>
-            <th style="padding:6px">Divisão</th>
-            <th style="padding:6px">GRE</th>
-            <th style="padding:6px">Cidade</th>
-            <th style="padding:6px">Fornecedor</th>
-            <th style="padding:6px">Status</th>
-            <th style="padding:6px">Situação</th>
+        _modalFrotaLinhas=linhas;
+        thead.innerHTML=`<tr style="background:var(--bg);color:var(--slate)">
+            <th style="padding:6px;text-align:left">Placa</th><th style="padding:6px">Modelo</th>
+            <th style="padding:6px">Divisão</th><th style="padding:6px">GRE</th>
+            <th style="padding:6px">Cidade</th><th style="padding:6px">Fornecedor</th>
+            <th style="padding:6px">Status</th><th style="padding:6px">Situação</th>
             <th style="padding:6px">Oficina</th>
         </tr>`;
 
-        // Se modal disponível: agrupa por fornecedor
+        const _row = r=>{
+            const div=divKey(r);const sit=sitKey(r);
+            const cDiv=coresDiv[div]||'transparent';
+            const cSit=sit.includes('Em Uso')?'#cfe2f3':sit.includes('Disponível')?'#b7e1cd':'#f4cccc';
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px;font-weight:700">${r.placa||''}</td>
+                <td style="padding:5px;font-size:10px">${r.modelo||''}</td>
+                <td style="padding:5px;text-align:center"><span style="background:${cDiv};color:#1a1a1a;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:700">${div}</span></td>
+                <td style="padding:5px;font-size:10px">${r.gre||''}</td>
+                <td style="padding:5px;font-size:10px">${r.cidade||''}</td>
+                <td style="padding:5px;font-size:10px">${r.fornecedor_nome||''}</td>
+                <td style="padding:5px;text-align:center;font-size:10px">${r.status||''}</td>
+                <td style="padding:5px;text-align:center"><span style="background:${cSit};color:#1a1a1a;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:700">${sit}</span></td>
+                <td style="padding:5px;font-size:10px">${r.oficina||''}</td>
+            </tr>`;
+        };
+
         if (tipo==='disponivel') {
-            const porForn = {};
-            linhas.forEach(r=>{
-                const fn=r.fornecedor_nome||'NÃO IDENTIFICADO';
-                if (!porForn[fn]) porForn[fn]=[];
-                porForn[fn].push(r);
-            });
-            tbody.innerHTML = Object.entries(porForn).sort().flatMap(([fn,rs])=>[
+            const porForn={};
+            linhas.forEach(r=>{const fn=r.fornecedor_nome||'NÃO IDENTIFICADO';if(!porForn[fn])porForn[fn]=[];porForn[fn].push(r);});
+            tbody.innerHTML=Object.entries(porForn).sort().flatMap(([fn,rs])=>[
                 `<tr style="background:var(--surface2)"><td colspan="9" style="padding:6px;font-weight:700;color:var(--gold)">${fn} (${rs.length})</td></tr>`,
-                ...rs.map(r=>{
-                    const div=divKey(r); const sit=sitKey(r);
-                    const cDiv=coresDiv[div]||'transparent';
-                    const cSit=sit.includes('Em Uso')?'#cfe2f3':sit.includes('Disponível')?'#b7e1cd':'#f4cccc';
-                    return `<tr style="border-bottom:1px solid var(--border)">
-                        <td style="padding:5px;font-weight:700">${r.placa||''}</td>
-                        <td style="padding:5px;font-size:10px">${r.modelo||''}</td>
-                        <td style="padding:5px;text-align:center"><span style="background:${cDiv};color:#1a1a1a;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:700">${div}</span></td>
-                        <td style="padding:5px;font-size:10px">${r.gre||''}</td>
-                        <td style="padding:5px;font-size:10px">${r.cidade||''}</td>
-                        <td style="padding:5px;font-size:10px">${r.fornecedor_nome||''}</td>
-                        <td style="padding:5px;text-align:center;font-size:10px">${r.status||''}</td>
-                        <td style="padding:5px;text-align:center"><span style="background:${cSit};color:#1a1a1a;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:700">${sit}</span></td>
-                        <td style="padding:5px;font-size:10px">${r.oficina||''}</td>
-                    </tr>`;
-                })
+                ...rs.map(_row)
             ]).join('');
         } else {
-            tbody.innerHTML = linhas.map(r=>{
-                const div=divKey(r); const sit=sitKey(r);
-                const cDiv=coresDiv[div]||'transparent';
-                const cSit=sit.includes('Em Uso')?'#cfe2f3':sit.includes('Disponível')?'#b7e1cd':'#f4cccc';
-                return `<tr style="border-bottom:1px solid var(--border)">
-                    <td style="padding:5px;font-weight:700">${r.placa||''}</td>
-                    <td style="padding:5px;font-size:10px">${r.modelo||''}</td>
-                    <td style="padding:5px;text-align:center"><span style="background:${cDiv};color:#1a1a1a;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:700">${div}</span></td>
-                    <td style="padding:5px;font-size:10px">${r.gre||''}</td>
-                    <td style="padding:5px;font-size:10px">${r.cidade||''}</td>
-                    <td style="padding:5px;font-size:10px">${r.fornecedor_nome||''}</td>
-                    <td style="padding:5px;text-align:center;font-size:10px">${r.status||''}</td>
-                    <td style="padding:5px;text-align:center"><span style="background:${cSit};color:#1a1a1a;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:700">${sit}</span></td>
-                    <td style="padding:5px;font-size:10px">${r.oficina||''}</td>
-                </tr>`;
-            }).join('') || '<tr><td colspan="9" style="color:var(--slate);text-align:center;padding:20px">Sem dados</td></tr>';
+            tbody.innerHTML=linhas.map(_row).join('')||'<tr><td colspan="9" style="color:var(--slate);text-align:center;padding:20px">Sem dados</td></tr>';
         }
 
         modal.style.display='flex';
     }
-
-    function fecharModalFrota() {
-        const m=document.getElementById('modal-frota-detalhe'); if(m) m.style.display='none';
-    }
-
-    function exportarModalFrotaCSV() {
-        if (!_modalFrotaLinhas.length) return;
+    function fecharModalFrota(){const m=document.getElementById('modal-frota-detalhe');if(m)m.style.display='none';}
+    function exportarModalFrotaCSV(){
+        if(!_modalFrotaLinhas.length)return;
         const cols=['placa','modelo','Divisão','gre','cidade','fornecedor_nome','status','situacao','oficina'];
         let csv=cols.join(',')+'\n';
         _modalFrotaLinhas.forEach(r=>{csv+=cols.map(c=>`"${(r[c]||'').replace(/"/g,'""')}"`).join(',')+'\n';});
@@ -3510,11 +3484,23 @@ function getNivelUsuario() {
         a.download='frota_detalhe_'+new Date().toISOString().slice(0,10)+'.csv';
         a.click();
     }
-
-    // Fecha modal ao clicar fora
-    document.getElementById('modal-frota-detalhe')?.addEventListener('click', function(e){
-        if (e.target===this) fecharModalFrota();
-    });
+    function exportarFrotaCSV(){
+        if(!dadosFrota.length)return;
+        const csv=Papa.unparse(dadosFrota);
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+        a.download='frota_'+new Date().toISOString().slice(0,10)+'.csv';
+        a.click();
+    }
+    function exportarCardCSV(tbodyId,nome){
+        const tb=document.getElementById(tbodyId);if(!tb)return;
+        const rows=[...tb.querySelectorAll('tr')];if(!rows.length)return;
+        const linhas=rows.map(tr=>[...tr.querySelectorAll('td')].map(td=>'"'+td.innerText.replace(/"/g,'""')+'"').join(','));
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(new Blob(['\uFEFF'+linhas.join('\n')],{type:'text/csv;charset=utf-8'}));
+        a.download=nome+'_'+new Date().toISOString().slice(0,10)+'.csv';
+        a.click();
+    }
 
     function exportarFrotaCSV() {
         if (!dadosFrota.length) return;
@@ -3606,57 +3592,38 @@ function getNivelUsuario() {
             </tr>`;
         }).join('') || '<tr><td colspan="7" style="color:var(--slate);text-align:center;padding:10px">Nenhuma previsão vencida ✅</td></tr>';
 
-        // ── Situação por Fornecedor (Total/Ativo/Inativo/Manut/%) ──
-        const fornIndis = {}; window._cplAnomalias = [];
+        // ── % Indisponibilidade por fornecedor ────────────────
+        const fornIndis = {};
         dados.forEach(r=>{
             const fn=r.fornecedor_nome||'NÃO IDENTIFICADO';
-            const sit=sitKey(r); const st=(r.status||'').toUpperCase();
-            if (!fornIndis[fn]) fornIndis[fn]={total:0,ativo:0,inativo:0,manut:0};
+            const sit=sitKey(r);
+            if (!fornIndis[fn]) fornIndis[fn]={total:0,indis:0};
             fornIndis[fn].total++;
-            if (st==='A') fornIndis[fn].ativo++; else fornIndis[fn].inativo++;
-            if (sit.includes('Manutenção')||sit.includes('Não Disponível')) fornIndis[fn].manut++;
+            if (!sit.includes('Em Uso')&&!sit.includes('Disponível')) fornIndis[fn].indis++;
         });
         const tbFornI = document.getElementById('tbodyCplFornIndispon');
         if (tbFornI) tbFornI.innerHTML = Object.entries(fornIndis)
             .filter(([,f])=>f.total>0)
-            .sort((a,b)=>b[1].total-a[1].total)
+            .sort((a,b)=>(b[1].indis/b[1].total)-(a[1].indis/a[1].total))
             .map(([fn,f])=>{
-                const pct=((f.inativo+f.manut)/f.total*100).toFixed(1);
+                const pct=(f.indis/f.total*100).toFixed(1);
                 const cor=parseFloat(pct)>30?'var(--danger)':parseFloat(pct)>15?'var(--warning)':'var(--success)';
                 return `<tr style="border-bottom:1px solid var(--border)">
                     <td style="padding:5px;font-size:10px">${fn}</td>
-                    <td style="padding:5px;text-align:center;font-weight:700">${f.total}</td>
-                    <td style="padding:5px;text-align:center;color:var(--success)">${f.ativo}</td>
-                    <td style="padding:5px;text-align:center;color:var(--danger)">${f.inativo}</td>
-                    <td style="padding:5px;text-align:center;color:var(--extra)">${f.manut}</td>
+                    <td style="padding:5px;text-align:center">${f.total}</td>
+                    <td style="padding:5px;text-align:center;color:var(--danger)">${f.indis}</td>
                     <td style="padding:5px;text-align:center;font-weight:700;color:${cor}">${pct}%</td>
                 </tr>`;
-            }).join('') || '<tr><td colspan="6" style="color:var(--slate);text-align:center;padding:10px">Sem dados</td></tr>';
+            }).join('') || '<tr><td colspan="4" style="color:var(--slate);text-align:center;padding:10px">Sem dados</td></tr>';
 
         // ── Anomalias: inativos com GRE / ativos sem GRE ─────
         const inatGre  = dados.filter(r=>(r.status||'').toUpperCase()==='I'&&(r.gre||'').trim()&&r.gre!=='---');
         const ativSGre = dados.filter(r=>(r.status||'').toUpperCase()==='A'&&(!(r.gre||'').trim()||r.gre==='---'));
         _setEl('cpl-kpi-inativosgre', inatGre.length);
         _setEl('cpl-kpi-semgre',      ativSGre.length);
-        // salva globalmente para o filtro interno
-        window._cplAnomalias = [
-            ...inatGre.map(r=>({...r,_anomalia:'Inativo c/ GRE'})),
-            ...ativSGre.map(r=>({...r,_anomalia:'Ativo s/ GRE'}))
-        ];
-        filtrarAnomalias();
-    }
-
-    function filtrarAnomalias() {
-        const f = (document.getElementById('cpl-anom-filtro')||{}).value||'TODOS';
-        const coresDiv = {PROPRIO:'#b7e1cd',PARCEIRO:'#cfe2f3',LOCADO:'#fff2cc',TERCEIRO:'#f4cccc'};
-        const divKey = r=>(r['Divisão']||r.divisao||'').toUpperCase();
-        const sitKey = r=>(r.situacao||'').trim();
-        let lista = window._cplAnomalias || [];
-        if (f==='INAT_GRE')  lista = lista.filter(r=>r._anomalia==='Inativo c/ GRE');
-        if (f==='ATIV_SGRE') lista = lista.filter(r=>r._anomalia==='Ativo s/ GRE');
-        if (f==='MANUT')     lista = lista.filter(r=>sitKey(r).includes('Manutenção')||sitKey(r).includes('Não Disponível'));
+        const anomalias = [...inatGre.map(r=>({...r,_anomalia:'Inativo c/ GRE'})), ...ativSGre.map(r=>({...r,_anomalia:'Ativo s/ GRE'}))];
         const tbAnom = document.getElementById('tbodyCplAnomalias');
-        if (tbAnom) tbAnom.innerHTML = lista.map(r=>{
+        if (tbAnom) tbAnom.innerHTML = anomalias.map(r=>{
             const div=divKey(r); const cor=coresDiv[div]||'transparent';
             return `<tr style="border-bottom:1px solid var(--border)">
                 <td style="padding:5px;font-weight:700">${r.placa||''}</td>
@@ -3719,13 +3686,6 @@ function getNivelUsuario() {
             const json=await res.json();
             if (!json.ok) throw new Error(json.error||'Sem dados');
             _dadosHistFrota=json.registros||[];
-            // Popula select de fornecedor
-            const selForn=document.getElementById('hist-frota-fornecedor');
-            if (selForn) {
-                const fns=[...new Set(_dadosHistFrota.map(r=>r.fornecedor_nome).filter(Boolean))].sort();
-                selForn.innerHTML='<option value="TODOS">FORNECEDOR: TODOS</option>';
-                fns.forEach(fn=>{const o=document.createElement('option');o.value=fn;o.text=fn;selForn.appendChild(o);});
-            }
             if (loading) loading.style.display='none';
             filtrarHistoricoFrota();
         } catch(err){
@@ -3734,58 +3694,31 @@ function getNivelUsuario() {
     }
 
     function filtrarHistoricoFrota() {
-        const placa   = (document.getElementById('hist-frota-placa')      ||{}).value.trim().toUpperCase();
-        const div     = (document.getElementById('hist-frota-divisao')     ||{}).value||'TODOS';
-        const status  = (document.getElementById('hist-frota-status')      ||{}).value||'TODOS';
-        const situac  = (document.getElementById('hist-frota-situacao')    ||{}).value||'TODOS';
-        const forn    = (document.getElementById('hist-frota-fornecedor')  ||{}).value||'TODOS';
-        const soDelta = (document.getElementById('hist-frota-delta')       ||{}).checked;
-        const dtIni   = (document.getElementById('hist-frota-dt-ini')      ||{}).value;
-        const dtFim   = (document.getElementById('hist-frota-dt-fim')      ||{}).value;
-
-        let dados = _dadosHistFrota.filter(r=>{
-            if (placa  && !(r.placa||'').includes(placa)) return false;
-            if (div    !=='TODOS' && (r.divisao||'').toUpperCase()!==div) return false;
-            if (status !=='TODOS' && (r.status||'').toUpperCase()!==status) return false;
-            if (situac !=='TODOS' && !(r.situacao||'').includes(situac)) return false;
-            if (forn   !=='TODOS' && (r.fornecedor_nome||'')!==forn) return false;
-            if (soDelta && r.alterado!=='SIM') return false;
-            if (dtIni || dtFim) {
-                // data_registro = "dd/MM/yyyy HH:mm" → converte para Date
-                const partes = (r.data_registro||'').split(' ')[0].split('/');
-                if (partes.length===3) {
-                    const dtR = new Date(`${partes[2]}-${partes[1]}-${partes[0]}`);
-                    if (dtIni && dtR < new Date(dtIni)) return false;
-                    if (dtFim && dtR > new Date(dtFim)) return false;
-                }
-            }
+        const placa=(document.getElementById('hist-frota-placa')||{}).value.trim().toUpperCase();
+        const div=(document.getElementById('hist-frota-divisao')||{}).value||'TODOS';
+        const soDelta=(document.getElementById('hist-frota-delta')||{}).checked;
+        let dados=_dadosHistFrota.filter(r=>{
+            if (placa&&!(r.placa||'').includes(placa)) return false;
+            if (div!=='TODOS'&&(r.divisao||'').toUpperCase()!==div) return false;
+            if (soDelta&&r.alterado!=='SIM') return false;
             return true;
         });
-
         const cnt=document.getElementById('hist-frota-contador');
         if (cnt) cnt.innerText=`📋 ${dados.length} registros`;
-
         const thead=document.getElementById('hist-frota-thead');
         const tbody=document.getElementById('hist-frota-tbody');
-        if (thead) thead.innerHTML=`<tr style="background:var(--bg);color:var(--slate);position:sticky;top:0">
-            <th style="padding:6px;text-align:left">Data</th>
-            <th style="padding:6px">Placa</th>
-            <th style="padding:6px">GRE</th>
-            <th style="padding:6px">Cidade</th>
-            <th style="padding:6px">Status</th>
-            <th style="padding:6px">Situação</th>
-            <th style="padding:6px">Oficina</th>
-            <th style="padding:6px">Divisão</th>
-            <th style="padding:6px">Fornecedor</th>
-            <th style="padding:6px">Alterado</th>
-            <th style="padding:6px">Campos Alterados</th>
+        if (thead) thead.innerHTML=`<tr style="background:var(--bg);color:var(--slate)">
+            <th style="padding:6px;text-align:left">Data</th><th style="padding:6px">Placa</th>
+            <th style="padding:6px">GRE</th><th style="padding:6px">Cidade</th>
+            <th style="padding:6px">Status</th><th style="padding:6px">Situação</th>
+            <th style="padding:6px">Oficina</th><th style="padding:6px">Divisão</th>
+            <th style="padding:6px">Alterado</th><th style="padding:6px">Campos Alterados</th>
         </tr>`;
-
         const coresDiv={PROPRIO:'#b7e1cd',PARCEIRO:'#cfe2f3',LOCADO:'#fff2cc',TERCEIRO:'#f4cccc'};
         if (tbody) tbody.innerHTML=dados.map(r=>{
             const cAlt=r.alterado==='SIM'?'#f4cccc':r.alterado==='NOVO'?'#cfe2f3':'#b7e1cd';
-            const divR=(r.divisao||'').toUpperCase();
-            const cDiv=coresDiv[divR]||'transparent';
+            const div=(r.divisao||'').toUpperCase();
+            const cDiv=coresDiv[div]||'transparent';
             return `<tr style="border-bottom:1px solid var(--border)">
                 <td style="padding:6px;font-size:10px;white-space:nowrap">${r.data_registro||''}</td>
                 <td style="padding:6px;font-weight:700">${r.placa||''}</td>
@@ -3794,12 +3727,11 @@ function getNivelUsuario() {
                 <td style="padding:6px;text-align:center;font-size:10px">${r.status||''}</td>
                 <td style="padding:6px;font-size:10px">${r.situacao||''}</td>
                 <td style="padding:6px;font-size:10px">${r.oficina||'—'}</td>
-                <td style="padding:6px;text-align:center"><span style="background:${cDiv};color:#1a1a1a;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700">${divR}</span></td>
-                <td style="padding:6px;font-size:10px">${r.fornecedor_nome||''}</td>
+                <td style="padding:6px;text-align:center"><span style="background:${cDiv};color:#1a1a1a;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700">${div}</span></td>
                 <td style="padding:6px;text-align:center"><span style="background:${cAlt};color:#1a1a1a;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700">${r.alterado||''}</span></td>
                 <td style="padding:6px;font-size:10px;color:var(--slate)">${r.campos_alterados||''}</td>
             </tr>`;
-        }).join('')||'<tr><td colspan="11" style="color:var(--slate);text-align:center;padding:20px">Sem registros</td></tr>';
+        }).join('')||'<tr><td colspan="10" style="color:var(--slate);text-align:center;padding:20px">Sem registros</td></tr>';
     }
 
     function exportarHistFrotaCSV() {
@@ -5922,7 +5854,7 @@ function limparFiltroFiscal() {
                 h += `<tr class="nested-row ${id}"><td class="indent-detail">GRE: ${gr}</td><td align="center">${gi.r}</td><td align="center">${gi.v.size}</td></tr>`;
             });
         });
-        document.getElementById('tbodyTipologiaFrota').innerHTML = h;
+        document.getElementById('tbodyFrota').innerHTML = h;
     }
 
     function renderFrotaPorGre(dados) {
