@@ -1717,11 +1717,14 @@
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
                 <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">🚫 Inativos com GRE / Ativos sem GRE</div>
                 <div style="display:flex;gap:6px;align-items:center">
-                    <select id="cpl-anom-filtro" onchange="filtrarAnomalias()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px 6px;color:var(--text);font-size:9px">
+                    <select id="cpl-anom-tipo" onchange="filtrarAnomalias()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px 6px;color:var(--text);font-size:9px">
                         <option value="TODOS">TODOS</option>
                         <option value="INAT_GRE">Inativos c/ GRE</option>
-                        <option value="ATIV_SGRE">Ativos s/ GRE</option>
-                        <option value="MANUT">Com O.S. aberta (Manut.)</option>
+                        <option value="INAT_SGRE">Inativos s/ GRE</option>
+                    </select>
+                    <select id="cpl-anom-filtro" onchange="filtrarAnomalias()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:3px 6px;color:var(--text);font-size:9px">
+                        <option value="TODOS">O.S.: TODAS</option>
+                        <option value="MANUT">Com O.S. aberta</option>
                     </select>
                     <button onclick="exportarCardCSV('tbodyCplAnomalias','anomalias')" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 7px;cursor:pointer">⬇</button>
                 </div>
@@ -1743,6 +1746,31 @@
     </div>
 
     <!-- Comunicado gerado -->
+    <!-- Coeficiente Operacional por Fornecedor -->
+    <div style="background:var(--card-bg);border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div>
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">⚡ Coeficiente Operacional por Fornecedor</div>
+                <div style="font-size:9px;color:var(--slate);margin-top:2px">Ativos em operação (Em Uso + Disponível) vs. Em Manutenção</div>
+            </div>
+            <button onclick="exportarCardCSV('tbodyCplCoeficiente','coeficiente_forn')" style="font-size:9px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 7px;cursor:pointer">⬇</button>
+        </div>
+        <div style="overflow-x:auto;max-height:260px;overflow-y:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:10px">
+                <thead style="position:sticky;top:0"><tr style="background:var(--bg);color:var(--slate)">
+                    <th style="padding:6px;text-align:left">Fornecedor</th>
+                    <th style="padding:6px;text-align:center">Em Uso</th>
+                    <th style="padding:6px;text-align:center">Disponível</th>
+                    <th style="padding:6px;text-align:center">Operacional</th>
+                    <th style="padding:6px;text-align:center">Manutenção</th>
+                    <th style="padding:6px;text-align:center">Total Ativo</th>
+                    <th style="padding:6px;text-align:center">% Operação</th>
+                </tr></thead>
+                <tbody id="tbodyCplCoeficiente"></tbody>
+            </table>
+        </div>
+    </div>
+
     <div id="cpl-comunicado-box" style="background:var(--card-bg);border-radius:12px;padding:14px;display:none">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
             <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase">📨 Comunicado Gerado</div>
@@ -3353,7 +3381,7 @@ function getNivelUsuario() {
         const tbForn = document.getElementById('tbodyFrotaFornecedor');
         if (tbForn) tbForn.innerHTML = Object.entries(fornMap)
             .sort((a,b)=>(b[1].uso+b[1].disp+b[1].manut)-(a[1].uso+a[1].disp+a[1].manut))
-            .map(([fn,f])=>`<tr style="border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="abrirModalFrota('forn',${JSON.stringify(fn)})" title="Ver placas">
+            .map(([fn,f])=>`<tr style="border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" data-fn="${fn.replace(/"/g,'&quot;').replace(/'/g,'&#39;')}" onclick="abrirModalFrota('forn',this.dataset.fn)" title="Ver placas">
                 <td style="padding:5px">${fn}</td>
                 <td style="padding:5px;text-align:center;color:var(--info)">${f.uso}</td>
                 <td style="padding:5px;text-align:center;color:var(--gold)">${f.disp}</td>
@@ -3398,10 +3426,12 @@ function getNivelUsuario() {
                 <td style="padding:5px;text-align:center;font-weight:700;color:var(--extra)">${v}</td>
             </tr>`).join('') || '<tr><td colspan="2" style="color:var(--slate);text-align:center;padding:10px">Nenhum com O.S.</td></tr>';
 
-        // ── KPI Disponíveis clicável ──────────────────────────
+        // ── KPI Disponíveis clicável (só ativos) ─────────────
         window._frotaDados = dados;
+        const dispAtivos = dados.filter(r=>sitKey(r).includes('Disponível')&&(r.status||'').toUpperCase()==='A');
+        _setEl('frota-kpi-disponivel', dispAtivos.length);
         const kpiDisp = document.getElementById('frota-kpi-disponivel');
-        if (kpiDisp) { kpiDisp.style.cursor='pointer'; kpiDisp.title='Ver disponíveis por fornecedor';
+        if (kpiDisp) { kpiDisp.style.cursor='pointer'; kpiDisp.title='Ver disponíveis ativos por fornecedor';
             kpiDisp.onclick=()=>abrirModalFrota('disponivel',''); }
 
         const loading = document.getElementById('frota-loading');
@@ -3635,29 +3665,61 @@ function getNivelUsuario() {
 
         // ── Anomalias: inativos com GRE / ativos sem GRE ─────
         const inatGre  = dados.filter(r=>(r.status||'').toUpperCase()==='I'&&(r.gre||'').trim()&&r.gre!=='---');
+        const inatSGre = dados.filter(r=>(r.status||'').toUpperCase()==='I'&&(!(r.gre||'').trim()||r.gre==='---'));
         const ativSGre = dados.filter(r=>(r.status||'').toUpperCase()==='A'&&(!(r.gre||'').trim()||r.gre==='---'));
-        _setEl('cpl-kpi-inativosgre', inatGre.length);
+        _setEl('cpl-kpi-inativosgre', inatGre.length+inatSGre.length);
         _setEl('cpl-kpi-semgre',      ativSGre.length);
         // salva globalmente para o filtro interno
         window._cplAnomalias = [
             ...inatGre.map(r=>({...r,_anomalia:'Inativo c/ GRE'})),
+            ...inatSGre.map(r=>({...r,_anomalia:'Inativo s/ GRE'})),
             ...ativSGre.map(r=>({...r,_anomalia:'Ativo s/ GRE'}))
         ];
         filtrarAnomalias();
+
+        // ── Coeficiente Operacional por Fornecedor ────────────
+        const coefMap = {};
+        dados.filter(r=>(r.status||'').toUpperCase()==='A').forEach(r=>{
+            const fn=r.fornecedor_nome||'NÃO IDENTIFICADO';
+            const sit=sitKey(r);
+            if (!coefMap[fn]) coefMap[fn]={uso:0,disp:0,manut:0,total:0};
+            coefMap[fn].total++;
+            if (sit.includes('Em Uso'))          coefMap[fn].uso++;
+            else if (sit.includes('Disponível')) coefMap[fn].disp++;
+            else if (sit.includes('Manutenção')||sit.includes('Não Disponível')) coefMap[fn].manut++;
+        });
+        const tbCoef=document.getElementById('tbodyCplCoeficiente');
+        if (tbCoef) tbCoef.innerHTML=Object.entries(coefMap)
+            .sort((a,b)=>b[1].total-a[1].total)
+            .map(([fn,c])=>{
+                const op=c.uso+c.disp;
+                const pct=c.total?((op/c.total)*100).toFixed(1):'0.0';
+                const cor=parseFloat(pct)>=80?'var(--success)':parseFloat(pct)>=60?'var(--warning)':'var(--danger)';
+                return `<tr style="border-bottom:1px solid var(--border)">
+                    <td style="padding:5px;font-size:10px">${fn}</td>
+                    <td style="padding:5px;text-align:center;color:var(--info)">${c.uso}</td>
+                    <td style="padding:5px;text-align:center;color:var(--gold)">${c.disp}</td>
+                    <td style="padding:5px;text-align:center;font-weight:700;color:var(--success)">${op}</td>
+                    <td style="padding:5px;text-align:center;color:var(--extra)">${c.manut}</td>
+                    <td style="padding:5px;text-align:center">${c.total}</td>
+                    <td style="padding:5px;text-align:center;font-weight:900;color:${cor}">${pct}%</td>
+                </tr>`;
+            }).join('')||'<tr><td colspan="7" style="color:var(--slate);text-align:center;padding:10px">Sem dados</td></tr>';
     }
 
     function filtrarAnomalias() {
-        const f = (document.getElementById('cpl-anom-filtro')||{}).value||'TODOS';
-        const coresDiv = {PROPRIO:'#b7e1cd',PARCEIRO:'#cfe2f3',LOCADO:'#fff2cc',TERCEIRO:'#f4cccc'};
-        const divKey = r=>(r['Divisão']||r.divisao||'').toUpperCase();
-        const sitKey = r=>(r.situacao||'').trim();
-        let lista = window._cplAnomalias || [];
-        if (f==='INAT_GRE')  lista = lista.filter(r=>r._anomalia==='Inativo c/ GRE');
-        if (f==='ATIV_SGRE') lista = lista.filter(r=>r._anomalia==='Ativo s/ GRE');
-        if (f==='MANUT')     lista = lista.filter(r=>sitKey(r).includes('Manutenção')||sitKey(r).includes('Não Disponível'));
-        const tbAnom = document.getElementById('tbodyCplAnomalias');
-        if (tbAnom) tbAnom.innerHTML = lista.map(r=>{
-            const div=divKey(r); const cor=coresDiv[div]||'transparent';
+        const tipo  = (document.getElementById('cpl-anom-tipo')  ||{}).value||'TODOS';
+        const filtOS= (document.getElementById('cpl-anom-filtro')||{}).value||'TODOS';
+        const coresDiv={PROPRIO:'#b7e1cd',PARCEIRO:'#cfe2f3',LOCADO:'#fff2cc',TERCEIRO:'#f4cccc'};
+        const divKey=r=>(r['Divisão']||r.divisao||'').toUpperCase();
+        const sitKey=r=>(r.situacao||'').trim();
+        let lista=window._cplAnomalias||[];
+        if (tipo==='INAT_GRE')  lista=lista.filter(r=>r._anomalia==='Inativo c/ GRE');
+        if (tipo==='INAT_SGRE') lista=lista.filter(r=>r._anomalia==='Inativo s/ GRE');
+        if (filtOS==='MANUT')   lista=lista.filter(r=>sitKey(r).includes('Manutenção')||sitKey(r).includes('Não Disponível'));
+        const tbAnom=document.getElementById('tbodyCplAnomalias');
+        if (tbAnom) tbAnom.innerHTML=lista.map(r=>{
+            const div=divKey(r);const cor=coresDiv[div]||'transparent';
             return `<tr style="border-bottom:1px solid var(--border)">
                 <td style="padding:5px;font-weight:700">${r.placa||''}</td>
                 <td style="padding:5px;font-size:10px">${r.modelo||''}</td>
@@ -3666,7 +3728,8 @@ function getNivelUsuario() {
                 <td style="padding:5px;font-size:10px">${r.situacao||''}</td>
                 <td style="padding:5px;text-align:center"><span style="background:#f4cccc;color:#1a1a1a;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:700">${r._anomalia}</span></td>
             </tr>`;
-        }).join('') || '<tr><td colspan="6" style="color:var(--slate);text-align:center;padding:10px">Nenhuma anomalia ✅</td></tr>';
+        }).join('')||'<tr><td colspan="6" style="color:var(--slate);text-align:center;padding:10px">Nenhuma anomalia ✅</td></tr>';
+    }
     }
 
     function gerarComunicadoManutencao() {
