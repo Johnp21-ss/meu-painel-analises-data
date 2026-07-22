@@ -3442,87 +3442,83 @@ function getNivelUsuario() {
 
     // ── Modal de detalhes ─────────────────────────────────────
     let _modalFrotaLinhas = [];
-    function abrirModalFrota(tipo, chave) {
-        const modal = document.getElementById('modal-frota-detalhe');
-        const titulo = document.getElementById('modal-frota-titulo');
-        const thead = document.getElementById('modal-frota-thead');
-        const tbody = document.getElementById('modal-frota-tbody');
-        const coresDiv = {PROPRIO:'#b7e1cd',PARCEIRO:'#cfe2f3',LOCADO:'#fff2cc',TERCEIRO:'#f4cccc'};
-        const divKey = r=>(r['Divisão']||r.divisao||'').toUpperCase();
-        const sitKey = r=>(r.situacao||'').trim();
-        let linhas = [];
+    function abrirModalFrota(tipo, chave, filtroSit) {
+        const modal=document.getElementById('modal-frota-detalhe');
+        const titulo=document.getElementById('modal-frota-titulo');
+        const thead=document.getElementById('modal-frota-thead');
+        const tbody=document.getElementById('modal-frota-tbody');
+        if (!modal) return;
+        const coresDiv={PROPRIO:'#b7e1cd',PARCEIRO:'#cfe2f3',LOCADO:'#fff2cc',TERCEIRO:'#f4cccc'};
+        const divKey=r=>(r['Divisão']||r.divisao||'').toUpperCase();
+        const sitKey=r=>(r.situacao||'').trim();
+        let linhas=[];
 
         if (tipo==='forn') {
-            linhas = (window._frotaFornMap||{})[chave] || [];
-            if (titulo) titulo.innerText = `🏢 Fornecedor: ${chave} (${linhas.length} veículos)`;
+            linhas=(window._frotaFornMap||{})[chave]||[];
+            if (titulo) titulo.innerText=`🏢 ${chave} (${linhas.length} veículos)`;
         } else if (tipo==='gre') {
-            linhas = (window._frotaDados||[]).filter(r=>(r.gre||'')=== chave);
-            if (titulo) titulo.innerText = `🏛️ GRE: ${chave} (${linhas.length} veículos)`;
+            linhas=(window._frotaDados||[]).filter(r=>(r.gre||'')=== chave);
+            if (titulo) titulo.innerText=`🏛️ GRE: ${chave} (${linhas.length} veículos)`;
         } else if (tipo==='disponivel') {
-            linhas = (window._frotaDados||[]).filter(r=>sitKey(r).includes('Disponível'));
-            if (titulo) titulo.innerText = `✅ Veículos Disponíveis (${linhas.length})`;
+            linhas=(window._frotaDados||[]).filter(r=>sitKey(r).includes('Disponível')&&(r.status||'').toUpperCase()==='A');
+            if (titulo) titulo.innerText=`✅ Disponíveis Ativos (${linhas.length}) — por fornecedor`;
+        } else if (tipo==='coef') {
+            const todos=(window._frotaFornMap||{})[chave]||[];
+            const ativos=todos.filter(r=>(r.status||'').toUpperCase()==='A');
+            if (filtroSit==='uso')        linhas=ativos.filter(r=>sitKey(r).includes('Em Uso'));
+            else if (filtroSit==='disp')  linhas=ativos.filter(r=>sitKey(r).includes('Disponível'));
+            else if (filtroSit==='op')    linhas=ativos.filter(r=>sitKey(r).includes('Em Uso')||sitKey(r).includes('Disponível'));
+            else if (filtroSit==='manut') linhas=ativos.filter(r=>sitKey(r).includes('Manutenção')||sitKey(r).includes('Não Disponível'));
+            else linhas=ativos;
+            const label={uso:'Em Uso',disp:'Disponível',op:'Operacional',manut:'Manutenção'}[filtroSit]||'Todos';
+            if (titulo) titulo.innerText=`⚡ ${chave} — ${label} (${linhas.length})`;
+        } else if (tipo==='sit_forn') {
+            const todos=(window._frotaFornMap||{})[chave]||[];
+            if (filtroSit==='ativo')       linhas=todos.filter(r=>(r.status||'').toUpperCase()==='A');
+            else if (filtroSit==='inativo') linhas=todos.filter(r=>(r.status||'').toUpperCase()==='I');
+            else if (filtroSit==='manut')   linhas=todos.filter(r=>sitKey(r).includes('Manutenção')||sitKey(r).includes('Não Disponível'));
+            else linhas=todos;
+            const label={ativo:'Ativos',inativo:'Inativos',manut:'Manutenção',total:'Total'}[filtroSit]||'Todos';
+            if (titulo) titulo.innerText=`📊 ${chave} — ${label} (${linhas.length})`;
         }
 
-        _modalFrotaLinhas = linhas;
-
-        thead.innerHTML = `<tr style="background:var(--bg);color:var(--slate)">
-            <th style="padding:6px;text-align:left">Placa</th>
-            <th style="padding:6px">Modelo</th>
-            <th style="padding:6px">Divisão</th>
-            <th style="padding:6px">GRE</th>
-            <th style="padding:6px">Cidade</th>
-            <th style="padding:6px">Fornecedor</th>
-            <th style="padding:6px">Status</th>
-            <th style="padding:6px">Situação</th>
+        _modalFrotaLinhas=linhas;
+        thead.innerHTML=`<tr style="background:var(--bg);color:var(--slate)">
+            <th style="padding:6px;text-align:left">Placa</th><th style="padding:6px">Modelo</th>
+            <th style="padding:6px">Divisão</th><th style="padding:6px">GRE</th>
+            <th style="padding:6px">Cidade</th><th style="padding:6px">Fornecedor</th>
+            <th style="padding:6px">Status</th><th style="padding:6px">Situação</th>
             <th style="padding:6px">Oficina</th>
         </tr>`;
 
-        // Se modal disponível: agrupa por fornecedor
+        const _row=r=>{
+            const div=divKey(r);const sit=sitKey(r);
+            const cDiv=coresDiv[div]||'transparent';
+            const cSit=sit.includes('Em Uso')?'#cfe2f3':sit.includes('Disponível')?'#b7e1cd':'#f4cccc';
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px;font-weight:700">${r.placa||''}</td>
+                <td style="padding:5px;font-size:10px">${r.modelo||''}</td>
+                <td style="padding:5px;text-align:center"><span style="background:${cDiv};color:#1a1a1a;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:700">${div}</span></td>
+                <td style="padding:5px;font-size:10px">${r.gre||''}</td>
+                <td style="padding:5px;font-size:10px">${r.cidade||''}</td>
+                <td style="padding:5px;font-size:10px">${r.fornecedor_nome||''}</td>
+                <td style="padding:5px;text-align:center;font-size:10px">${r.status||''}</td>
+                <td style="padding:5px;text-align:center"><span style="background:${cSit};color:#1a1a1a;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:700">${sit}</span></td>
+                <td style="padding:5px;font-size:10px">${r.oficina||''}</td>
+            </tr>`;
+        };
+
         if (tipo==='disponivel') {
-            const porForn = {};
-            linhas.forEach(r=>{
-                const fn=r.fornecedor_nome||'NÃO IDENTIFICADO';
-                if (!porForn[fn]) porForn[fn]=[];
-                porForn[fn].push(r);
-            });
-            tbody.innerHTML = Object.entries(porForn).sort().flatMap(([fn,rs])=>[
+            const porForn={};
+            linhas.forEach(r=>{const fn=r.fornecedor_nome||'NÃO IDENTIFICADO';if(!porForn[fn])porForn[fn]=[];porForn[fn].push(r);});
+            tbody.innerHTML=Object.entries(porForn).sort().flatMap(([fn,rs])=>[
                 `<tr style="background:var(--surface2)"><td colspan="9" style="padding:6px;font-weight:700;color:var(--gold)">${fn} (${rs.length})</td></tr>`,
-                ...rs.map(r=>{
-                    const div=divKey(r); const sit=sitKey(r);
-                    const cDiv=coresDiv[div]||'transparent';
-                    const cSit=sit.includes('Em Uso')?'#cfe2f3':sit.includes('Disponível')?'#b7e1cd':'#f4cccc';
-                    return `<tr style="border-bottom:1px solid var(--border)">
-                        <td style="padding:5px;font-weight:700">${r.placa||''}</td>
-                        <td style="padding:5px;font-size:10px">${r.modelo||''}</td>
-                        <td style="padding:5px;text-align:center"><span style="background:${cDiv};color:#1a1a1a;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:700">${div}</span></td>
-                        <td style="padding:5px;font-size:10px">${r.gre||''}</td>
-                        <td style="padding:5px;font-size:10px">${r.cidade||''}</td>
-                        <td style="padding:5px;font-size:10px">${r.fornecedor_nome||''}</td>
-                        <td style="padding:5px;text-align:center;font-size:10px">${r.status||''}</td>
-                        <td style="padding:5px;text-align:center"><span style="background:${cSit};color:#1a1a1a;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:700">${sit}</span></td>
-                        <td style="padding:5px;font-size:10px">${r.oficina||''}</td>
-                    </tr>`;
-                })
+                ...rs.map(_row)
             ]).join('');
         } else {
-            tbody.innerHTML = linhas.map(r=>{
-                const div=divKey(r); const sit=sitKey(r);
-                const cDiv=coresDiv[div]||'transparent';
-                const cSit=sit.includes('Em Uso')?'#cfe2f3':sit.includes('Disponível')?'#b7e1cd':'#f4cccc';
-                return `<tr style="border-bottom:1px solid var(--border)">
-                    <td style="padding:5px;font-weight:700">${r.placa||''}</td>
-                    <td style="padding:5px;font-size:10px">${r.modelo||''}</td>
-                    <td style="padding:5px;text-align:center"><span style="background:${cDiv};color:#1a1a1a;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:700">${div}</span></td>
-                    <td style="padding:5px;font-size:10px">${r.gre||''}</td>
-                    <td style="padding:5px;font-size:10px">${r.cidade||''}</td>
-                    <td style="padding:5px;font-size:10px">${r.fornecedor_nome||''}</td>
-                    <td style="padding:5px;text-align:center;font-size:10px">${r.status||''}</td>
-                    <td style="padding:5px;text-align:center"><span style="background:${cSit};color:#1a1a1a;padding:2px 5px;border-radius:6px;font-size:9px;font-weight:700">${sit}</span></td>
-                    <td style="padding:5px;font-size:10px">${r.oficina||''}</td>
-                </tr>`;
-            }).join('') || '<tr><td colspan="9" style="color:var(--slate);text-align:center;padding:20px">Sem dados</td></tr>';
+            tbody.innerHTML=linhas.map(_row).join('')
+                ||'<tr><td colspan="9" style="color:var(--slate);text-align:center;padding:20px">Sem dados</td></tr>';
         }
-
         modal.style.display='flex';
     }
 
@@ -3653,12 +3649,13 @@ function getNivelUsuario() {
             .map(([fn,f])=>{
                 const pct=((f.inativo+f.manut)/f.total*100).toFixed(1);
                 const cor=parseFloat(pct)>30?'var(--danger)':parseFloat(pct)>15?'var(--warning)':'var(--success)';
+                const fnEnc=fn.replace(/"/g,'&quot;').replace(/'/g,'&#39;');
                 return `<tr style="border-bottom:1px solid var(--border)">
-                    <td style="padding:5px;font-size:10px">${fn}</td>
-                    <td style="padding:5px;text-align:center;font-weight:700">${f.total}</td>
-                    <td style="padding:5px;text-align:center;color:var(--success)">${f.ativo}</td>
-                    <td style="padding:5px;text-align:center;color:var(--danger)">${f.inativo}</td>
-                    <td style="padding:5px;text-align:center;color:var(--extra)">${f.manut}</td>
+                    <td style="padding:5px;font-size:10px;font-weight:700">${fn}</td>
+                    <td style="padding:5px;text-align:center;font-weight:700;cursor:pointer;text-decoration:underline dotted" onclick="abrirModalFrota('sit_forn','${fnEnc}','total')" title="Ver todos">${f.total}</td>
+                    <td style="padding:5px;text-align:center;color:var(--success);cursor:pointer;text-decoration:underline dotted" onclick="abrirModalFrota('sit_forn','${fnEnc}','ativo')" title="Ver ativos">${f.ativo}</td>
+                    <td style="padding:5px;text-align:center;color:var(--danger);cursor:pointer;text-decoration:underline dotted" onclick="abrirModalFrota('sit_forn','${fnEnc}','inativo')" title="Ver inativos">${f.inativo}</td>
+                    <td style="padding:5px;text-align:center;color:var(--extra);cursor:pointer;text-decoration:underline dotted" onclick="abrirModalFrota('sit_forn','${fnEnc}','manut')" title="Ver manutenção">${f.manut}</td>
                     <td style="padding:5px;text-align:center;font-weight:700;color:${cor}">${pct}%</td>
                 </tr>`;
             }).join('') || '<tr><td colspan="6" style="color:var(--slate);text-align:center;padding:10px">Sem dados</td></tr>';
@@ -3695,12 +3692,13 @@ function getNivelUsuario() {
                 const op=c.uso+c.disp;
                 const pct=c.total?((op/c.total)*100).toFixed(1):'0.0';
                 const cor=parseFloat(pct)>=80?'var(--success)':parseFloat(pct)>=60?'var(--warning)':'var(--danger)';
+                const fnEnc=fn.replace(/"/g,'&quot;').replace(/'/g,'&#39;');
                 return `<tr style="border-bottom:1px solid var(--border)">
-                    <td style="padding:5px;font-size:10px">${fn}</td>
-                    <td style="padding:5px;text-align:center;color:var(--info)">${c.uso}</td>
-                    <td style="padding:5px;text-align:center;color:var(--gold)">${c.disp}</td>
-                    <td style="padding:5px;text-align:center;font-weight:700;color:var(--success)">${op}</td>
-                    <td style="padding:5px;text-align:center;color:var(--extra)">${c.manut}</td>
+                    <td style="padding:5px;font-size:10px;font-weight:700">${fn}</td>
+                    <td style="padding:5px;text-align:center;color:var(--info);cursor:pointer;text-decoration:underline dotted" onclick="abrirModalFrota('coef','${fnEnc}','uso')" title="Ver em uso">${c.uso}</td>
+                    <td style="padding:5px;text-align:center;color:var(--gold);cursor:pointer;text-decoration:underline dotted" onclick="abrirModalFrota('coef','${fnEnc}','disp')" title="Ver disponíveis">${c.disp}</td>
+                    <td style="padding:5px;text-align:center;font-weight:700;color:var(--success);cursor:pointer;text-decoration:underline dotted" onclick="abrirModalFrota('coef','${fnEnc}','op')" title="Ver operacionais">${op}</td>
+                    <td style="padding:5px;text-align:center;color:var(--extra);cursor:pointer;text-decoration:underline dotted" onclick="abrirModalFrota('coef','${fnEnc}','manut')" title="Ver manutenção">${c.manut}</td>
                     <td style="padding:5px;text-align:center">${c.total}</td>
                     <td style="padding:5px;text-align:center;font-weight:900;color:${cor}">${pct}%</td>
                 </tr>`;
@@ -3716,7 +3714,11 @@ function getNivelUsuario() {
         let lista=window._cplAnomalias||[];
         if (tipo==='INAT_GRE')  lista=lista.filter(r=>r._anomalia==='Inativo c/ GRE');
         if (tipo==='INAT_SGRE') lista=lista.filter(r=>r._anomalia==='Inativo s/ GRE');
-        if (filtOS==='MANUT')   lista=lista.filter(r=>sitKey(r).includes('Manutenção')||sitKey(r).includes('Não Disponível'));
+        if (filtOS==='MANUT') lista=lista.filter(r=>{
+            const sit=(r.situacao||'').trim();
+            const ofic=(r.oficina||'').trim();
+            return (sit.includes('Manutenção')||sit.includes('Não Disponível'))&&ofic&&ofic!=='---';
+        });
         const tbAnom=document.getElementById('tbodyCplAnomalias');
         if (tbAnom) tbAnom.innerHTML=lista.map(r=>{
             const div=divKey(r);const cor=coresDiv[div]||'transparent';
