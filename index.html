@@ -3313,7 +3313,7 @@ function getNivelUsuario() {
         _setEl('frota-kpi-inativo',    dados.filter(r=>(r.status||'').toUpperCase()==='I').length);
         _setEl('frota-kpi-emuso',      dados.filter(r=>sitKey(r).includes('Em Uso')).length);
         _setEl('frota-kpi-disponivel', dados.filter(r=>sitKey(r).includes('Disponível')).length);
-        _setEl('frota-kpi-manutencao', dados.filter(r=>sitKey(r).includes('Manutenção')||sitKey(r).includes('Não Disponível')).length);
+        _setEl('frota-kpi-manutencao', dados.filter(r=>(r.status||'').toUpperCase()==='A'&&(r.oficina||'').trim()&&r.oficina!=='---').length);
 
         // ── Filtros dinâmicos ─────────────────────────────────
         const _popular = (id, vals) => {
@@ -3354,7 +3354,7 @@ function getNivelUsuario() {
             if (!greSit[gre]) greSit[gre]={uso:0,disp:0,manut:0};
             if (sit.includes('Em Uso'))          greSit[gre].uso++;
             else if (sit.includes('Disponível')) greSit[gre].disp++;
-            else                                  greSit[gre].manut++;
+            else if ((r.status||'').toUpperCase()==='A'&&(r.oficina||'').trim()&&r.oficina!=='---') greSit[gre].manut++;
         });
         const tbSit = document.getElementById('tbodyFrotaSituacaoGre');
         if (tbSit) tbSit.innerHTML = Object.entries(greSit).sort().map(([gre,s])=>
@@ -3374,7 +3374,7 @@ function getNivelUsuario() {
             if (!fornMap[fn]) { fornMap[fn]={uso:0,disp:0,manut:0,inat:0}; window._frotaFornMap[fn]=[]; }
             if (sit.includes('Em Uso'))           fornMap[fn].uso++;
             else if (sit.includes('Disponível'))  fornMap[fn].disp++;
-            else if (sit.includes('Manutenção')||sit.includes('Não Disponível')) fornMap[fn].manut++;
+            else if (sit.includes('Manutenção')||sit.includes('Não Disponível')) { if (st==='A'&&(r.oficina||'').trim()&&r.oficina!=='---') fornMap[fn].manut++; }
             if (st==='I') fornMap[fn].inat++;
             window._frotaFornMap[fn].push(r);
         });
@@ -3468,7 +3468,7 @@ function getNivelUsuario() {
             if (filtroSit==='uso')        linhas=ativos.filter(r=>sitKey(r).includes('Em Uso'));
             else if (filtroSit==='disp')  linhas=ativos.filter(r=>sitKey(r).includes('Disponível'));
             else if (filtroSit==='op')    linhas=ativos.filter(r=>sitKey(r).includes('Em Uso')||sitKey(r).includes('Disponível'));
-            else if (filtroSit==='manut') linhas=ativos.filter(r=>sitKey(r).includes('Manutenção')||sitKey(r).includes('Não Disponível'));
+            else if (filtroSit==='manut') linhas=ativos.filter(r=>(r.oficina||'').trim()&&r.oficina!=='---');
             else linhas=ativos;
             const label={uso:'Em Uso',disp:'Disponível',op:'Operacional',manut:'Manutenção'}[filtroSit]||'Todos';
             if (titulo) titulo.innerText=`⚡ ${chave} — ${label} (${linhas.length})`;
@@ -3476,7 +3476,7 @@ function getNivelUsuario() {
             const todos=(window._frotaFornMap||{})[chave]||[];
             if (filtroSit==='ativo')       linhas=todos.filter(r=>(r.status||'').toUpperCase()==='A');
             else if (filtroSit==='inativo') linhas=todos.filter(r=>(r.status||'').toUpperCase()==='I');
-            else if (filtroSit==='manut')   linhas=todos.filter(r=>sitKey(r).includes('Manutenção')||sitKey(r).includes('Não Disponível'));
+            else if (filtroSit==='manut')   linhas=todos.filter(r=>(r.status||'').toUpperCase()==='A'&&(r.oficina||'').trim()&&r.oficina!=='---');
             else linhas=todos;
             const label={ativo:'Ativos',inativo:'Inativos',manut:'Manutenção',total:'Total'}[filtroSit]||'Todos';
             if (titulo) titulo.innerText=`📊 ${chave} — ${label} (${linhas.length})`;
@@ -3640,7 +3640,7 @@ function getNivelUsuario() {
             if (!fornIndis[fn]) fornIndis[fn]={total:0,ativo:0,inativo:0,manut:0};
             fornIndis[fn].total++;
             if (st==='A') fornIndis[fn].ativo++; else fornIndis[fn].inativo++;
-            if (sit.includes('Manutenção')||sit.includes('Não Disponível')) fornIndis[fn].manut++;
+            if (st==='A'&&(r.oficina||'').trim()&&r.oficina!=='---') fornIndis[fn].manut++;
         });
         const tbFornI = document.getElementById('tbodyCplFornIndispon');
         if (tbFornI) tbFornI.innerHTML = Object.entries(fornIndis)
@@ -3683,7 +3683,7 @@ function getNivelUsuario() {
             coefMap[fn].total++;
             if (sit.includes('Em Uso'))          coefMap[fn].uso++;
             else if (sit.includes('Disponível')) coefMap[fn].disp++;
-            else if (sit.includes('Manutenção')||sit.includes('Não Disponível')) coefMap[fn].manut++;
+            else if ((r.oficina||'').trim()&&r.oficina!=='---') coefMap[fn].manut++;
         });
         const tbCoef=document.getElementById('tbodyCplCoeficiente');
         if (tbCoef) tbCoef.innerHTML=Object.entries(coefMap)
