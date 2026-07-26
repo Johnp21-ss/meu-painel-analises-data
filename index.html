@@ -1439,67 +1439,122 @@
         </div>
     </div>
 
-    <!-- Cards analíticos linha 2: Ranking GRE | Top Municípios | Ranking Municípios Ofensores -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
-        <!-- Ranking GRE -->
-        <div style="background:var(--card-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;max-height:320px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">🏅 Ranking Regionais</div>
-            <div style="flex:1;overflow-y:auto">
+    <!-- ── BLOCO ANALÍTICO 2×2: Regionais + Municípios ── -->
+    <!-- Linha A: Ranking Regionais | Rotas por Regional -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <!-- Ranking Regionais por Assiduidade -->
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;display:flex;flex-direction:column;border:1px solid rgba(52,152,219,.12)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px">🏅 Ranking Regionais — Assiduidade</div>
+                <span style="font-size:8px;color:var(--info);background:rgba(52,152,219,.12);padding:2px 8px;border-radius:8px">Melhor → Pior</span>
+            </div>
+            <div style="flex:1;overflow-y:auto;max-height:280px">
                 <table style="width:100%;border-collapse:collapse;font-size:10px">
-                    <thead><tr style="background:var(--bg)"><th style="padding:6px">#</th><th style="padding:6px;text-align:left">Regional</th><th style="padding:6px;text-align:right">Rotas</th><th style="padding:6px;text-align:right">Ok</th><th style="padding:6px;text-align:right">Assid.</th></tr></thead>
+                    <thead><tr style="background:var(--bg)">
+                        <th style="padding:7px;text-align:center;width:30px">#</th>
+                        <th style="padding:7px;text-align:left">Regional</th>
+                        <th style="padding:7px;text-align:center">Total</th>
+                        <th style="padding:7px;text-align:center">Ok</th>
+                        <th style="padding:7px;text-align:center">Não Ex.</th>
+                        <th style="padding:7px;text-align:right">Assid.</th>
+                    </tr></thead>
                     <tbody id="rt-tbodyGre"></tbody>
                 </table>
             </div>
         </div>
-        <!-- Top Municípios (melhores) -->
-        <div style="background:var(--card-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;max-height:320px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">🏆 Top Municípios — Melhores</div>
-            <div style="flex:1;overflow-y:auto">
+        <!-- Rotas por Regional — barras visuais -->
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;display:flex;flex-direction:column;border:1px solid rgba(52,152,219,.12)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px">🏆 Rotas por Regional (GRE)</div>
+                <span style="font-size:8px;color:var(--gold);background:rgba(241,196,15,.12);padding:2px 8px;border-radius:8px">Volume + Status</span>
+            </div>
+            <div style="flex:1;overflow-y:auto;max-height:280px" id="rt-rotasPorGre-container">
+                <div style="color:var(--slate);font-size:10px;padding:10px">Aguardando dados...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Linha B: Top Municípios | Municípios Ofensores -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <!-- Top Municípios — Melhores -->
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;display:flex;flex-direction:column;border:1px solid rgba(39,174,96,.12)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px">🥇 Top Municípios — Melhores</div>
+                <span style="font-size:8px;color:var(--success);background:rgba(39,174,96,.12);padding:2px 8px;border-radius:8px">≥ 2 rotas</span>
+            </div>
+            <div style="flex:1;overflow-y:auto;max-height:280px">
                 <table style="width:100%;border-collapse:collapse;font-size:10px">
-                    <thead><tr style="background:var(--bg)"><th style="padding:6px">#</th><th style="padding:6px;text-align:left">Cidade</th><th style="padding:6px;text-align:right">Tot</th><th style="padding:6px;text-align:right">Ok</th><th style="padding:6px;text-align:right">Assid.</th></tr></thead>
+                    <thead><tr style="background:var(--bg)">
+                        <th style="padding:7px;text-align:center;width:30px">#</th>
+                        <th style="padding:7px;text-align:left">Cidade</th>
+                        <th style="padding:7px;text-align:center">Tot</th>
+                        <th style="padding:7px;text-align:center">Ok</th>
+                        <th style="padding:7px;text-align:right">Assid.</th>
+                    </tr></thead>
                     <tbody id="rt-tbodyCidMelhor"></tbody>
                 </table>
             </div>
         </div>
-        <!-- Municípios Ofensores (piores) -->
-        <div style="background:var(--card-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;max-height:320px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">⚠️ Municípios Ofensores</div>
-            <div style="flex:1;overflow-y:auto">
+        <!-- Municípios Ofensores -->
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;display:flex;flex-direction:column;border:1px solid rgba(231,76,60,.12)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px">⚠️ Municípios Ofensores</div>
+                <span style="font-size:8px;color:var(--danger);background:rgba(231,76,60,.12);padding:2px 8px;border-radius:8px">Ação prioritária</span>
+            </div>
+            <div style="flex:1;overflow-y:auto;max-height:280px">
                 <table style="width:100%;border-collapse:collapse;font-size:10px">
-                    <thead><tr style="background:var(--bg)"><th style="padding:6px">#</th><th style="padding:6px;text-align:left">Cidade</th><th style="padding:6px;text-align:right">Tot</th><th style="padding:6px;text-align:right">Não Ex.</th><th style="padding:6px;text-align:right">Assid.</th></tr></thead>
+                    <thead><tr style="background:var(--bg)">
+                        <th style="padding:7px;text-align:center;width:30px">#</th>
+                        <th style="padding:7px;text-align:left">Cidade</th>
+                        <th style="padding:7px;text-align:center">Tot</th>
+                        <th style="padding:7px;text-align:center">Não Ex.</th>
+                        <th style="padding:7px;text-align:right">Assid.</th>
+                    </tr></thead>
                     <tbody id="rt-tbodyCidOfensor"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Cards analíticos linha 3: Motoristas por GRE | Tipologia Frota | Ocorrências por Fiscal -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
-        <!-- Motoristas por GRE -->
-        <div style="background:var(--card-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;max-height:300px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">🧑‍✈️ Motoristas na Escala</div>
-            <div style="display:flex;gap:20px;margin-bottom:8px">
-                <div style="text-align:center"><div style="font-size:20px;font-weight:900" id="rt-mot-tot">0</div><div style="font-size:8px;color:var(--slate)">Total</div></div>
-                <div style="text-align:center"><div style="font-size:20px;font-weight:900;color:var(--success)" id="rt-mot-com">0</div><div style="font-size:8px;color:var(--slate)">Com Veíc.</div></div>
-                <div style="text-align:center"><div style="font-size:20px;font-weight:900;color:var(--danger)" id="rt-mot-sem">0</div><div style="font-size:8px;color:var(--slate)">Sem Veíc.</div></div>
+    <!-- ── BLOCO ANALÍTICO 2×2: Operações ── -->
+    <!-- Linha C: Motoristas | Tipologia -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <!-- Motoristas na Escala -->
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;display:flex;flex-direction:column;border:1px solid rgba(52,152,219,.1)">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">🧑‍✈️ Motoristas na Escala</div>
+            <div style="display:flex;gap:24px;margin-bottom:12px;padding:10px;background:var(--bg);border-radius:10px">
+                <div style="text-align:center"><div style="font-size:22px;font-weight:900" id="rt-mot-tot">0</div><div style="font-size:8px;color:var(--slate);text-transform:uppercase">Total</div></div>
+                <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:var(--success)" id="rt-mot-com">0</div><div style="font-size:8px;color:var(--slate);text-transform:uppercase">Com Veíc.</div></div>
+                <div style="text-align:center"><div style="font-size:22px;font-weight:900;color:var(--danger)" id="rt-mot-sem">0</div><div style="font-size:8px;color:var(--slate);text-transform:uppercase">Sem Veíc.</div></div>
             </div>
-            <div style="flex:1;overflow-y:auto">
+            <div style="flex:1;overflow-y:auto;max-height:200px">
                 <table style="width:100%;border-collapse:collapse;font-size:10px">
-                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">GRE</th><th style="padding:6px;text-align:center">Mot.</th><th style="padding:6px;text-align:center">Com V.</th><th style="padding:6px;text-align:center">Sem V.</th></tr></thead>
+                    <thead><tr style="background:var(--bg)">
+                        <th style="padding:6px;text-align:left">GRE</th>
+                        <th style="padding:6px;text-align:center">Mot.</th>
+                        <th style="padding:6px;text-align:center">Com V.</th>
+                        <th style="padding:6px;text-align:center">Sem V.</th>
+                    </tr></thead>
                     <tbody id="rt-tbodyMotGre"></tbody>
                 </table>
             </div>
         </div>
-        <!-- Tipologia Frota -->
-        <div style="background:var(--card-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;max-height:300px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">🚛 Tipologia de Frota</div>
-            <div style="flex:1;overflow-y:auto">
+        <!-- Tipologia de Frota -->
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;display:flex;flex-direction:column;border:1px solid rgba(52,152,219,.1)">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">🚛 Tipologia de Frota</div>
+            <div style="flex:1;overflow-y:auto;max-height:280px">
                 <table style="width:100%;border-collapse:collapse;font-size:10px">
-                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">Categoria</th><th style="padding:6px;text-align:center">Rotas</th><th style="padding:6px;text-align:center">Veíc.</th></tr></thead>
+                    <thead><tr style="background:var(--bg)">
+                        <th style="padding:7px;text-align:left">Categoria</th>
+                        <th style="padding:7px;text-align:center">Rotas</th>
+                        <th style="padding:7px;text-align:center">Veíc. Únicos</th>
+                        <th style="padding:7px;text-align:right">% Total</th>
+                    </tr></thead>
                     <tbody id="rt-tbodyTipologia"></tbody>
                 </table>
             </div>
         </div>
+    </div>
         <!-- Ocorrências por Fiscal -->
         <div style="background:var(--card-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;max-height:300px">
             <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">📝 Ocorrências por Fiscal</div>
@@ -1663,47 +1718,160 @@
     </div>
 </section>
 
-<!-- ═══ Compliance RT ═══ -->
+<!-- ═══ Compliance RT — Reformulado ═══ -->
 <section id="aba-rt-compliance" class="content-section">
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:15px">
-        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--info)"><div style="font-size:24px;font-weight:900" id="cpl-rt-total">0</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Analisadas</div></div>
-        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--success)"><div style="font-size:24px;font-weight:900;color:var(--success)" id="cpl-rt-concl">0</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Concluídas</div></div>
-        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--gold)"><div style="font-size:24px;font-weight:900;color:var(--gold)" id="cpl-rt-assid">0%</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Assiduidade</div></div>
-        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--extra)"><div style="font-size:24px;font-weight:900;color:var(--extra)" id="cpl-rt-km">0 km</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">KM Planejado</div></div>
+
+    <!-- KPIs executivos -->
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px">
+        <div style="background:var(--card-bg);border-radius:10px;padding:12px;text-align:center;border-left:3px solid var(--info)"><div style="font-size:22px;font-weight:900" id="cpl-rt-total">0</div><div style="font-size:8px;color:var(--slate);text-transform:uppercase;font-weight:700">Total Rotas</div></div>
+        <div style="background:var(--card-bg);border-radius:10px;padding:12px;text-align:center;border-left:3px solid var(--success)"><div style="font-size:22px;font-weight:900;color:var(--success)" id="cpl-rt-concl">0</div><div style="font-size:8px;color:var(--slate);text-transform:uppercase;font-weight:700">Concluídas</div></div>
+        <div style="background:var(--card-bg);border-radius:10px;padding:12px;text-align:center;border-left:3px solid var(--gold)"><div style="font-size:22px;font-weight:900;color:var(--gold)" id="cpl-rt-assid">0%</div><div style="font-size:8px;color:var(--slate);text-transform:uppercase;font-weight:700">Assiduidade</div></div>
+        <div style="background:var(--card-bg);border-radius:10px;padding:12px;text-align:center;border-left:3px solid var(--warning)"><div style="font-size:22px;font-weight:900;color:var(--warning)" id="cpl-rt-gargalos">0</div><div style="font-size:8px;color:var(--slate);text-transform:uppercase;font-weight:700">Gargalos &gt;3h</div></div>
+        <div style="background:var(--card-bg);border-radius:10px;padding:12px;text-align:center;border-left:3px solid var(--danger)"><div style="font-size:22px;font-weight:900;color:var(--danger)" id="cpl-rt-alertas">0</div><div style="font-size:8px;color:var(--slate);text-transform:uppercase;font-weight:700">Motoristas Alerta</div></div>
+        <div style="background:var(--card-bg);border-radius:10px;padding:12px;text-align:center;border-left:3px solid var(--extra)"><div style="font-size:22px;font-weight:900;color:var(--extra)" id="cpl-rt-km">0 km</div><div style="font-size:8px;color:var(--slate);text-transform:uppercase;font-weight:700">KM Planejado</div></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-        <!-- Compliance por GRE -->
-        <div style="background:var(--card-bg);border-radius:12px;padding:14px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">🗺️ Compliance por Regional</div>
-            <div style="max-height:320px;overflow-y:auto">
+
+    <!-- Linha 1: Pareto | Mapa GRE -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <!-- Pareto de Irregularidades -->
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;border:1px solid rgba(231,76,60,.15)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px">📊 Pareto de Irregularidades</div>
+                <div style="display:flex;gap:5px">
+                    <button id="cpl-rt-pareto-fiscal-btn" onclick="rtSetPareto('fiscal')" style="padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--danger);background:var(--danger);color:#fff;border-radius:12px;cursor:pointer">Fiscal</button>
+                    <button id="cpl-rt-pareto-gre-btn"   onclick="rtSetPareto('gre')"   style="padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--border);background:transparent;color:var(--slate);border-radius:12px;cursor:pointer">GRE</button>
+                </div>
+            </div>
+            <div style="font-size:9px;color:var(--slate);margin-bottom:10px">Quem concentra o maior volume de rotas não executadas</div>
+            <div style="position:relative;height:240px"><canvas id="cpl-rt-chartPareto"></canvas></div>
+        </div>
+        <!-- Mapa de Compliance por GRE -->
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;border:1px solid rgba(243,156,18,.15)">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">📋 Mapa de Compliance por GRE</div>
+            <div style="font-size:9px;color:var(--slate);margin-bottom:10px">Visão consolidada de conformidade por regional</div>
+            <div style="max-height:260px;overflow-y:auto">
                 <table style="width:100%;border-collapse:collapse;font-size:10px">
-                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">GRE</th><th style="padding:6px;text-align:center">Tot</th><th style="padding:6px;text-align:center">Concl.</th><th style="padding:6px;text-align:center">Assid.</th><th style="padding:6px;text-align:center">Status</th></tr></thead>
+                    <thead><tr style="background:var(--bg)">
+                        <th style="padding:7px;text-align:left">GRE</th>
+                        <th style="padding:7px;text-align:center">Total</th>
+                        <th style="padding:7px;text-align:center">Concl.</th>
+                        <th style="padding:7px;text-align:center">Gargalo</th>
+                        <th style="padding:7px;text-align:center">Ocorr.</th>
+                        <th style="padding:7px;text-align:center">Assid.</th>
+                        <th style="padding:7px;text-align:center">Risco</th>
+                    </tr></thead>
                     <tbody id="cpl-rt-tbodyGre"></tbody>
                 </table>
             </div>
         </div>
+    </div>
+
+    <!-- Linha 2: Compliance Fornecedor | Motoristas em Alerta -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
         <!-- Compliance por Fornecedor -->
-        <div style="background:var(--card-bg);border-radius:12px;padding:14px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">🤝 Compliance por Fornecedor</div>
-            <div style="max-height:320px;overflow-y:auto">
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;border:1px solid rgba(52,152,219,.12)">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">🤝 Compliance por Fornecedor</div>
+            <div style="max-height:260px;overflow-y:auto">
                 <table style="width:100%;border-collapse:collapse;font-size:10px">
-                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">Fornecedor</th><th style="padding:6px;text-align:center">Tot</th><th style="padding:6px;text-align:center">Concl.</th><th style="padding:6px;text-align:center">Assid.</th><th style="padding:6px;text-align:center">Status</th></tr></thead>
+                    <thead><tr style="background:var(--bg)">
+                        <th style="padding:7px;text-align:left">Fornecedor</th>
+                        <th style="padding:7px;text-align:center">Tot</th>
+                        <th style="padding:7px;text-align:center">Concl.</th>
+                        <th style="padding:7px;text-align:center">Assid.</th>
+                        <th style="padding:7px;text-align:center">Risco</th>
+                    </tr></thead>
                     <tbody id="cpl-rt-tbodyForn"></tbody>
                 </table>
             </div>
         </div>
+        <!-- Motoristas em Alerta (≥2 rotas não executadas) -->
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;border:1px solid rgba(231,76,60,.12)">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">🚨 Motoristas em Alerta</div>
+            <div style="font-size:9px;color:var(--slate);margin-bottom:10px">Com ≥ 2 rotas não executadas no dia</div>
+            <div style="max-height:260px;overflow-y:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg)">
+                        <th style="padding:7px;text-align:left">Motorista</th>
+                        <th style="padding:7px;text-align:center">GRE</th>
+                        <th style="padding:7px;text-align:center">Total</th>
+                        <th style="padding:7px;text-align:center">Não Ex.</th>
+                        <th style="padding:7px;text-align:center">Assid.</th>
+                        <th style="padding:7px;text-align:center">Risco</th>
+                    </tr></thead>
+                    <tbody id="cpl-rt-tbodyAlertaMot"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
-    <!-- Municípios Ofensores no Compliance -->
-    <div style="background:var(--card-bg);border-radius:12px;padding:14px;margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">⚠️ Municípios Ofensores — Compliance</div>
-        <div style="max-height:250px;overflow-y:auto">
-            <table style="width:100%;border-collapse:collapse;font-size:10px">
-                <thead><tr style="background:var(--bg)"><th style="padding:6px">#</th><th style="padding:6px;text-align:left">Cidade</th><th style="padding:6px;text-align:center">Total</th><th style="padding:6px;text-align:center">Não Ex.</th><th style="padding:6px;text-align:center">Em And.</th><th style="padding:6px;text-align:center">Assid.</th><th style="padding:6px;text-align:center">Risco</th></tr></thead>
-                <tbody id="cpl-rt-tbodyOfensor"></tbody>
+
+    <!-- Linha 3: Municípios Ofensores | Gargalos Ativos -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <!-- Municípios Ofensores -->
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;border:1px solid rgba(230,126,34,.12)">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">⚠️ Municípios Ofensores</div>
+            <div style="max-height:260px;overflow-y:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg)">
+                        <th style="padding:7px;text-align:center;width:30px">#</th>
+                        <th style="padding:7px;text-align:left">Cidade</th>
+                        <th style="padding:7px;text-align:center">Total</th>
+                        <th style="padding:7px;text-align:center">Não Ex.</th>
+                        <th style="padding:7px;text-align:center">Em And.</th>
+                        <th style="padding:7px;text-align:center">Assid.</th>
+                        <th style="padding:7px;text-align:center">Risco</th>
+                    </tr></thead>
+                    <tbody id="cpl-rt-tbodyOfensor"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Gargalos Ativos — rotas em andamento > 3h -->
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;border:1px solid rgba(241,196,15,.12)">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">⏳ Gargalos Ativos</div>
+            <div style="font-size:9px;color:var(--slate);margin-bottom:10px">Rotas em andamento há mais de 3h sem conclusão</div>
+            <div style="max-height:260px;overflow-y:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg)">
+                        <th style="padding:7px;text-align:left">Rota</th>
+                        <th style="padding:7px;text-align:left">Motorista</th>
+                        <th style="padding:7px;text-align:center">GRE</th>
+                        <th style="padding:7px;text-align:center">Turno</th>
+                        <th style="padding:7px;text-align:center">% Concl.</th>
+                    </tr></thead>
+                    <tbody id="cpl-rt-tbodyGargalo"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auditoria Prioritária — card largo -->
+    <div style="background:linear-gradient(135deg,rgba(26,39,68,.8),rgba(13,27,42,.9));border-radius:14px;padding:18px;margin-bottom:14px;border:1px solid rgba(52,152,219,.2)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+            <div>
+                <div style="font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.8px">📋 Auditoria Prioritária — Decisão da Diretoria</div>
+                <div style="font-size:9px;color:var(--slate);margin-top:3px">Rotas críticas que exigem ação imediata: não executadas com ocorrência ou sem justificativa</div>
+            </div>
+            <span id="cpl-rt-auditoria-badge" style="background:rgba(231,76,60,.2);color:#e74c3c;border:1px solid rgba(231,76,60,.4);border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700">0 rotas</span>
+        </div>
+        <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:10px;min-width:700px">
+                <thead>
+                    <tr style="background:rgba(52,152,219,.08)">
+                        <th style="padding:8px;text-align:center;width:30px">#</th>
+                        <th style="padding:8px;text-align:left">Rota</th>
+                        <th style="padding:8px;text-align:left">Motorista</th>
+                        <th style="padding:8px;text-align:center">GRE</th>
+                        <th style="padding:8px;text-align:center">Fiscal</th>
+                        <th style="padding:8px;text-align:center">Turno</th>
+                        <th style="padding:8px;text-align:center">Status</th>
+                        <th style="padding:8px;text-align:left">Ocorrência</th>
+                        <th style="padding:8px;text-align:center">Prioridade</th>
+                    </tr>
+                </thead>
+                <tbody id="cpl-rt-tbodyAuditoria"></tbody>
             </table>
         </div>
     </div>
-    <p style="font-size:11px;color:var(--slate)">ICO completo disponível no bloco <strong>📅 Por Data</strong> após sincronização manual.</p>
+
 </section>
 
 <!-- ══════════════════════════════════════════════════════════
@@ -3665,11 +3833,12 @@ function getNivelUsuario() {
         const tbTip = rtG('rt-tbodyTipologia');
         if (tbTip) tbTip.innerHTML = Object.entries(tipMap).filter(([,d]) => d.r > 0).map(([cat, d]) =>
             `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:5px">${iconTip[cat]} ${cat}</td>
-                <td style="padding:5px;text-align:center;font-weight:700">${d.r}</td>
-                <td style="padding:5px;text-align:center">${d.v.size}</td>
+                <td style="padding:6px">${iconTip[cat]} ${cat}</td>
+                <td style="padding:6px;text-align:center;font-weight:700">${d.r}</td>
+                <td style="padding:6px;text-align:center">${d.v.size}</td>
+                <td style="padding:6px;text-align:right;color:var(--slate)">${total>0?Math.round(d.r/total*100):0}%</td>
             </tr>`
-        ).join('') || '<tr><td colspan="3" style="text-align:center;padding:10px;color:var(--slate)">Sem dados</td></tr>';
+        ).join('') || '<tr><td colspan="4" style="text-align:center;padding:10px;color:var(--slate)">Sem dados</td></tr>';
 
         // Fornecedores
         const fornMap = {};
@@ -3714,6 +3883,48 @@ function getNivelUsuario() {
         _rtRenderChartAssid(dados);
         _renderRTOcorrencias(dados);
         _renderRTTecnologia(dados);
+        _renderRTRotasPorGre(dados);
+    }
+
+    function _renderRTRotasPorGre(dados) {
+        const cont = rtG('rt-rotasPorGre-container');
+        if (!cont) return;
+        const greMap = {};
+        dados.forEach(r => {
+            const g = rtGre(r) || 'S/GRE';
+            if (!greMap[g]) greMap[g] = { t:0, c:0, and:0, pend:0, extra:0 };
+            greMap[g].t++;
+            if (rtIsConcl(r)) greMap[g].c++;
+            else if (rtIsOk(r)) greMap[g].and++;
+            else greMap[g].pend++;
+            if (rtIsExtra(r)) greMap[g].extra++;
+        });
+        const sorted = Object.entries(greMap).sort((a,b) => b[1].t - a[1].t);
+        const maxT = sorted[0]?.[1]?.t || 1;
+        cont.innerHTML = sorted.map(([g, v]) => {
+            const pct = v.t > 0 ? Math.round(v.c / v.t * 100) : 0;
+            const pctAnd = v.t > 0 ? Math.round(v.and / v.t * 100) : 0;
+            const pctPend = v.t > 0 ? Math.round(v.pend / v.t * 100) : 0;
+            const barW = Math.round(v.t / maxT * 100);
+            const cor = pct >= 80 ? 'var(--success)' : pct >= 60 ? 'var(--warning)' : 'var(--danger)';
+            return `<div style="margin-bottom:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                    <span style="font-size:10px;font-weight:700">${g}</span>
+                    <span style="font-size:9px;color:var(--slate)">${v.t} rotas${v.extra>0?' · '+v.extra+' extras':''}</span>
+                </div>
+                <div style="background:var(--bg);border-radius:6px;overflow:hidden;height:18px;display:flex">
+                    <div style="width:${Math.round(v.c/v.t*100)}%;background:var(--success);opacity:.85;transition:width .4s" title="Concluídas: ${v.c}"></div>
+                    <div style="width:${Math.round(v.and/v.t*100)}%;background:var(--warning);opacity:.75" title="Em andamento: ${v.and}"></div>
+                    <div style="width:${Math.round(v.pend/v.t*100)}%;background:var(--danger);opacity:.7" title="Não iniciadas: ${v.pend}"></div>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:3px;font-size:8px;color:var(--slate)">
+                    <span style="color:var(--success)">✔ ${v.c}</span>
+                    <span style="color:var(--warning)">⟳ ${v.and}</span>
+                    <span style="color:var(--danger)">✗ ${v.pend}</span>
+                    <span style="margin-left:auto;font-weight:700;color:${cor}">${pct}% assid.</span>
+                </div>
+            </div>`;
+        }).join('') || '<div style="color:var(--slate);font-size:10px;padding:10px">Sem dados</div>';
     }
 
     function _renderRTOcorrencias(dados) {
@@ -4062,35 +4273,125 @@ function getNivelUsuario() {
         ).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--slate)">Nenhuma rota extra</td></tr>';
     }
 
+    // Pareto RT — visão atual
+    let rtParetoVisao = 'fiscal';
+    let rtChartPareto = null;
+
+    function rtSetPareto(visao) {
+        rtParetoVisao = visao;
+        const bF = rtG('cpl-rt-pareto-fiscal-btn'), bG = rtG('cpl-rt-pareto-gre-btn');
+        const on = 'border:1px solid var(--danger);background:var(--danger);color:#fff';
+        const off = 'border:1px solid var(--border);background:transparent;color:var(--slate)';
+        if (bF) bF.style.cssText = visao === 'fiscal' ? on : off;
+        if (bG) bG.style.cssText = visao === 'gre'    ? on : off;
+        _rtRenderPareto(dadosRT);
+    }
+
+    function _rtRenderPareto(d) {
+        const ctx = document.getElementById('cpl-rt-chartPareto');
+        if (!ctx) return;
+        const map = {};
+        d.forEach(r => {
+            if (rtIsOk(r)) return; // só não executadas
+            const key = rtParetoVisao === 'fiscal' ? (rtFisc(r) || 'N/A') : (rtGre(r) || 'N/A');
+            map[key] = (map[key] || 0) + 1;
+        });
+        const sorted = Object.entries(map).sort((a,b) => b[1]-a[1]).slice(0, 12);
+        const labels = sorted.map(([k]) => k.length > 18 ? k.substring(0,18)+'…' : k);
+        const values = sorted.map(([,v]) => v);
+        const max = values[0] || 1;
+        const colors = values.map(v => {
+            const r = Math.round(231 - (v/max)*(231-39));
+            const g = Math.round(76 + (v/max)*(174-76));
+            return `rgba(${231-Math.round((v/max)*192)},${76+Math.round((v/max)*98)},60,0.8)`;
+        });
+        if (rtChartPareto) rtChartPareto.destroy();
+        rtChartPareto = new Chart(ctx, {
+            type: 'bar',
+            data: { labels, datasets: [{ data: values, backgroundColor: values.map((v,i) => i===0?'rgba(231,76,60,.9)':i<3?'rgba(230,126,34,.8)':'rgba(52,152,219,.7)'), borderRadius: 4 }] },
+            options: {
+                indexAxis: 'y', maintainAspectRatio: false, responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: '#7d8590', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,.04)' } },
+                    y: { ticks: { color: '#c8cdd2', font: { size: 9 } }, grid: { display: false } }
+                }
+            }
+        });
+    }
+
     function renderRTCompliance() {
         if (!dadosRT.length) return;
         const d = dadosRT;
         const total = d.length;
         const concl = d.filter(rtIsConcl).length;
         const km    = d.reduce((acc, r) => acc + rtKm(r), 0);
-        _setEl('cpl-rt-total', total);
-        _setEl('cpl-rt-concl', concl);
-        _setEl('cpl-rt-assid', rtPct(concl, total));
-        _setEl('cpl-rt-km',    km.toLocaleString('pt-BR', { minimumFractionDigits: 1 }) + ' km');
 
-        // Por GRE
+        // Gargalos: em andamento (não concluídas, não não-iniciadas) — usamos turno como proxy de horário
+        // Detecta rotas cujo turno já deveria ter terminado (turno MANHÃ iniciado, status ainda aberto)
+        const agora = new Date();
+        const hAgora = agora.getHours() + agora.getMinutes() / 60;
+        const gargalos = d.filter(r => {
+            const s = rtSt(r);
+            const isAberta = s.includes('ANDAMENTO') || s.includes('EXECUTANDO') || s.includes('INICIADA') && !s.includes('NAO');
+            if (!isAberta) return false;
+            const turno = norm(rtTurno(r));
+            // Considera gargalo se turno da manhã e já passa das 13h, ou tarde já passou das 18h
+            if (turno.includes('MANHA') && hAgora > 13) return true;
+            if (turno.includes('TARDE') && hAgora > 18) return true;
+            if (turno.includes('NOITE') && hAgora > 23) return true;
+            // Fallback: % conclusão baixo e já passa de hora crítica
+            const pct = parseFloat(r.percentual_conclusao || '0');
+            return pct < 50 && hAgora > 14;
+        });
+
+        // Motoristas em alerta: ≥2 rotas não executadas
+        const motAlerta = {};
+        d.forEach(r => {
+            if (rtIsOk(r)) return;
+            const m = rtMot(r) || '?';
+            if (!motAlerta[m]) motAlerta[m] = { t:0, pend:0, gre: rtGre(r) };
+            motAlerta[m].pend++;
+        });
+        d.forEach(r => {
+            const m = rtMot(r) || '?';
+            if (motAlerta[m]) motAlerta[m].t++;
+        });
+        const alertaMots = Object.entries(motAlerta).filter(([,v]) => v.pend >= 2).length;
+
+        _setEl('cpl-rt-total',    total);
+        _setEl('cpl-rt-concl',    concl);
+        _setEl('cpl-rt-assid',    rtPct(concl, total));
+        _setEl('cpl-rt-gargalos', gargalos.length);
+        _setEl('cpl-rt-alertas',  alertaMots);
+        _setEl('cpl-rt-km',       km.toLocaleString('pt-BR', { minimumFractionDigits: 1 }) + ' km');
+
+        // Pareto
+        _rtRenderPareto(d);
+
+        // Mapa GRE
         const cGreMap = {};
         d.forEach(r => {
             const g = rtGre(r) || 'S/GRE';
-            if (!cGreMap[g]) cGreMap[g] = { t:0, c:0 };
+            if (!cGreMap[g]) cGreMap[g] = { t:0, c:0, garg:0, obs:0 };
             cGreMap[g].t++;
             if (rtIsConcl(r)) cGreMap[g].c++;
+            const obs = r.observacao || r.column_observacao || '';
+            if (obs && obs.trim().length > 1) cGreMap[g].obs++;
         });
+        gargalos.forEach(r => { const g = rtGre(r)||'S/GRE'; if (cGreMap[g]) cGreMap[g].garg++; });
         const tbCG = rtG('cpl-rt-tbodyGre');
         if (tbCG) tbCG.innerHTML = Object.entries(cGreMap).sort((a,b) => b[1].t - a[1].t).map(([g, v]) => {
             const pct = rtPct(v.c, v.t);
             return `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:5px">${g}</td>
-                <td style="padding:5px;text-align:center">${v.t}</td>
-                <td style="padding:5px;text-align:center;color:var(--success)">${v.c}</td>
-                <td style="padding:5px;text-align:center;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
-                <td style="padding:5px;text-align:center">${rtBadgeRisco(pct)}</td>
-            </tr>`;}).join('');
+                <td style="padding:6px;font-weight:700">${g}</td>
+                <td style="padding:6px;text-align:center">${v.t}</td>
+                <td style="padding:6px;text-align:center;color:var(--success)">${v.c}</td>
+                <td style="padding:6px;text-align:center;color:${v.garg>0?'var(--warning)':'var(--slate)'}">${v.garg}</td>
+                <td style="padding:6px;text-align:center;color:${v.obs>0?'var(--info)':'var(--slate)'}">${v.obs}</td>
+                <td style="padding:6px;text-align:center;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
+                <td style="padding:6px;text-align:center">${rtBadgeRisco(pct)}</td>
+            </tr>`;}).join('') || '<tr><td colspan="7" style="text-align:center;padding:10px;color:var(--slate)">Sem dados</td></tr>';
 
         // Por Fornecedor
         const cFornMap = {};
@@ -4104,14 +4405,29 @@ function getNivelUsuario() {
         if (tbCF) tbCF.innerHTML = Object.entries(cFornMap).sort((a,b) => b[1].t - a[1].t).map(([f, v]) => {
             const pct = rtPct(v.c, v.t);
             return `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:5px;font-size:9px">${f.length>28?f.substring(0,28)+'…':f}</td>
-                <td style="padding:5px;text-align:center">${v.t}</td>
-                <td style="padding:5px;text-align:center;color:var(--success)">${v.c}</td>
-                <td style="padding:5px;text-align:center;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
-                <td style="padding:5px;text-align:center">${rtBadgeRisco(pct)}</td>
-            </tr>`;}).join('');
+                <td style="padding:6px;font-size:9px">${f.length>28?f.substring(0,28)+'…':f}</td>
+                <td style="padding:6px;text-align:center">${v.t}</td>
+                <td style="padding:6px;text-align:center;color:var(--success)">${v.c}</td>
+                <td style="padding:6px;text-align:center;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
+                <td style="padding:6px;text-align:center">${rtBadgeRisco(pct)}</td>
+            </tr>`;}).join('') || '<tr><td colspan="5" style="text-align:center;padding:10px;color:var(--slate)">Sem dados</td></tr>';
 
-        // Municípios Ofensores Compliance
+        // Motoristas em Alerta (≥2 não executadas)
+        const tbAM = rtG('cpl-rt-tbodyAlertaMot');
+        if (tbAM) tbAM.innerHTML = Object.entries(motAlerta).filter(([,v]) => v.pend >= 2)
+            .sort((a,b) => b[1].pend - a[1].pend).map(([m, v]) => {
+                const pct = v.t > 0 ? rtPct(v.t - v.pend, v.t) : '0%';
+                return `<tr style="border-bottom:1px solid var(--border)">
+                    <td style="padding:6px;font-size:9px">${m}</td>
+                    <td style="padding:6px;text-align:center;font-size:9px">${v.gre||'—'}</td>
+                    <td style="padding:6px;text-align:center">${v.t}</td>
+                    <td style="padding:6px;text-align:center;color:var(--danger);font-weight:700">${v.pend}</td>
+                    <td style="padding:6px;text-align:center;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
+                    <td style="padding:6px;text-align:center">${rtBadgeRisco(pct)}</td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="6" style="text-align:center;padding:12px;color:var(--success)">✅ Nenhum motorista em alerta</td></tr>';
+
+        // Municípios Ofensores
         const cCidMap = {};
         d.forEach(r => {
             const c = rtCid(r) || 'S/CIDADE';
@@ -4126,15 +4442,60 @@ function getNivelUsuario() {
         if (tbCO) tbCO.innerHTML = ofensores.map(([c, v], i) => {
             const pct = rtPct(v.c, v.t);
             return `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:5px;text-align:center;color:var(--slate)">${i+1}º</td>
-                <td style="padding:5px">${c}</td>
-                <td style="padding:5px;text-align:center">${v.t}</td>
-                <td style="padding:5px;text-align:center;color:var(--danger);font-weight:700">${v.pend}</td>
-                <td style="padding:5px;text-align:center;color:var(--warning)">${v.and}</td>
-                <td style="padding:5px;text-align:center;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
-                <td style="padding:5px;text-align:center">${rtBadgeRisco(pct)}</td>
+                <td style="padding:6px;text-align:center;color:var(--slate)">${i+1}º</td>
+                <td style="padding:6px">${c}</td>
+                <td style="padding:6px;text-align:center">${v.t}</td>
+                <td style="padding:6px;text-align:center;color:var(--danger);font-weight:700">${v.pend}</td>
+                <td style="padding:6px;text-align:center;color:var(--warning)">${v.and}</td>
+                <td style="padding:6px;text-align:center;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
+                <td style="padding:6px;text-align:center">${rtBadgeRisco(pct)}</td>
+            </tr>`;}).join('') || '<tr><td colspan="7" style="text-align:center;padding:12px;color:var(--success)">✅ Nenhum município ofensor</td></tr>';
+
+        // Gargalos Ativos
+        const tbGarg = rtG('cpl-rt-tbodyGargalo');
+        if (tbGarg) tbGarg.innerHTML = gargalos.slice(0, 20).map(r =>
+            `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:6px;font-size:9px;max-width:160px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${rtRota(r).substring(0,35)}</td>
+                <td style="padding:6px;font-size:9px">${rtMot(r)}</td>
+                <td style="padding:6px;text-align:center;font-size:9px">${rtGre(r)}</td>
+                <td style="padding:6px;text-align:center;font-size:9px">${rtTurno(r)}</td>
+                <td style="padding:6px;text-align:center;font-weight:700;color:var(--warning)">${r.percentual_conclusao||'0'}%</td>
+            </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;padding:12px;color:var(--success)">✅ Sem gargalos detectados</td></tr>';
+
+        // Auditoria Prioritária: não executadas com ocorrência registrada OU sem justificativa
+        const auditoria = d.filter(r => {
+            if (rtIsOk(r)) return false;
+            return true; // toda rota não executada é auditável em RT
+        }).sort((a,b) => {
+            // Prioriza: com ocorrência > sem veículo > demais
+            const obsA = (a.observacao||a.column_observacao||'').trim().length > 1 ? 1 : 0;
+            const obsB = (b.observacao||b.column_observacao||'').trim().length > 1 ? 1 : 0;
+            return obsB - obsA;
+        }).slice(0, 30);
+
+        const badge = rtG('cpl-rt-auditoria-badge');
+        if (badge) badge.textContent = auditoria.length + ' rotas';
+
+        const tbAud = rtG('cpl-rt-tbodyAuditoria');
+        if (tbAud) tbAud.innerHTML = auditoria.map((r, i) => {
+            const obs = r.observacao || r.column_observacao || '';
+            const temObs = obs.trim().length > 1;
+            const semVei = !rtVei(r) || rtVei(r).length < 3;
+            const prioLabel = temObs ? `<span style="background:rgba(231,76,60,.2);color:#e74c3c;border:1px solid rgba(231,76,60,.4);border-radius:8px;padding:2px 8px;font-size:8px;font-weight:700">🔴 ALTA</span>`
+                : semVei ? `<span style="background:rgba(230,126,34,.2);color:#e67e22;border:1px solid rgba(230,126,34,.4);border-radius:8px;padding:2px 8px;font-size:8px;font-weight:700">🟠 MÉDIA</span>`
+                : `<span style="background:rgba(52,152,219,.15);color:var(--info);border:1px solid rgba(52,152,219,.3);border-radius:8px;padding:2px 8px;font-size:8px;font-weight:700">🔵 BAIXA</span>`;
+            return `<tr style="border-bottom:1px solid var(--border)${temObs?';background:rgba(231,76,60,.04)':''}">
+                <td style="padding:7px;text-align:center;color:var(--slate)">${i+1}</td>
+                <td style="padding:7px;font-size:9px;max-width:180px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis" title="${rtRota(r)}">${rtRota(r).substring(0,40)}</td>
+                <td style="padding:7px;font-size:9px">${rtMot(r)}</td>
+                <td style="padding:7px;text-align:center;font-size:9px">${rtGre(r)}</td>
+                <td style="padding:7px;text-align:center;font-size:9px">${rtFisc(r)}</td>
+                <td style="padding:7px;text-align:center;font-size:9px">${rtTurno(r)}</td>
+                <td style="padding:7px;text-align:center">${rtBadgeStatus(rtSts(r))}</td>
+                <td style="padding:7px;font-size:9px;color:${temObs?'var(--warning)':'var(--slate)'}">${temObs?obs.substring(0,60):'—'}</td>
+                <td style="padding:7px;text-align:center">${prioLabel}</td>
             </tr>`;
-        }).join('') || '<tr><td colspan="7" style="text-align:center;padding:15px;color:var(--success)">✅ Nenhum município ofensor identificado</td></tr>';
+        }).join('') || '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--success)">✅ Nenhuma rota para auditoria</td></tr>';
     }
 
     // ══════════════════════════════════════════════
