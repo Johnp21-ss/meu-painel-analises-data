@@ -1274,6 +1274,28 @@
             </div>
         </div>
 
+        <!-- Municípios Ofensores — Por Data -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
+            <div class="card row-new" style="border-top-color:#e67e22;">
+                <h3>⚠️ Municípios Ofensores — Não Executadas</h3>
+                <div class="scroll-area">
+                    <table id="tOfensoresCidade">
+                        <thead><tr><th width="30">Pos</th><th>Cidade</th><th style="text-align:center" width="40">Tot</th><th style="text-align:center" width="50">Não Ex.</th><th style="text-align:right" width="55">Assid.</th></tr></thead>
+                        <tbody id="tbodyOfensoresCidade"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card row-new" style="border-top-color:#c0392b;">
+                <h3>🏅 Ranking Municípios — Assiduidade</h3>
+                <div class="scroll-area">
+                    <table id="tRankingAssidCidade">
+                        <thead><tr><th width="30">Pos</th><th>Cidade</th><th style="text-align:center" width="40">Tot</th><th style="text-align:center" width="40">Ok</th><th style="text-align:right" width="55">Assid.</th></tr></thead>
+                        <tbody id="tbodyRankingAssidCidade"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div class="grid-new">
             <div class="card row-new" style="border-top-color: var(--extra)">
                 <h3>🚛 Tipologia de Frota</h3>
@@ -1334,23 +1356,26 @@
     <div class="header-controls">
         <div>
             <h2 style="margin:0;font-size:14px;">⚡ Escala ao Vivo</h2>
-            <span id="rt-update-time" style="color:var(--success);font-size:9px;font-weight:bold;">Carregando...</span>
+            <span id="rt-update-time" style="color:var(--success);font-size:9px;font-weight:bold;">Aguardando primeira carga...</span>
         </div>
-        <select id="rt-fTipo"   onchange="processarRT()"><option value="TODOS">TIPO: TODOS</option><option value="REGULAR">REGULARES</option><option value="EXTRA">EXTRAS</option></select>
-        <select id="rt-fTurno"  onchange="processarRT()"><option value="TODOS">TURNO: TODOS</option></select>
-        <select id="rt-fGre"    onchange="processarRT()"><option value="TODOS">GRE: TODAS</option></select>
-        <select id="rt-fCidade" onchange="processarRT()"><option value="TODOS">CIDADE: TODAS</option></select>
-        <select id="rt-fStatus" onchange="processarRT()">
+        <select id="rt-fTipo"    onchange="processarRT()"><option value="TODOS">TIPO: TODOS</option><option value="REGULAR">REGULARES</option><option value="EXTRA">EXTRAS</option></select>
+        <select id="rt-fTurno"   onchange="processarRT()"><option value="TODOS">TURNO: TODOS</option></select>
+        <select id="rt-fDirecao" onchange="processarRT()"><option value="TODOS">DIREÇÃO: TODAS</option></select>
+        <select id="rt-fGre"     onchange="processarRT()"><option value="TODOS">GRE: TODAS</option></select>
+        <select id="rt-fCidade"  onchange="processarRT()"><option value="TODOS">CIDADE: TODAS</option></select>
+        <select id="rt-fFiscal"  onchange="processarRT()"><option value="TODOS">FISCAL: TODOS</option></select>
+        <select id="rt-fStatus"  onchange="processarRT()">
             <option value="TODOS">STATUS: TODOS</option>
-            <option value="CONCLUÍDA">CONCLUÍDAS</option>
-            <option value="EM ANDAMENTO">EM ANDAMENTO</option>
-            <option value="NÃO INICIADA">NÃO INICIADAS</option>
+            <option value="CONCLU">CONCLUÍDAS</option>
+            <option value="ANDAMENTO">EM ANDAMENTO</option>
+            <option value="NAO INICIADA">NÃO INICIADAS</option>
         </select>
-        <button class="btn-action" onclick="carregarRT()" style="background:var(--success)"><i class="fas fa-sync-alt"></i> ATUALIZAR</button>
+        <button class="btn-action" onclick="carregarRT(true)" style="background:var(--success)"><i class="fas fa-sync-alt"></i> ATUALIZAR</button>
+        <span id="rt-countdown" style="font-size:9px;color:var(--slate);white-space:nowrap">🔄 próx. em --:--</span>
     </div>
 
-    <!-- KPIs -->
-    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:15px">
+    <!-- KPIs linha 1 -->
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:10px">
         <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--info)">
             <div style="font-size:24px;font-weight:900" id="rt-total">0</div>
             <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Total</div>
@@ -1376,57 +1401,276 @@
             <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Extras</div>
         </div>
     </div>
+    <!-- KPIs linha 2 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:15px">
+        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--info)">
+            <div style="font-size:20px;font-weight:900;color:var(--info)" id="rt-motoristas">0</div>
+            <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Motoristas</div>
+        </div>
+        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--success)">
+            <div style="font-size:20px;font-weight:900;color:var(--success)" id="rt-comvei">0</div>
+            <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Com Veículo</div>
+        </div>
+        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--danger)">
+            <div style="font-size:20px;font-weight:900;color:var(--danger)" id="rt-semvei">0</div>
+            <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Sem Veículo</div>
+        </div>
+        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid #9b59b6">
+            <div style="font-size:20px;font-weight:900;color:#9b59b6" id="rt-km">0 km</div>
+            <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">KM Planejado</div>
+        </div>
+    </div>
+
+    <!-- Cards analíticos linha 1: Performance Campo | Assiduidade por Faixa Horária -->
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:12px;margin-bottom:12px">
+        <!-- Performance por Fiscal -->
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;max-height:340px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">🎯 Performance Campo — Top 7</div>
+            <div style="flex:1;overflow-y:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">#</th><th style="padding:6px;text-align:left">Fiscal</th><th style="padding:6px;text-align:right">Rotas</th><th style="padding:6px;text-align:right">Concl.</th><th style="padding:6px;text-align:right">Assid.</th></tr></thead>
+                    <tbody id="rt-tbodyFiscal"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Assiduidade por Faixa Horária -->
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;max-height:340px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px">⏰ Assiduidade por Faixa Horária</div>
+                <div style="display:flex;gap:5px">
+                    <button id="rt-togFiscal" onclick="rtToggleAssid('fiscal')" style="padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--extra);background:var(--extra);color:#fff;border-radius:12px;cursor:pointer">Fiscal</button>
+                    <button id="rt-togGre"    onclick="rtToggleAssid('gre')"    style="padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--border);background:transparent;color:var(--slate);border-radius:12px;cursor:pointer">GRE</button>
+                </div>
+            </div>
+            <div style="flex:1;position:relative;min-height:0"><canvas id="rt-chartAssid"></canvas></div>
+            <div id="rt-assidLeg" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;font-size:8px"></div>
+        </div>
+    </div>
+
+    <!-- Cards analíticos linha 2: Ranking GRE | Top Municípios | Ranking Municípios Ofensores -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+        <!-- Ranking GRE -->
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;max-height:320px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">🏅 Ranking Regionais</div>
+            <div style="flex:1;overflow-y:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg)"><th style="padding:6px">#</th><th style="padding:6px;text-align:left">Regional</th><th style="padding:6px;text-align:right">Rotas</th><th style="padding:6px;text-align:right">Ok</th><th style="padding:6px;text-align:right">Assid.</th></tr></thead>
+                    <tbody id="rt-tbodyGre"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Top Municípios (melhores) -->
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;max-height:320px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">🏆 Top Municípios — Melhores</div>
+            <div style="flex:1;overflow-y:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg)"><th style="padding:6px">#</th><th style="padding:6px;text-align:left">Cidade</th><th style="padding:6px;text-align:right">Tot</th><th style="padding:6px;text-align:right">Ok</th><th style="padding:6px;text-align:right">Assid.</th></tr></thead>
+                    <tbody id="rt-tbodyCidMelhor"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Municípios Ofensores (piores) -->
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;max-height:320px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">⚠️ Municípios Ofensores</div>
+            <div style="flex:1;overflow-y:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg)"><th style="padding:6px">#</th><th style="padding:6px;text-align:left">Cidade</th><th style="padding:6px;text-align:right">Tot</th><th style="padding:6px;text-align:right">Não Ex.</th><th style="padding:6px;text-align:right">Assid.</th></tr></thead>
+                    <tbody id="rt-tbodyCidOfensor"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards analíticos linha 3: Motoristas por GRE | Tipologia Frota | Fornecedores -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+        <!-- Motoristas por GRE -->
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;max-height:300px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">🧑‍✈️ Motoristas na Escala</div>
+            <div style="display:flex;gap:20px;margin-bottom:8px">
+                <div style="text-align:center"><div style="font-size:20px;font-weight:900" id="rt-mot-tot">0</div><div style="font-size:8px;color:var(--slate)">Total</div></div>
+                <div style="text-align:center"><div style="font-size:20px;font-weight:900;color:var(--success)" id="rt-mot-com">0</div><div style="font-size:8px;color:var(--slate)">Com Veíc.</div></div>
+                <div style="text-align:center"><div style="font-size:20px;font-weight:900;color:var(--danger)" id="rt-mot-sem">0</div><div style="font-size:8px;color:var(--slate)">Sem Veíc.</div></div>
+            </div>
+            <div style="flex:1;overflow-y:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">GRE</th><th style="padding:6px;text-align:center">Mot.</th><th style="padding:6px;text-align:center">Com V.</th><th style="padding:6px;text-align:center">Sem V.</th></tr></thead>
+                    <tbody id="rt-tbodyMotGre"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Tipologia Frota -->
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;max-height:300px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">🚛 Tipologia de Frota</div>
+            <div style="flex:1;overflow-y:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">Categoria</th><th style="padding:6px;text-align:center">Rotas</th><th style="padding:6px;text-align:center">Veíc.</th></tr></thead>
+                    <tbody id="rt-tbodyTipologia"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Fornecedores -->
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;max-height:300px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">🤝 Fornecedores</div>
+            <div style="flex:1;overflow-y:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">Fornecedor</th><th style="padding:6px;text-align:right">Rotas</th><th style="padding:6px;text-align:right">Ok</th><th style="padding:6px;text-align:right">Assid.</th></tr></thead>
+                    <tbody id="rt-tbodyForn"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <!-- Tabela de rotas ao vivo -->
     <div style="background:var(--card-bg);border-radius:12px;padding:15px">
-        <div style="font-size:12px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">Rotas em Tempo Real</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="font-size:12px;font-weight:700;color:var(--slate);text-transform:uppercase">📋 Rotas em Tempo Real</div>
+            <span id="rt-tabela-count" style="font-size:10px;color:var(--slate)"></span>
+        </div>
+        <div id="rt-loading" style="text-align:center;padding:40px;color:var(--slate);font-size:12px">
+            <i class="fas fa-satellite-dish" style="font-size:32px;margin-bottom:10px;display:block"></i>
+            Carregando dados ao vivo...
+        </div>
         <div style="overflow-x:auto">
-            <table id="tabelaRT" style="width:100%;border-collapse:collapse;font-size:11px">
+            <table id="tabelaRT" style="width:100%;border-collapse:collapse;font-size:10px;display:none">
                 <thead>
                     <tr style="background:var(--bg);color:var(--slate)">
-                        <th style="padding:8px;text-align:left">Rota</th>
-                        <th style="padding:8px">Direção</th>
-                        <th style="padding:8px">Turno</th>
-                        <th style="padding:8px">Motorista</th>
-                        <th style="padding:8px">GRE</th>
-                        <th style="padding:8px">Cidade</th>
-                        <th style="padding:8px">Fiscal</th>
-                        <th style="padding:8px">Status</th>
-                        <th style="padding:8px">% Conclusão</th>
+                        <th style="padding:7px;text-align:left">Rota</th>
+                        <th style="padding:7px;text-align:center">Dir.</th>
+                        <th style="padding:7px;text-align:center">Turno</th>
+                        <th style="padding:7px;text-align:left">Motorista</th>
+                        <th style="padding:7px;text-align:center">GRE</th>
+                        <th style="padding:7px;text-align:center">Cidade</th>
+                        <th style="padding:7px;text-align:left">Fiscal</th>
+                        <th style="padding:7px;text-align:center">Veículo</th>
+                        <th style="padding:7px;text-align:center">Status</th>
+                        <th style="padding:7px;text-align:center">% Concl.</th>
                     </tr>
                 </thead>
                 <tbody id="tbodyRT"></tbody>
             </table>
         </div>
-        <div id="rt-loading" style="text-align:center;padding:40px;color:var(--slate);font-size:12px">
-            <i class="fas fa-satellite-dish" style="font-size:32px;margin-bottom:10px;display:block"></i>
-            Clique em ATUALIZAR para carregar os dados ao vivo
+    </div>
+</section>
+
+<!-- ═══ Assiduidade RT ═══ -->
+<section id="aba-rt-assid" class="content-section">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:15px">
+        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--info)"><div style="font-size:24px;font-weight:900" id="assid-rt-total">0</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Total</div></div>
+        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--success)"><div style="font-size:24px;font-weight:900;color:var(--success)" id="assid-rt-concl">0</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Concluídas</div></div>
+        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--warning)"><div style="font-size:24px;font-weight:900;color:var(--warning)" id="assid-rt-and">0</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Em Andamento</div></div>
+        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--gold)"><div style="font-size:24px;font-weight:900;color:var(--gold)" id="assid-rt-pct">0%</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Assiduidade</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <!-- Ranking por Motorista -->
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">📊 Assiduidade por Motorista</div>
+            <div style="max-height:400px;overflow-y:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">Motorista</th><th style="padding:6px;text-align:center">Total</th><th style="padding:6px;text-align:center">Concl.</th><th style="padding:6px;text-align:center">Assid.</th></tr></thead>
+                    <tbody id="assid-rt-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Ranking por GRE -->
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">🗺️ Assiduidade por GRE</div>
+            <div style="max-height:180px;overflow-y:auto;margin-bottom:12px">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">GRE</th><th style="padding:6px;text-align:center">Total</th><th style="padding:6px;text-align:center">Concl.</th><th style="padding:6px;text-align:center">Assid.</th></tr></thead>
+                    <tbody id="assid-rt-tbodyGre"></tbody>
+                </table>
+            </div>
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:8px">🏙️ Assiduidade por Cidade</div>
+            <div style="max-height:180px;overflow-y:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">Cidade</th><th style="padding:6px;text-align:center">Total</th><th style="padding:6px;text-align:center">Concl.</th><th style="padding:6px;text-align:center">Assid.</th></tr></thead>
+                    <tbody id="assid-rt-tbodyCid"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- Assiduidade RT -->
-<section id="aba-rt-assid" class="content-section">
-    <div style="background:var(--card-bg);border-radius:12px;padding:20px;margin-bottom:15px">
-        <div style="font-size:14px;font-weight:700;margin-bottom:15px">⏱️ Assiduidade do Dia</div>
-        <div id="rt-assid-content" style="color:var(--slate);font-size:12px">Carregue os dados no bloco Escala ao Vivo primeiro.</div>
-    </div>
-</section>
-
-<!-- Extras RT -->
+<!-- ═══ Extras RT ═══ -->
 <section id="aba-rt-extras" class="content-section">
-    <div style="background:var(--card-bg);border-radius:12px;padding:20px;margin-bottom:15px">
-        <div style="font-size:14px;font-weight:700;margin-bottom:15px">🚀 Extras do Dia</div>
-        <div id="rt-extras-content" style="color:var(--slate);font-size:12px">Carregue os dados no bloco Escala ao Vivo primeiro.</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:15px">
+        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--extra)"><div style="font-size:24px;font-weight:900;color:var(--extra)" id="ext-rt-total">0</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Total Extras</div></div>
+        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--success)"><div style="font-size:24px;font-weight:900;color:var(--success)" id="ext-rt-concl">0</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Concluídas</div></div>
+        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--warning)"><div style="font-size:24px;font-weight:900;color:var(--warning)" id="ext-rt-and">0</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Em Andamento</div></div>
+        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--danger)"><div style="font-size:24px;font-weight:900;color:var(--danger)" id="ext-rt-pend">0</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Não Iniciadas</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">🚀 Extras por GRE</div>
+            <div style="max-height:300px;overflow-y:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">GRE</th><th style="padding:6px;text-align:center">Tot</th><th style="padding:6px;text-align:center">Concl.</th><th style="padding:6px;text-align:center">Assid.</th></tr></thead>
+                    <tbody id="ext-rt-tbodyGre"></tbody>
+                </table>
+            </div>
+        </div>
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">🏙️ Extras por Cidade</div>
+            <div style="max-height:300px;overflow-y:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">Cidade</th><th style="padding:6px;text-align:center">Tot</th><th style="padding:6px;text-align:center">Concl.</th><th style="padding:6px;text-align:center">Assid.</th></tr></thead>
+                    <tbody id="ext-rt-tbodyCid"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div style="background:var(--card-bg);border-radius:12px;padding:15px">
+        <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">📋 Detalhamento de Extras</div>
+        <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:10px">
+                <thead><tr style="background:var(--bg)"><th style="padding:7px;text-align:left">Rota</th><th style="padding:7px;text-align:left">Motorista</th><th style="padding:7px;text-align:center">GRE</th><th style="padding:7px;text-align:center">Cidade</th><th style="padding:7px;text-align:center">Turno</th><th style="padding:7px;text-align:center">Status</th></tr></thead>
+                <tbody id="ext-rt-tbody"></tbody>
+            </table>
+        </div>
     </div>
 </section>
 
-<!-- Compliance RT -->
+<!-- ═══ Compliance RT ═══ -->
 <section id="aba-rt-compliance" class="content-section">
-    <div style="background:var(--card-bg);border-radius:12px;padding:20px;margin-bottom:15px">
-        <div style="font-size:14px;font-weight:700;margin-bottom:15px">🛡️ Compliance do Dia</div>
-        <div id="rt-compliance-content" style="color:var(--slate);font-size:12px">Carregue os dados no bloco Escala ao Vivo primeiro.</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:15px">
+        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--info)"><div style="font-size:24px;font-weight:900" id="cpl-rt-total">0</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Analisadas</div></div>
+        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--success)"><div style="font-size:24px;font-weight:900;color:var(--success)" id="cpl-rt-concl">0</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Concluídas</div></div>
+        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--gold)"><div style="font-size:24px;font-weight:900;color:var(--gold)" id="cpl-rt-assid">0%</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Assiduidade</div></div>
+        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--extra)"><div style="font-size:24px;font-weight:900;color:var(--extra)" id="cpl-rt-km">0 km</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">KM Planejado</div></div>
     </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <!-- Compliance por GRE -->
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">🗺️ Compliance por Regional</div>
+            <div style="max-height:320px;overflow-y:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">GRE</th><th style="padding:6px;text-align:center">Tot</th><th style="padding:6px;text-align:center">Concl.</th><th style="padding:6px;text-align:center">Assid.</th><th style="padding:6px;text-align:center">Status</th></tr></thead>
+                    <tbody id="cpl-rt-tbodyGre"></tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Compliance por Fornecedor -->
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">🤝 Compliance por Fornecedor</div>
+            <div style="max-height:320px;overflow-y:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">Fornecedor</th><th style="padding:6px;text-align:center">Tot</th><th style="padding:6px;text-align:center">Concl.</th><th style="padding:6px;text-align:center">Assid.</th><th style="padding:6px;text-align:center">Status</th></tr></thead>
+                    <tbody id="cpl-rt-tbodyForn"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- Municípios Ofensores no Compliance -->
+    <div style="background:var(--card-bg);border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">⚠️ Municípios Ofensores — Compliance</div>
+        <div style="max-height:250px;overflow-y:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:10px">
+                <thead><tr style="background:var(--bg)"><th style="padding:6px">#</th><th style="padding:6px;text-align:left">Cidade</th><th style="padding:6px;text-align:center">Total</th><th style="padding:6px;text-align:center">Não Ex.</th><th style="padding:6px;text-align:center">Em And.</th><th style="padding:6px;text-align:center">Assid.</th><th style="padding:6px;text-align:center">Risco</th></tr></thead>
+                <tbody id="cpl-rt-tbodyOfensor"></tbody>
+            </table>
+        </div>
+    </div>
+    <p style="font-size:11px;color:var(--slate)">ICO completo disponível no bloco <strong>📅 Por Data</strong> após sincronização manual.</p>
 </section>
 
 <!-- ══════════════════════════════════════════════════════════
@@ -3003,6 +3247,15 @@ function getNivelUsuario() {
         // Callbacks por bloco
         if (bloco === 'gestao') initGestaoAcessos();
         if (bloco === 'hist')   carregarHistorico();
+        if (bloco === 'rt') {
+            // Primeira carga automática + ativa auto-refresh
+            if (!dadosRT.length) carregarRT(true);
+            _rtIniciarAutoRefresh();
+        } else {
+            // Pausa o auto-refresh ao sair do bloco RT
+            if (rtAutoInterval)      { clearInterval(rtAutoInterval);      rtAutoInterval = null; }
+            if (rtCountdownInterval) { clearInterval(rtCountdownInterval); rtCountdownInterval = null; }
+        }
 
         // Aplicar permissões no bloco
         aplicarPermissoesBloco(bloco);
@@ -3074,182 +3327,629 @@ function getNivelUsuario() {
     }
 
     // ══════════════════════════════════════════════
-    // TEMPO REAL — ESCALA AO VIVO
+    // ══════════════════════════════════════════════
+    // TEMPO REAL — ENGINE COMPLETA
     // ══════════════════════════════════════════════
     let dadosRT = [];
-    let chartAssidRT = null;
+    let rtChartAssid = null;
+    let rtAssidVisao = 'fiscal'; // 'fiscal' | 'gre'
+    let rtAutoInterval = null;
+    let rtCountdownInterval = null;
+    const RT_INTERVALO_MS = 5 * 60 * 1000; // 5 minutos
 
-    async function carregarRT() {
+    // Helpers RT
+    const rtG = id => document.getElementById(id);
+    const rtSt = (r) => norm(r.column_status || r.status || '');
+    const rtIsOk = (r) => { const s = rtSt(r); return s.includes('CONCLUIDA') || s.includes('FINALIZADA') || s.includes('ANDAMENTO') || s.includes('EXECUTANDO'); };
+    const rtIsConcl = (r) => { const s = rtSt(r); return s.includes('CONCLUIDA') || s.includes('FINALIZADA'); };
+    const rtIsExtra = (r) => (r.planejamento || '').toLowerCase().includes('não');
+    const rtMot = (r) => r.column_motorista || r.motorista || '';
+    const rtGre = (r) => r.column_gre || r.gre || '';
+    const rtCid = (r) => r.column_cidade || r.cidade || '';
+    const rtSts = (r) => r.column_status || r.status || '';
+    const rtVei = (r) => r.column_veiculo || r.veiculo || '';
+    const rtForn = (r) => r.column_fornecedor_motorista || r.fornecedor_motorista || r.column_fornecedor_veiculo || '';
+    const rtFisc = (r) => r.column_fiscal_responsavel || r.fiscal_responsavel || '';
+    const rtTurno = (r) => r.column_turno || r.turno || '';
+    const rtDir = (r) => r.column_direcao || r.direcao || '';
+    const rtRota = (r) => r.column_rota || r.rota || '';
+    const rtKm = (r) => parseFloat((r.km_planejado || r.column_km_planejado || '0').toString().replace(',', '.')) || 0;
+    const rtDivVei = (r) => norm(r.divisao_veiculo || r.column_divisao_veiculo || r.tipo_fornecedor || '');
+
+    function rtPct(num, den) {
+        if (!den) return '0%';
+        return Math.round(num / den * 100) + '%';
+    }
+    function rtCorAssid(pct) {
+        const v = parseInt(pct);
+        return v >= 80 ? 'var(--success)' : v >= 60 ? 'var(--warning)' : 'var(--danger)';
+    }
+    function rtCorStatus(st) {
+        const s = norm(st);
+        if (s.includes('CONCLUIDA') || s.includes('FINALIZADA')) return { bg: 'rgba(39,174,96,.18)', cor: '#2ecc71' };
+        if (s.includes('ANDAMENTO') || s.includes('EXECUTANDO')) return { bg: 'rgba(241,196,15,.15)', cor: '#f1c40f' };
+        return { bg: 'rgba(231,76,60,.15)', cor: '#e74c3c' };
+    }
+    function rtBadgeStatus(st) {
+        const { bg, cor } = rtCorStatus(st);
+        return `<span style="background:${bg};color:${cor};padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;border:1px solid ${cor}40">${st}</span>`;
+    }
+    function rtBadgeRisco(pct) {
+        const v = parseInt(pct);
+        if (v >= 80) return `<span style="background:rgba(39,174,96,.15);color:var(--success);padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700">OK</span>`;
+        if (v >= 60) return `<span style="background:rgba(241,196,15,.15);color:var(--warning);padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700">MÉDIO</span>`;
+        if (v >= 40) return `<span style="background:rgba(230,126,34,.15);color:var(--orange,#e67e22);padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700">ALTO</span>`;
+        return `<span style="background:rgba(231,76,60,.15);color:var(--danger);padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700">CRÍTICO</span>`;
+    }
+
+    function _preencherSelectRT(id, valores, prefixo) {
+        const sel = rtG(id);
+        if (!sel) return;
+        const atual = sel.value;
+        const unicos = [...new Set(valores.filter(v => v && v.trim()))].sort();
+        // Mantém opção selecionada ao recarregar
+        sel.innerHTML = `<option value="TODOS">${prefixo}: TODOS</option>` +
+            unicos.map(v => `<option value="${v}"${v === atual ? ' selected' : ''}>${v}</option>`).join('');
+    }
+
+    async function carregarRT(manual = false) {
         const token = sessionStorage.getItem('token');
-        const loading = document.getElementById('rt-loading');
-        const tabela  = document.getElementById('tabelaRT');
-        const timeEl  = document.getElementById('rt-update-time');
-        const rtUlt   = document.getElementById('rt-ultima-atualizacao');
+        const loading = rtG('rt-loading');
+        const tabela  = rtG('tabelaRT');
+        const timeEl  = rtG('rt-update-time');
 
-        if (loading) loading.innerHTML = '<i class="fas fa-satellite-dish fa-spin" style="font-size:32px;margin-bottom:10px;display:block"></i> Conectando ao Fleetbus...';
+        if (loading) { loading.style.display = 'block'; loading.innerHTML = '<i class="fas fa-satellite-dish fa-spin" style="font-size:28px;margin-bottom:8px;display:block"></i> Conectando ao Fleetbus...'; }
         if (tabela)  tabela.style.display = 'none';
 
         try {
-            const res = await fetch('/api/escala-rt', {
-                headers: { Authorization: 'Bearer ' + token }
-            });
-            if (!res.ok) throw new Error('Erro ' + res.status);
+            const res = await fetch('/api/escala-rt', { headers: { Authorization: 'Bearer ' + token } });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
             const csv = await res.text();
-            if (!csv.trim()) throw new Error('Sem dados');
+            if (!csv || !csv.trim() || csv.startsWith('ERRO')) throw new Error(csv || 'Sem dados');
 
-            dadosRT = Papa.parse(csv, { header: true, skipEmptyLines: true }).data;
+            dadosRT = Papa.parse(csv.trim(), { header: true, skipEmptyLines: true }).data;
 
-            const agora = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
-            if (timeEl) timeEl.innerText = '✅ Atualizado às ' + agora;
-            if (rtUlt)  rtUlt.innerText  = 'Última atualização: ' + agora;
+            const agora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            if (timeEl) { timeEl.innerText = '✅ Atualizado às ' + agora; timeEl.style.color = 'var(--success)'; }
             if (loading) loading.style.display = 'none';
             if (tabela)  tabela.style.display = '';
+
+            // Preencher filtros
+            _preencherSelectRT('rt-fTurno',   dadosRT.map(rtTurno),  'TURNO');
+            _preencherSelectRT('rt-fDirecao',  dadosRT.map(rtDir),    'DIREÇÃO');
+            _preencherSelectRT('rt-fGre',      dadosRT.map(rtGre),    'GRE');
+            _preencherSelectRT('rt-fCidade',   dadosRT.map(rtCid),    'CIDADE');
+            _preencherSelectRT('rt-fFiscal',   dadosRT.map(rtFisc),   'FISCAL');
 
             processarRT();
             renderRTAssid();
             renderRTExtras();
             renderRTCompliance();
 
+            // Reiniciar countdown
+            _rtIniciarCountdown();
+
         } catch(err) {
-            if (loading) loading.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size:32px;margin-bottom:10px;display:block;color:var(--danger)"></i> Erro ao carregar: ' + err.message;
-            if (timeEl) timeEl.innerText = '❌ Falha ao carregar';
+            if (loading) { loading.style.display = 'block'; loading.innerHTML = `<i class="fas fa-exclamation-triangle" style="font-size:28px;margin-bottom:8px;display:block;color:var(--danger)"></i> Erro: ${err.message}`; }
+            if (timeEl)  { timeEl.innerText = '❌ Falha ao carregar'; timeEl.style.color = 'var(--danger)'; }
         }
+    }
+
+    function _rtIniciarAutoRefresh() {
+        if (rtAutoInterval) clearInterval(rtAutoInterval);
+        rtAutoInterval = setInterval(() => carregarRT(false), RT_INTERVALO_MS);
+        _rtIniciarCountdown();
+    }
+
+    function _rtIniciarCountdown() {
+        if (rtCountdownInterval) clearInterval(rtCountdownInterval);
+        let secs = RT_INTERVALO_MS / 1000;
+        const el = rtG('rt-countdown');
+        function tick() {
+            if (!el) return;
+            const m = String(Math.floor(secs / 60)).padStart(2, '0');
+            const s = String(secs % 60).padStart(2, '0');
+            el.innerText = `🔄 próx. em ${m}:${s}`;
+            if (secs <= 0) { clearInterval(rtCountdownInterval); return; }
+            secs--;
+        }
+        tick();
+        rtCountdownInterval = setInterval(tick, 1000);
+    }
+
+    function _rtFiltrar() {
+        const fTipo   = (rtG('rt-fTipo')   || {}).value || 'TODOS';
+        const fTurno  = (rtG('rt-fTurno')  || {}).value || 'TODOS';
+        const fDir    = (rtG('rt-fDirecao')|| {}).value || 'TODOS';
+        const fGre    = (rtG('rt-fGre')    || {}).value || 'TODOS';
+        const fCidade = (rtG('rt-fCidade') || {}).value || 'TODOS';
+        const fFiscal = (rtG('rt-fFiscal') || {}).value || 'TODOS';
+        const fStatus = (rtG('rt-fStatus') || {}).value || 'TODOS';
+        return dadosRT.filter(r => {
+            const st   = rtSt(r);
+            const plan = rtIsExtra(r);
+            if (fTipo === 'REGULAR' && plan)  return false;
+            if (fTipo === 'EXTRA'   && !plan) return false;
+            if (fTurno  !== 'TODOS' && !norm(rtTurno(r)).includes(norm(fTurno))) return false;
+            if (fDir    !== 'TODOS' && !norm(rtDir(r)).includes(norm(fDir)))     return false;
+            if (fGre    !== 'TODOS' && !norm(rtGre(r)).includes(norm(fGre)))     return false;
+            if (fCidade !== 'TODOS' && !norm(rtCid(r)).includes(norm(fCidade)))  return false;
+            if (fFiscal !== 'TODOS' && !norm(rtFisc(r)).includes(norm(fFiscal))) return false;
+            if (fStatus !== 'TODOS' && !st.includes(norm(fStatus)))              return false;
+            return true;
+        });
     }
 
     function processarRT() {
-        const fTipo   = (document.getElementById('rt-fTipo')   || {}).value || 'TODOS';
-        const fTurno  = (document.getElementById('rt-fTurno')  || {}).value || 'TODOS';
-        const fGre    = (document.getElementById('rt-fGre')    || {}).value || 'TODOS';
-        const fCidade = (document.getElementById('rt-fCidade') || {}).value || 'TODOS';
-        const fStatus = (document.getElementById('rt-fStatus') || {}).value || 'TODOS';
+        if (!dadosRT.length) return;
+        const dados = _rtFiltrar();
 
-        let dados = dadosRT.filter(r => {
-            const st    = (r.column_status || r.status || '').toUpperCase();
-            const turno = (r.column_turno  || r.turno  || '').toUpperCase();
-            const gre   = (r.column_gre    || r.gre    || '').toUpperCase();
-            const cid   = (r.column_cidade || r.cidade || '').toUpperCase();
-            const plan  = (r.planejamento  || '').toLowerCase();
-
-            if (fTipo === 'REGULAR' && plan === 'não planejada') return false;
-            if (fTipo === 'EXTRA'   && plan !== 'não planejada') return false;
-            if (fTurno  !== 'TODOS' && !turno.includes(fTurno))  return false;
-            if (fGre    !== 'TODOS' && !gre.includes(fGre))      return false;
-            if (fCidade !== 'TODOS' && !cid.includes(fCidade))   return false;
-            if (fStatus !== 'TODOS' && !st.includes(fStatus.toUpperCase())) return false;
-            return true;
-        });
-
-        // Preencher filtros dinâmicos na primeira carga
-        if (dadosRT.length > 0) {
-            _preencherSelectRT('rt-fTurno',  dadosRT.map(r => r.column_turno  || r.turno  || ''));
-            _preencherSelectRT('rt-fGre',    dadosRT.map(r => r.column_gre    || r.gre    || ''));
-            _preencherSelectRT('rt-fCidade', dadosRT.map(r => r.column_cidade || r.cidade || ''));
-        }
-
+        // KPIs principais
         const total = dados.length;
-        const concl = dados.filter(r => (r.column_status||r.status||'').toUpperCase().includes('CONCLU')).length;
-        const andto = dados.filter(r => (r.column_status||r.status||'').toUpperCase().includes('ANDAMENTO')).length;
-        const pend  = dados.filter(r => (r.column_status||r.status||'').toUpperCase().includes('N') && (r.column_status||r.status||'').toUpperCase().includes('INICIADA')).length;
-        const extrs = dados.filter(r => (r.planejamento||'').toLowerCase().includes('não')).length;
-        const assid = total > 0 ? Math.round((concl / total) * 100) : 0;
+        const concl = dados.filter(rtIsConcl).length;
+        const andto = dados.filter(r => { const s = rtSt(r); return s.includes('ANDAMENTO') || s.includes('EXECUTANDO'); }).length;
+        const pend  = dados.filter(r => { const s = rtSt(r); return s.includes('NAO INICIADA') || s.includes('NAO_INICIADA') || (!rtIsConcl(r) && !s.includes('ANDAMENTO') && !s.includes('EXECUTANDO')); }).length;
+        const extrs = dados.filter(rtIsExtra).length;
+        const km    = dados.reduce((acc, r) => acc + rtKm(r), 0);
 
-        _setEl('rt-total', total);
-        _setEl('rt-concl', concl);
-        _setEl('rt-and',   andto);
-        _setEl('rt-pend',  pend);
-        _setEl('rt-assid', assid + '%');
-        _setEl('rt-extras', extrs);
+        // Motoristas/Veículos
+        const motMap = {}, veiPorMot = {};
+        dados.forEach(r => {
+            const m = rtMot(r); if (!m || m === '---') return;
+            motMap[m] = true;
+            const tv = rtVei(r) && rtVei(r).length > 3;
+            if (!veiPorMot[m]) veiPorMot[m] = tv; else if (tv) veiPorMot[m] = true;
+        });
+        const motTotal = Object.keys(motMap).length;
+        const motCom   = Object.values(veiPorMot).filter(v => v).length;
+        const motSem   = motTotal - motCom;
 
-        // Preencher tabela
-        const tbody = document.getElementById('tbodyRT');
-        if (!tbody) return;
-        tbody.innerHTML = dados.slice(0, 200).map(r => {
-            const st = (r.column_status || r.status || '').toUpperCase();
-            const cor = st.includes('CONCLU') ? '#b7e1cd' : st.includes('ANDAMENTO') ? '#fff3cd' : '#f8d7da';
-            const pct = r.percentual_conclusao || '0';
+        _setEl('rt-total',      total);
+        _setEl('rt-concl',      concl);
+        _setEl('rt-and',        andto);
+        _setEl('rt-pend',       pend);
+        _setEl('rt-assid',      rtPct(concl + andto, total));
+        _setEl('rt-extras',     extrs);
+        _setEl('rt-motoristas', motTotal);
+        _setEl('rt-comvei',     motCom);
+        _setEl('rt-semvei',     motSem);
+        _setEl('rt-km',         km.toLocaleString('pt-BR', { minimumFractionDigits: 1 }) + ' km');
+
+        // Performance por Fiscal (top 7)
+        const fiscMap = {};
+        dados.forEach(r => {
+            const f = rtFisc(r) || 'NÃO ID.';
+            if (!fiscMap[f]) fiscMap[f] = { t: 0, c: 0 };
+            fiscMap[f].t++;
+            if (rtIsConcl(r)) fiscMap[f].c++;
+        });
+        const fiscOrd = Object.entries(fiscMap).sort((a, b) => b[1].t - a[1].t).slice(0, 7);
+        const tbFisc = rtG('rt-tbodyFiscal');
+        if (tbFisc) tbFisc.innerHTML = fiscOrd.map(([f, d], i) => {
+            const pct = rtPct(d.c, d.t);
             return `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:7px;font-size:10px;max-width:200px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis" title="${r.column_rota||r.rota||''}">${(r.column_rota||r.rota||'').substring(0,40)}</td>
-                <td style="padding:7px;text-align:center;font-size:10px">${r.column_direcao||r.direcao||''}</td>
-                <td style="padding:7px;text-align:center;font-size:10px">${r.column_turno||r.turno||''}</td>
-                <td style="padding:7px;font-size:10px">${r.column_motorista||r.motorista||''}</td>
-                <td style="padding:7px;text-align:center;font-size:10px">${r.column_gre||r.gre||''}</td>
-                <td style="padding:7px;text-align:center;font-size:10px">${r.column_cidade||r.cidade||''}</td>
-                <td style="padding:7px;font-size:10px">${r.column_fiscal_responsavel||r.fiscal_responsavel||''}</td>
-                <td style="padding:7px;text-align:center"><span style="background:${cor};color:#1a1a1a;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700">${r.column_status||r.status||''}</span></td>
-                <td style="padding:7px;text-align:center;font-size:10px;font-weight:700">${pct}%</td>
+                <td style="padding:5px;color:var(--slate)">${i+1}º</td>
+                <td style="padding:5px">${f}</td>
+                <td style="padding:5px;text-align:right">${d.t}</td>
+                <td style="padding:5px;text-align:right;color:var(--success)">${d.c}</td>
+                <td style="padding:5px;text-align:right;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="5" style="padding:10px;text-align:center;color:var(--slate)">Sem dados</td></tr>';
+
+        // Ranking GRE
+        const greMap = {};
+        dados.forEach(r => {
+            const g = rtGre(r) || 'S/GRE';
+            if (!greMap[g]) greMap[g] = { t: 0, c: 0 };
+            greMap[g].t++;
+            if (rtIsOk(r)) greMap[g].c++;
+        });
+        const greOrd = Object.entries(greMap).sort((a, b) => b[1].c / b[1].t - a[1].c / a[1].t);
+        const tbGre = rtG('rt-tbodyGre');
+        if (tbGre) tbGre.innerHTML = greOrd.map(([g, d], i) => {
+            const pct = rtPct(d.c, d.t);
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px;text-align:center;color:var(--slate)">${i+1}º</td>
+                <td style="padding:5px">${g}</td>
+                <td style="padding:5px;text-align:right">${d.t}</td>
+                <td style="padding:5px;text-align:right;color:var(--success)">${d.c}</td>
+                <td style="padding:5px;text-align:right;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="5" style="text-align:center;padding:10px;color:var(--slate)">Sem dados</td></tr>';
+
+        // Municípios: melhores e ofensores
+        const cidMap = {};
+        dados.forEach(r => {
+            const c = rtCid(r) || 'S/CIDADE';
+            if (!cidMap[c]) cidMap[c] = { t: 0, c: 0, pend: 0 };
+            cidMap[c].t++;
+            if (rtIsOk(r))   cidMap[c].c++;
+            if (!rtIsOk(r))  cidMap[c].pend++;
+        });
+        const cidTodos = Object.entries(cidMap).filter(([, d]) => d.t >= 2);
+
+        // Melhores (maior assiduidade)
+        const cidMelhor = [...cidTodos].sort((a, b) => b[1].c / b[1].t - a[1].c / a[1].t).slice(0, 12);
+        const tbCidM = rtG('rt-tbodyCidMelhor');
+        if (tbCidM) tbCidM.innerHTML = cidMelhor.map(([c, d], i) => {
+            const pct = rtPct(d.c, d.t);
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px;color:var(--slate)">${i+1}º</td>
+                <td style="padding:5px">${c}</td>
+                <td style="padding:5px;text-align:right">${d.t}</td>
+                <td style="padding:5px;text-align:right;color:var(--success)">${d.c}</td>
+                <td style="padding:5px;text-align:right;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="5" style="text-align:center;padding:10px;color:var(--slate)">Sem dados</td></tr>';
+
+        // Ofensores (piores com pelo menos 1 não executada)
+        const cidOfensor = [...cidTodos].filter(([, d]) => d.pend > 0).sort((a, b) => a[1].c / a[1].t - b[1].c / b[1].t).slice(0, 12);
+        const tbCidO = rtG('rt-tbodyCidOfensor');
+        if (tbCidO) tbCidO.innerHTML = cidOfensor.map(([c, d], i) => {
+            const pct = rtPct(d.c, d.t);
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px;color:var(--slate)">${i+1}º</td>
+                <td style="padding:5px">${c}</td>
+                <td style="padding:5px;text-align:right">${d.t}</td>
+                <td style="padding:5px;text-align:right;color:var(--danger)">${d.pend}</td>
+                <td style="padding:5px;text-align:right;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="5" style="text-align:center;padding:10px;color:var(--slate)">Nenhum ofensor</td></tr>';
+
+        // Motoristas por GRE
+        const frotaGreMap = {};
+        dados.forEach(r => {
+            const m = rtMot(r); if (!m || m === '---') return;
+            const g = rtGre(r) || 'S/GRE';
+            if (!frotaGreMap[g]) frotaGreMap[g] = {};
+            const tv = rtVei(r) && rtVei(r).length > 3;
+            if (!frotaGreMap[g][m]) frotaGreMap[g][m] = tv; else if (tv) frotaGreMap[g][m] = true;
+        });
+        const totMot = Object.keys(dados.reduce((a, r) => { const m = rtMot(r); if (m && m !== '---') a[m] = true; return a; }, {})).length;
+        const totCom = Object.values(veiPorMot).filter(v => v).length;
+        _setEl('rt-mot-tot', totMot); _setEl('rt-mot-com', totCom); _setEl('rt-mot-sem', totMot - totCom);
+        const tbMotGre = rtG('rt-tbodyMotGre');
+        if (tbMotGre) tbMotGre.innerHTML = Object.entries(frotaGreMap).sort().map(([g, mots]) => {
+            const total  = Object.keys(mots).length;
+            const comVei = Object.values(mots).filter(v => v).length;
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px"><strong>${g}</strong></td>
+                <td style="padding:5px;text-align:center">${total}</td>
+                <td style="padding:5px;text-align:center;color:var(--success)">${comVei}</td>
+                <td style="padding:5px;text-align:center;color:${total-comVei>0?'var(--danger)':'var(--slate)'}">${total - comVei}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="4" style="text-align:center;padding:10px;color:var(--slate)">Sem dados</td></tr>';
+
+        // Tipologia de Frota
+        const tipMap = { PROPRIO: {r:0,v:new Set()}, PARCEIRO: {r:0,v:new Set()}, LOCADO: {r:0,v:new Set()}, TERCEIRO: {r:0,v:new Set()} };
+        dados.forEach(r => {
+            const div = rtDivVei(r);
+            const cat = div.includes('PROPRIO') ? 'PROPRIO' : div.includes('PARCEIRO') ? 'PARCEIRO' : div.includes('LOCADO') ? 'LOCADO' : 'TERCEIRO';
+            tipMap[cat].r++;
+            if (rtVei(r) && rtVei(r).length > 2) tipMap[cat].v.add(rtVei(r));
+        });
+        const iconTip = { PROPRIO:'🟢', PARCEIRO:'🔵', LOCADO:'🟡', TERCEIRO:'🔴' };
+        const tbTip = rtG('rt-tbodyTipologia');
+        if (tbTip) tbTip.innerHTML = Object.entries(tipMap).filter(([,d]) => d.r > 0).map(([cat, d]) =>
+            `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px">${iconTip[cat]} ${cat}</td>
+                <td style="padding:5px;text-align:center;font-weight:700">${d.r}</td>
+                <td style="padding:5px;text-align:center">${d.v.size}</td>
+            </tr>`
+        ).join('') || '<tr><td colspan="3" style="text-align:center;padding:10px;color:var(--slate)">Sem dados</td></tr>';
+
+        // Fornecedores
+        const fornMap = {};
+        dados.forEach(r => {
+            const f = rtForn(r) || 'S/FORNECEDOR';
+            if (!fornMap[f]) fornMap[f] = { t:0, c:0 };
+            fornMap[f].t++;
+            if (rtIsOk(r)) fornMap[f].c++;
+        });
+        const tbForn = rtG('rt-tbodyForn');
+        if (tbForn) tbForn.innerHTML = Object.entries(fornMap).sort((a,b) => b[1].t - a[1].t).map(([f, d]) => {
+            const pct = rtPct(d.c, d.t);
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px;font-size:9px">${f.length > 25 ? f.substring(0,25)+'…' : f}</td>
+                <td style="padding:5px;text-align:right">${d.t}</td>
+                <td style="padding:5px;text-align:right;color:var(--success)">${d.c}</td>
+                <td style="padding:5px;text-align:right;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="4" style="text-align:center;padding:10px;color:var(--slate)">Sem dados</td></tr>';
+
+        // Tabela de rotas
+        const tbody = rtG('tbodyRT');
+        const tabCount = rtG('rt-tabela-count');
+        if (tabCount) tabCount.innerText = `${dados.length} rotas`;
+        if (tbody) tbody.innerHTML = dados.map(r => {
+            const st = rtSts(r);
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:6px;font-size:9px;max-width:180px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis" title="${rtRota(r)}">${rtRota(r).substring(0, 40)}</td>
+                <td style="padding:6px;text-align:center;font-size:9px">${rtDir(r)}</td>
+                <td style="padding:6px;text-align:center;font-size:9px">${rtTurno(r)}</td>
+                <td style="padding:6px;font-size:9px">${rtMot(r)}</td>
+                <td style="padding:6px;text-align:center;font-size:9px">${rtGre(r)}</td>
+                <td style="padding:6px;text-align:center;font-size:9px">${rtCid(r)}</td>
+                <td style="padding:6px;font-size:9px">${rtFisc(r)}</td>
+                <td style="padding:6px;text-align:center;font-size:9px">${rtVei(r)}</td>
+                <td style="padding:6px;text-align:center">${rtBadgeStatus(st)}</td>
+                <td style="padding:6px;text-align:center;font-size:9px;font-weight:700">${r.percentual_conclusao || '0'}%</td>
             </tr>`;
         }).join('');
+
+        // Atualiza gráfico de assiduidade
+        _rtRenderChartAssid(dados);
     }
 
-    function _preencherSelectRT(id, valores) {
-        const sel = document.getElementById(id);
-        if (!sel || sel.options.length > 1) return;
-        const unicos = [...new Set(valores.filter(v => v))].sort();
-        unicos.forEach(v => { const o = document.createElement('option'); o.value = v; o.text = v; sel.appendChild(o); });
+    function rtToggleAssid(visao) {
+        rtAssidVisao = visao;
+        const bF = rtG('rt-togFiscal'), bG = rtG('rt-togGre');
+        if (bF && bG) {
+            const on  = 'border:1px solid var(--extra);background:var(--extra);color:#fff';
+            const off = 'border:1px solid var(--border);background:transparent;color:var(--slate)';
+            bF.style.cssText = visao === 'fiscal' ? on : off;
+            bG.style.cssText = visao === 'gre' ? on : off;
+        }
+        _rtRenderChartAssid(_rtFiltrar());
+    }
+
+    function _rtRenderChartAssid(dados) {
+        const ctx = document.getElementById('rt-chartAssid');
+        if (!ctx) return;
+
+        // Agrupar por faixa horária (hora cheia do horário)
+        const faixas = {};
+        dados.forEach(r => {
+            const h = (r.column_horario || r.horario || '').substring(0, 2) || '??';
+            if (!faixas[h]) faixas[h] = {};
+            const chave = rtAssidVisao === 'fiscal' ? (rtFisc(r) || 'N/A') : (rtGre(r) || 'N/A');
+            if (!faixas[h][chave]) faixas[h][chave] = { t: 0, ok: 0 };
+            faixas[h][chave].t++;
+            if (rtIsOk(r)) faixas[h][chave].ok++;
+        });
+
+        const labels = Object.keys(faixas).sort();
+        const chaves = [...new Set(dados.map(r => rtAssidVisao === 'fiscal' ? (rtFisc(r)||'N/A') : (rtGre(r)||'N/A')))].sort();
+        const cores = ['#3498db','#e74c3c','#2ecc71','#f39c12','#9b59b6','#1abc9c','#e67e22','#95a5a6','#e91e63','#00bcd4'];
+
+        const datasets = chaves.map((ch, i) => ({
+            label: ch,
+            data: labels.map(l => {
+                const d = faixas[l][ch];
+                return d && d.t ? Math.round(d.ok / d.t * 100) : 0;
+            }),
+            borderColor: cores[i % cores.length],
+            backgroundColor: cores[i % cores.length] + '20',
+            borderWidth: 2,
+            tension: 0,
+            pointRadius: 3,
+            fill: false
+        }));
+
+        if (rtChartAssid) rtChartAssid.destroy();
+        rtChartAssid = new Chart(ctx, {
+            type: 'line',
+            data: { labels: labels.map(l => l + 'h'), datasets },
+            options: {
+                maintainAspectRatio: false, responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: '#7d8590', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,.04)' } },
+                    y: { min: 0, max: 100, ticks: { color: '#7d8590', font: { size: 9 }, callback: v => v + '%' }, grid: { color: 'rgba(255,255,255,.05)' } }
+                }
+            }
+        });
+
+        // Legenda manual
+        const leg = rtG('rt-assidLeg');
+        if (leg) leg.innerHTML = chaves.map((ch, i) =>
+            `<span style="display:inline-flex;align-items:center;gap:3px;margin-right:8px;cursor:default">
+                <span style="width:10px;height:3px;background:${cores[i%cores.length]};display:inline-block;border-radius:2px"></span>
+                <span style="color:var(--slate)">${ch.length > 18 ? ch.substring(0,18)+'…' : ch}</span>
+            </span>`
+        ).join('');
     }
 
     function renderRTAssid() {
-        const el = document.getElementById('rt-assid-content');
-        if (!el || dadosRT.length === 0) return;
-        const porMotorista = {};
-        dadosRT.forEach(r => {
-            const mot = r.column_motorista || r.motorista || 'N/A';
-            if (!porMotorista[mot]) porMotorista[mot] = { total:0, concl:0 };
-            porMotorista[mot].total++;
-            if ((r.column_status||r.status||'').toUpperCase().includes('CONCLU')) porMotorista[mot].concl++;
+        if (!dadosRT.length) return;
+        const d = dadosRT;
+        const total = d.length;
+        const concl = d.filter(rtIsConcl).length;
+        const andto = d.filter(r => { const s = rtSt(r); return s.includes('ANDAMENTO') || s.includes('EXECUTANDO'); }).length;
+        _setEl('assid-rt-total', total);
+        _setEl('assid-rt-concl', concl);
+        _setEl('assid-rt-and',   andto);
+        _setEl('assid-rt-pct',   rtPct(concl + andto, total));
+
+        // Por motorista
+        const motMap2 = {};
+        d.forEach(r => {
+            const m = rtMot(r) || 'N/A';
+            if (!motMap2[m]) motMap2[m] = { t:0, c:0 };
+            motMap2[m].t++;
+            if (rtIsOk(r)) motMap2[m].c++;
         });
-        const linhas = Object.entries(porMotorista)
-            .map(([mot, d]) => ({ mot, pct: d.total > 0 ? Math.round(d.concl/d.total*100) : 0, ...d }))
-            .sort((a,b) => a.pct - b.pct);
-        el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:11px">
-            <thead><tr style="background:var(--bg)"><th style="padding:8px;text-align:left">Motorista</th><th style="padding:8px;text-align:center">Total</th><th style="padding:8px;text-align:center">Concluídas</th><th style="padding:8px;text-align:center">Assiduidade</th></tr></thead>
-            <tbody>${linhas.map(l => `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:7px;font-size:10px">${l.mot}</td>
-                <td style="padding:7px;text-align:center;font-size:10px">${l.total}</td>
-                <td style="padding:7px;text-align:center;font-size:10px">${l.concl}</td>
-                <td style="padding:7px;text-align:center;font-weight:700;color:${l.pct>=80?'var(--success)':l.pct>=50?'var(--warning)':'var(--danger)'}">${l.pct}%</td>
-            </tr>`).join('')}</tbody>
-        </table>`;
+        const motOrd = Object.entries(motMap2).map(([m, v]) => ({ m, pct: Math.round(v.c/v.t*100), ...v })).sort((a,b) => a.pct - b.pct);
+        const tbAM = rtG('assid-rt-tbody');
+        if (tbAM) tbAM.innerHTML = motOrd.map(l =>
+            `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px;font-size:9px">${l.m}</td>
+                <td style="padding:5px;text-align:center">${l.t}</td>
+                <td style="padding:5px;text-align:center;color:var(--success)">${l.c}</td>
+                <td style="padding:5px;text-align:center;font-weight:700;color:${rtCorAssid(l.pct+'%')}">${l.pct}%</td>
+            </tr>`).join('');
+
+        // Por GRE
+        const greMap2 = {};
+        d.forEach(r => {
+            const g = rtGre(r) || 'S/GRE';
+            if (!greMap2[g]) greMap2[g] = { t:0, c:0 };
+            greMap2[g].t++;
+            if (rtIsOk(r)) greMap2[g].c++;
+        });
+        const tbAG = rtG('assid-rt-tbodyGre');
+        if (tbAG) tbAG.innerHTML = Object.entries(greMap2).sort((a,b) => b[1].c/b[1].t - a[1].c/a[1].t).map(([g, v]) => {
+            const pct = rtPct(v.c, v.t);
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px">${g}</td>
+                <td style="padding:5px;text-align:center">${v.t}</td>
+                <td style="padding:5px;text-align:center;color:var(--success)">${v.c}</td>
+                <td style="padding:5px;text-align:center;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
+            </tr>`;}).join('');
+
+        // Por cidade
+        const cidMap2 = {};
+        d.forEach(r => {
+            const c = rtCid(r) || 'S/CIDADE';
+            if (!cidMap2[c]) cidMap2[c] = { t:0, c:0 };
+            cidMap2[c].t++;
+            if (rtIsOk(r)) cidMap2[c].c++;
+        });
+        const tbAC = rtG('assid-rt-tbodyCid');
+        if (tbAC) tbAC.innerHTML = Object.entries(cidMap2).sort((a,b) => b[1].c/b[1].t - a[1].c/a[1].t).map(([c, v]) => {
+            const pct = rtPct(v.c, v.t);
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px">${c}</td>
+                <td style="padding:5px;text-align:center">${v.t}</td>
+                <td style="padding:5px;text-align:center;color:var(--success)">${v.c}</td>
+                <td style="padding:5px;text-align:center;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
+            </tr>`;}).join('');
     }
 
     function renderRTExtras() {
-        const el = document.getElementById('rt-extras-content');
-        if (!el) return;
-        const extras = dadosRT.filter(r => (r.planejamento||'').toLowerCase().includes('não'));
-        if (extras.length === 0) { el.innerHTML = '<p style="color:var(--slate)">Nenhuma rota extra encontrada.</p>'; return; }
-        el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:11px">
-            <thead><tr style="background:var(--bg)"><th style="padding:8px;text-align:left">Rota</th><th style="padding:8px">Motorista</th><th style="padding:8px">GRE</th><th style="padding:8px">Status</th></tr></thead>
-            <tbody>${extras.map(r => `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:7px;font-size:10px">${(r.column_rota||r.rota||'').substring(0,50)}</td>
-                <td style="padding:7px;font-size:10px">${r.column_motorista||r.motorista||''}</td>
-                <td style="padding:7px;font-size:10px;text-align:center">${r.column_gre||r.gre||''}</td>
-                <td style="padding:7px;font-size:10px;text-align:center">${r.column_status||r.status||''}</td>
-            </tr>`).join('')}</tbody>
-        </table>`;
+        if (!dadosRT.length) return;
+        const extras = dadosRT.filter(rtIsExtra);
+        const concl  = extras.filter(rtIsConcl).length;
+        const andto  = extras.filter(r => { const s = rtSt(r); return s.includes('ANDAMENTO') || s.includes('EXECUTANDO'); }).length;
+        const pend   = extras.length - concl - andto;
+        _setEl('ext-rt-total', extras.length);
+        _setEl('ext-rt-concl', concl);
+        _setEl('ext-rt-and',   andto);
+        _setEl('ext-rt-pend',  pend);
+
+        // Por GRE
+        const eGreMap = {};
+        extras.forEach(r => {
+            const g = rtGre(r) || 'S/GRE';
+            if (!eGreMap[g]) eGreMap[g] = { t:0, c:0 };
+            eGreMap[g].t++;
+            if (rtIsOk(r)) eGreMap[g].c++;
+        });
+        const tbEG = rtG('ext-rt-tbodyGre');
+        if (tbEG) tbEG.innerHTML = Object.entries(eGreMap).sort((a,b) => b[1].t - a[1].t).map(([g, v]) => {
+            const pct = rtPct(v.c, v.t);
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px">${g}</td>
+                <td style="padding:5px;text-align:center">${v.t}</td>
+                <td style="padding:5px;text-align:center;color:var(--success)">${v.c}</td>
+                <td style="padding:5px;text-align:center;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
+            </tr>`;}).join('') || '<tr><td colspan="4" style="text-align:center;padding:10px;color:var(--slate)">Nenhum extra</td></tr>';
+
+        // Por Cidade
+        const eCidMap = {};
+        extras.forEach(r => {
+            const c = rtCid(r) || 'S/CIDADE';
+            if (!eCidMap[c]) eCidMap[c] = { t:0, c:0 };
+            eCidMap[c].t++;
+            if (rtIsOk(r)) eCidMap[c].c++;
+        });
+        const tbEC = rtG('ext-rt-tbodyCid');
+        if (tbEC) tbEC.innerHTML = Object.entries(eCidMap).sort((a,b) => b[1].t - a[1].t).map(([c, v]) => {
+            const pct = rtPct(v.c, v.t);
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px">${c}</td>
+                <td style="padding:5px;text-align:center">${v.t}</td>
+                <td style="padding:5px;text-align:center;color:var(--success)">${v.c}</td>
+                <td style="padding:5px;text-align:center;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
+            </tr>`;}).join('') || '<tr><td colspan="4" style="text-align:center;padding:10px;color:var(--slate)">Nenhum extra</td></tr>';
+
+        // Tabela detalhamento
+        const tbED = rtG('ext-rt-tbody');
+        if (tbED) tbED.innerHTML = extras.map(r =>
+            `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px;font-size:9px;max-width:180px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${rtRota(r).substring(0,45)}</td>
+                <td style="padding:5px;font-size:9px">${rtMot(r)}</td>
+                <td style="padding:5px;text-align:center;font-size:9px">${rtGre(r)}</td>
+                <td style="padding:5px;text-align:center;font-size:9px">${rtCid(r)}</td>
+                <td style="padding:5px;text-align:center;font-size:9px">${rtTurno(r)}</td>
+                <td style="padding:5px;text-align:center">${rtBadgeStatus(rtSts(r))}</td>
+            </tr>`
+        ).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--slate)">Nenhuma rota extra</td></tr>';
     }
 
     function renderRTCompliance() {
-        const el = document.getElementById('rt-compliance-content');
-        if (!el || dadosRT.length === 0) return;
-        const total = dadosRT.length;
-        const concl = dadosRT.filter(r => (r.column_status||r.status||'').toUpperCase().includes('CONCLU')).length;
-        const assid = total > 0 ? (concl/total*100).toFixed(1) : 0;
-        el.innerHTML = `
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:20px">
-                <div style="background:var(--bg);border-radius:10px;padding:16px;text-align:center;border-left:3px solid var(--info)">
-                    <div style="font-size:32px;font-weight:900">${total}</div>
-                    <div style="font-size:9px;color:var(--slate);text-transform:uppercase">Rotas Analisadas</div>
-                </div>
-                <div style="background:var(--bg);border-radius:10px;padding:16px;text-align:center;border-left:3px solid var(--success)">
-                    <div style="font-size:32px;font-weight:900;color:var(--success)">${concl}</div>
-                    <div style="font-size:9px;color:var(--slate);text-transform:uppercase">Concluídas</div>
-                </div>
-                <div style="background:var(--bg);border-radius:10px;padding:16px;text-align:center;border-left:3px solid var(--gold)">
-                    <div style="font-size:32px;font-weight:900;color:var(--gold)">${assid}%</div>
-                    <div style="font-size:9px;color:var(--slate);text-transform:uppercase">Assiduidade Geral</div>
-                </div>
-            </div>
-            <p style="font-size:11px;color:var(--slate)">ICO completo disponível no bloco <strong>📅 Por Data</strong> após sincronização.</p>`;
+        if (!dadosRT.length) return;
+        const d = dadosRT;
+        const total = d.length;
+        const concl = d.filter(rtIsConcl).length;
+        const km    = d.reduce((acc, r) => acc + rtKm(r), 0);
+        _setEl('cpl-rt-total', total);
+        _setEl('cpl-rt-concl', concl);
+        _setEl('cpl-rt-assid', rtPct(concl, total));
+        _setEl('cpl-rt-km',    km.toLocaleString('pt-BR', { minimumFractionDigits: 1 }) + ' km');
+
+        // Por GRE
+        const cGreMap = {};
+        d.forEach(r => {
+            const g = rtGre(r) || 'S/GRE';
+            if (!cGreMap[g]) cGreMap[g] = { t:0, c:0 };
+            cGreMap[g].t++;
+            if (rtIsConcl(r)) cGreMap[g].c++;
+        });
+        const tbCG = rtG('cpl-rt-tbodyGre');
+        if (tbCG) tbCG.innerHTML = Object.entries(cGreMap).sort((a,b) => b[1].t - a[1].t).map(([g, v]) => {
+            const pct = rtPct(v.c, v.t);
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px">${g}</td>
+                <td style="padding:5px;text-align:center">${v.t}</td>
+                <td style="padding:5px;text-align:center;color:var(--success)">${v.c}</td>
+                <td style="padding:5px;text-align:center;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
+                <td style="padding:5px;text-align:center">${rtBadgeRisco(pct)}</td>
+            </tr>`;}).join('');
+
+        // Por Fornecedor
+        const cFornMap = {};
+        d.forEach(r => {
+            const f = rtForn(r) || 'S/FORNECEDOR';
+            if (!cFornMap[f]) cFornMap[f] = { t:0, c:0 };
+            cFornMap[f].t++;
+            if (rtIsConcl(r)) cFornMap[f].c++;
+        });
+        const tbCF = rtG('cpl-rt-tbodyForn');
+        if (tbCF) tbCF.innerHTML = Object.entries(cFornMap).sort((a,b) => b[1].t - a[1].t).map(([f, v]) => {
+            const pct = rtPct(v.c, v.t);
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px;font-size:9px">${f.length>28?f.substring(0,28)+'…':f}</td>
+                <td style="padding:5px;text-align:center">${v.t}</td>
+                <td style="padding:5px;text-align:center;color:var(--success)">${v.c}</td>
+                <td style="padding:5px;text-align:center;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
+                <td style="padding:5px;text-align:center">${rtBadgeRisco(pct)}</td>
+            </tr>`;}).join('');
+
+        // Municípios Ofensores Compliance
+        const cCidMap = {};
+        d.forEach(r => {
+            const c = rtCid(r) || 'S/CIDADE';
+            if (!cCidMap[c]) cCidMap[c] = { t:0, c:0, and:0, pend:0 };
+            cCidMap[c].t++;
+            if (rtIsConcl(r)) cCidMap[c].c++;
+            else if (rtIsOk(r)) cCidMap[c].and++;
+            else cCidMap[c].pend++;
+        });
+        const ofensores = Object.entries(cCidMap).filter(([,v]) => v.t >= 2 && v.pend > 0).sort((a,b) => a[1].c/a[1].t - b[1].c/b[1].t).slice(0, 15);
+        const tbCO = rtG('cpl-rt-tbodyOfensor');
+        if (tbCO) tbCO.innerHTML = ofensores.map(([c, v], i) => {
+            const pct = rtPct(v.c, v.t);
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px;text-align:center;color:var(--slate)">${i+1}º</td>
+                <td style="padding:5px">${c}</td>
+                <td style="padding:5px;text-align:center">${v.t}</td>
+                <td style="padding:5px;text-align:center;color:var(--danger);font-weight:700">${v.pend}</td>
+                <td style="padding:5px;text-align:center;color:var(--warning)">${v.and}</td>
+                <td style="padding:5px;text-align:center;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
+                <td style="padding:5px;text-align:center">${rtBadgeRisco(pct)}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="7" style="text-align:center;padding:15px;color:var(--success)">✅ Nenhum município ofensor identificado</td></tr>';
     }
 
     // ══════════════════════════════════════════════
@@ -5548,6 +6248,7 @@ function limparFiltroFiscal() {
         renderOcorrencias(fiscalObsMap);
         renderTecnologiaUnificada(dados);
         renderCardsKm(cidadeKmMap, greKmMap, cidadeConclMap);
+        renderCardsOfensoresCidade(cidadeMap);
     }
 
     // ── Assiduidade chart ─────────────────────────────────────────────────────
@@ -5948,6 +6649,51 @@ function limparFiltroFiscal() {
             tConcl.innerHTML = sorted.length ? sorted.map(([cid, n], i) =>
                 `<tr><td style="color:var(--slate)">${i+1}º</td><td>${cid}</td><td style="text-align:right;color:#e74c3c;font-weight:bold">${n}</td></tr>`
             ).join('') : '<tr><td colspan="3" style="color:var(--slate);text-align:center">Sem dados</td></tr>';
+        }
+    }
+
+    function renderCardsOfensoresCidade(cidadeMap) {
+        // Só cidades com ao menos 2 rotas
+        const cidades = Object.entries(cidadeMap).filter(([, d]) => d.t >= 2);
+
+        // Ofensores: cidades com PIOR assiduidade e pelo menos 1 não executada
+        const ofensores = cidades
+            .map(([nm, d]) => ({ nm, t: d.t, c: d.c, pend: d.t - d.c, pct: d.t > 0 ? (d.c / d.t * 100) : 0 }))
+            .filter(d => d.pend > 0)
+            .sort((a, b) => a.pct - b.pct)
+            .slice(0, 15);
+
+        const tbOf = document.getElementById('tbodyOfensoresCidade');
+        if (tbOf) {
+            const corRisco = pct => pct >= 80 ? 'var(--success)' : pct >= 60 ? 'var(--warning)' : pct >= 40 ? 'var(--orange,#e67e22)' : 'var(--danger)';
+            tbOf.innerHTML = ofensores.length ? ofensores.map((d, i) =>
+                `<tr style="border-bottom:1px solid var(--border)">
+                    <td style="padding:6px;color:var(--slate);text-align:center">${i+1}º</td>
+                    <td style="padding:6px">${d.nm}</td>
+                    <td style="padding:6px;text-align:center">${d.t}</td>
+                    <td style="padding:6px;text-align:center;color:var(--danger);font-weight:700">${d.pend}</td>
+                    <td style="padding:6px;text-align:right;font-weight:700;color:${corRisco(d.pct)}">${d.pct.toFixed(1)}%</td>
+                </tr>`
+            ).join('') : '<tr><td colspan="5" style="text-align:center;padding:12px;color:var(--success)">✅ Nenhum ofensor</td></tr>';
+        }
+
+        // Ranking completo por assiduidade (melhor → pior)
+        const rankingAssid = cidades
+            .map(([nm, d]) => ({ nm, t: d.t, c: d.c, pct: d.t > 0 ? (d.c / d.t * 100) : 0 }))
+            .sort((a, b) => b.pct - a.pct);
+
+        const tbRk = document.getElementById('tbodyRankingAssidCidade');
+        if (tbRk) {
+            const corAssid = pct => pct >= 80 ? 'var(--success)' : pct >= 60 ? 'var(--warning)' : 'var(--danger)';
+            tbRk.innerHTML = rankingAssid.length ? rankingAssid.map((d, i) =>
+                `<tr style="border-bottom:1px solid var(--border)">
+                    <td style="padding:6px;color:var(--slate);text-align:center">${i+1}º</td>
+                    <td style="padding:6px">${d.nm}</td>
+                    <td style="padding:6px;text-align:center">${d.t}</td>
+                    <td style="padding:6px;text-align:center;color:var(--success)">${d.c}</td>
+                    <td style="padding:6px;text-align:right;font-weight:700;color:${corAssid(d.pct)}">${d.pct.toFixed(1)}%</td>
+                </tr>`
+            ).join('') : '<tr><td colspan="5" style="text-align:center;padding:12px;color:var(--slate)">Sem dados</td></tr>';
         }
     }
 
