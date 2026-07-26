@@ -1402,22 +1402,14 @@
         </div>
     </div>
     <!-- KPIs linha 2 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:15px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px">
+        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--slate)">
+            <div style="font-size:22px;font-weight:900;color:var(--slate)" id="rt-km">0 km</div>
+            <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">KM Total Planejado</div>
+        </div>
         <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--info)">
-            <div style="font-size:20px;font-weight:900;color:var(--info)" id="rt-motoristas">0</div>
-            <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Motoristas</div>
-        </div>
-        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--success)">
-            <div style="font-size:20px;font-weight:900;color:var(--success)" id="rt-comvei">0</div>
-            <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Com Veículo</div>
-        </div>
-        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--danger)">
-            <div style="font-size:20px;font-weight:900;color:var(--danger)" id="rt-semvei">0</div>
-            <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Sem Veículo</div>
-        </div>
-        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid #9b59b6">
-            <div style="font-size:20px;font-weight:900;color:#9b59b6" id="rt-km">0 km</div>
-            <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">KM Planejado</div>
+            <div style="font-size:22px;font-weight:900;color:var(--info)" id="rt-mapeadas">0</div>
+            <div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Rotas Mapeadas (&gt; 4,99 km)</div>
         </div>
     </div>
 
@@ -1481,7 +1473,7 @@
         </div>
     </div>
 
-    <!-- Cards analíticos linha 3: Motoristas por GRE | Tipologia Frota | Fornecedores -->
+    <!-- Cards analíticos linha 3: Motoristas por GRE | Tipologia Frota | Ocorrências por Fiscal -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
         <!-- Motoristas por GRE -->
         <div style="background:var(--card-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;max-height:300px">
@@ -1508,15 +1500,56 @@
                 </table>
             </div>
         </div>
-        <!-- Fornecedores -->
+        <!-- Ocorrências por Fiscal -->
         <div style="background:var(--card-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;max-height:300px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">📝 Ocorrências por Fiscal</div>
+            <div id="rt-container-obs" style="flex:1;overflow-y:auto;font-size:10px">
+                <div style="padding:10px;color:var(--slate)">Sem ocorrências.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards analíticos linha 4: Fornecedores (card largo) -->
+    <div style="margin-bottom:12px">
+        <div style="background:var(--card-bg);border-radius:12px;padding:14px">
             <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">🤝 Fornecedores</div>
-            <div style="flex:1;overflow-y:auto">
+            <div style="overflow-x:auto">
                 <table style="width:100%;border-collapse:collapse;font-size:10px">
                     <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">Fornecedor</th><th style="padding:6px;text-align:right">Rotas</th><th style="padding:6px;text-align:right">Ok</th><th style="padding:6px;text-align:right">Assid.</th></tr></thead>
                     <tbody id="rt-tbodyForn"></tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <!-- Card Tecnologia — Origem da Localização (Fiscal › GRE › Cidade › Motorista) -->
+    <div style="background:var(--card-bg);border-radius:12px;padding:14px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">📱 Tecnologia — Origem da Localização (Fiscal › GRE › Cidade › Motorista)</div>
+        <p style="font-size:10px;color:var(--slate);margin-bottom:8px">Qtd. de motoristas únicos que concluíram rotas. Clique para expandir.</p>
+        <div style="max-height:360px;overflow-y:auto;overflow-x:auto">
+            <table id="rt-tblTecnologia" style="width:100%;border-collapse:collapse;font-size:10px;min-width:620px">
+                <thead>
+                    <tr style="background:var(--bg);color:var(--slate)">
+                        <th style="padding:7px;text-align:left">Fiscal &gt; GRE &gt; Cidade &gt; Motorista</th>
+                        <th style="padding:7px;text-align:center">Total Mots.</th>
+                        <th style="padding:7px;text-align:center">Mots. OK</th>
+                        <th style="padding:7px;text-align:center">Via App</th>
+                        <th style="padding:7px;text-align:center">Via Link</th>
+                        <th style="padding:7px;text-align:center">% App</th>
+                        <th style="padding:7px;text-align:center">% Abertura</th>
+                    </tr>
+                    <tr id="rt-trTecTotais" style="background:rgba(57,213,255,.05);border-bottom:2px solid rgba(57,213,255,.2)">
+                        <td style="text-align:left;font-weight:700;font-size:9px;color:var(--info);padding:4px 7px">∑ TOTAIS GERAIS</td>
+                        <td id="rt-tec-tot-total" style="text-align:center;font-weight:700;color:var(--warning);font-size:11px">—</td>
+                        <td id="rt-tec-tot-ok"    style="text-align:center;font-weight:700;color:var(--gold);font-size:11px">—</td>
+                        <td id="rt-tec-tot-app"   style="text-align:center;font-weight:700;color:var(--success);font-size:11px">—</td>
+                        <td id="rt-tec-tot-link"  style="text-align:center;font-weight:700;color:var(--info);font-size:11px">—</td>
+                        <td id="rt-tec-tot-papp"  style="text-align:center;font-weight:700;color:var(--info);font-size:11px">—</td>
+                        <td id="rt-tec-tot-pab"   style="text-align:center;font-weight:700;color:var(--info);font-size:11px">—</td>
+                    </tr>
+                </thead>
+                <tbody id="rt-tbodyTecnologia"></tbody>
+            </table>
         </div>
     </div>
 
@@ -3504,16 +3537,16 @@ function getNivelUsuario() {
         const motCom   = Object.values(veiPorMot).filter(v => v).length;
         const motSem   = motTotal - motCom;
 
-        _setEl('rt-total',      total);
-        _setEl('rt-concl',      concl);
-        _setEl('rt-and',        andto);
-        _setEl('rt-pend',       pend);
-        _setEl('rt-assid',      rtPct(concl + andto, total));
-        _setEl('rt-extras',     extrs);
-        _setEl('rt-motoristas', motTotal);
-        _setEl('rt-comvei',     motCom);
-        _setEl('rt-semvei',     motSem);
-        _setEl('rt-km',         km.toLocaleString('pt-BR', { minimumFractionDigits: 1 }) + ' km');
+        const mapeadas = dados.filter(r => rtKm(r) > 4.99).length;
+
+        _setEl('rt-total',    total);
+        _setEl('rt-concl',    concl);
+        _setEl('rt-and',      andto);
+        _setEl('rt-pend',     pend);
+        _setEl('rt-assid',    rtPct(concl + andto, total));
+        _setEl('rt-extras',   extrs);
+        _setEl('rt-km',       km.toLocaleString('pt-BR', { minimumFractionDigits: 1 }) + ' km');
+        _setEl('rt-mapeadas', mapeadas);
 
         // Performance por Fiscal (top 7)
         const fiscMap = {};
@@ -3677,8 +3710,160 @@ function getNivelUsuario() {
             </tr>`;
         }).join('');
 
-        // Atualiza gráfico de assiduidade
+        // Atualiza gráfico de assiduidade + cards extras
         _rtRenderChartAssid(dados);
+        _renderRTOcorrencias(dados);
+        _renderRTTecnologia(dados);
+    }
+
+    function _renderRTOcorrencias(dados) {
+        const cont = rtG('rt-container-obs');
+        if (!cont) return;
+        const obsMap = {};
+        dados.forEach(r => {
+            const obs = r.observacao || r.column_observacao || '';
+            if (!obs || obs.trim().length < 2) return;
+            const fis = rtFisc(r) || 'NÃO ID.';
+            if (!obsMap[fis]) obsMap[fis] = { total: 0, gres: {} };
+            obsMap[fis].total++;
+            const gre = rtGre(r) || 'S/GRE';
+            if (!obsMap[fis].gres[gre]) obsMap[fis].gres[gre] = [];
+            obsMap[fis].gres[gre].push(r);
+        });
+        if (!Object.keys(obsMap).length) {
+            cont.innerHTML = '<div style="padding:10px;color:var(--slate)">Sem ocorrências.</div>';
+            return;
+        }
+        let h = '', fIdx = 0;
+        Object.entries(obsMap).sort((a, b) => b[1].total - a[1].total).forEach(([fis, d]) => {
+            const id = 'rt-obs-f-' + fIdx++;
+            h += `<div style="padding:6px;background:rgba(255,255,255,.03);border-bottom:1px solid var(--border);cursor:pointer" onclick="
+                const el=document.getElementById('${id}');
+                if(el)el.style.display=el.style.display==='none'?'block':'none';
+                this.querySelector('.rt-obs-arrow').textContent=el&&el.style.display!=='none'?'▼':'▶'">
+                <span class='rt-obs-arrow'>▶</span> <strong>${fis}</strong>
+                <span style="float:right;color:var(--warning)">${d.total} Obs.</span>
+            </div>`;
+            Object.entries(d.gres).forEach(([gre, rotas]) => {
+                h += `<div id="${id}" style="display:none;padding:8px 16px;background:rgba(0,0,0,.2);border-bottom:1px solid var(--border)">
+                    <strong style="font-size:9px;color:var(--info)">GRE: ${gre}</strong>
+                    ${rotas.map(r => `<div style="margin-top:4px;font-size:9px;border-left:2px solid var(--warning);padding-left:6px">
+                        <span style="color:var(--slate)">${rtRota(r).substring(0,25)}</span>
+                        — ${rtMot(r)}: ${(r.observacao||r.column_observacao||'').substring(0,80)}
+                    </div>`).join('')}
+                </div>`;
+            });
+        });
+        cont.innerHTML = h;
+    }
+
+    function _renderRTTecnologia(dados) {
+        const techTree = {}, techTreeTotal = {};
+        dados.forEach(r => {
+            const fis = rtFisc(r) || 'NÃO ID.';
+            const gre = rtGre(r) || 'S/GRE';
+            const cdd = rtCid(r) || 'S/CIDADE';
+            const mot = rtMot(r) || '?';
+            const origem = norm(r.origem_localizacao || r.column_origem_localizacao || r.tecnologia || '');
+            const origemTipo = origem.includes('APP') ? 'APP' : 'LINK';
+
+            // Árvore total (todos escalados)
+            if (!techTreeTotal[fis]) techTreeTotal[fis] = { gres: {} };
+            if (!techTreeTotal[fis].gres[gre]) techTreeTotal[fis].gres[gre] = { cidades: {} };
+            if (!techTreeTotal[fis].gres[gre].cidades[cdd]) techTreeTotal[fis].gres[gre].cidades[cdd] = new Set();
+            techTreeTotal[fis].gres[gre].cidades[cdd].add(mot);
+
+            // Árvore OK (concluídas / em andamento)
+            if (!rtIsOk(r)) return;
+            if (!techTree[fis]) techTree[fis] = { gres: {} };
+            if (!techTree[fis].gres[gre]) techTree[fis].gres[gre] = { cidades: {} };
+            if (!techTree[fis].gres[gre].cidades[cdd]) techTree[fis].gres[gre].cidades[cdd] = { motoristas: {} };
+            const prev = techTree[fis].gres[gre].cidades[cdd].motoristas[mot];
+            techTree[fis].gres[gre].cidades[cdd].motoristas[mot] = (prev === 'APP' || origemTipo === 'APP') ? 'APP' : 'LINK';
+        });
+
+        const calcOk = node => {
+            let m = 0, a = 0, l = 0;
+            if (node.motoristas) { Object.values(node.motoristas).forEach(v => { m++; if (v==='APP') a++; else l++; }); }
+            else { Object.values(node.gres || node.cidades || {}).forEach(c => { const r = calcOk(c); m+=r.m; a+=r.a; l+=r.l; }); }
+            return { m, a, l, p: m ? ((a/m)*100).toFixed(0) : 0 };
+        };
+        const calcTot = node => { if (node instanceof Set) return node.size; let t=0; Object.values(node.gres||node.cidades||{}).forEach(c=>{t+=calcTot(c);}); return t; };
+
+        let html = '', fIdx = 0, totTotal = 0, totOk = 0, totApp = 0, totLink = 0;
+        const todos = [...new Set([...Object.keys(techTree), ...Object.keys(techTreeTotal)])].sort();
+        todos.forEach(fis => {
+            const fId = 'rt-tec-f-' + fIdx;
+            const fRes = techTree[fis] ? calcOk(techTree[fis]) : {m:0,a:0,l:0,p:0};
+            const fTot = techTreeTotal[fis] ? calcTot(techTreeTotal[fis]) : 0;
+            const fAb  = fTot ? ((fRes.m/fTot)*100).toFixed(0) : 0;
+            totTotal += fTot; totOk += fRes.m; totApp += fRes.a; totLink += fRes.l;
+
+            html += `<tr style="cursor:pointer;border-bottom:1px solid var(--border)" onclick="
+                document.querySelectorAll('.${fId}').forEach(el=>el.style.display=el.style.display==='none'?'table-row':'none');
+                this.querySelector('.rt-tec-arr').textContent=this.querySelector('.rt-tec-arr').textContent==='▶'?'▼':'▶'">
+                <td style="padding:6px"><span class="rt-tec-arr">▶</span> <strong>${fis}</strong></td>
+                <td style="padding:6px;text-align:center;color:var(--warning)">${fTot}</td>
+                <td style="padding:6px;text-align:center;color:var(--gold)">${fRes.m}</td>
+                <td style="padding:6px;text-align:center;color:var(--success)">${fRes.a}</td>
+                <td style="padding:6px;text-align:center;color:var(--info)">${fRes.l}</td>
+                <td style="padding:6px;text-align:center;font-weight:700">${fRes.p}%</td>
+                <td style="padding:6px;text-align:center;font-weight:700">${fAb}%</td>
+            </tr>`;
+
+            const gresSet = [...new Set([...Object.keys((techTree[fis]||{}).gres||{}), ...Object.keys((techTreeTotal[fis]||{}).gres||{})])].sort();
+            gresSet.forEach((gre, gIdx) => {
+                const gId = 'rt-tec-g-' + fIdx + '-' + gIdx;
+                const gRes = (techTree[fis]&&techTree[fis].gres[gre]) ? calcOk(techTree[fis].gres[gre]) : {m:0,a:0,l:0,p:0};
+                const gTot = (techTreeTotal[fis]&&techTreeTotal[fis].gres[gre]) ? calcTot(techTreeTotal[fis].gres[gre]) : 0;
+                html += `<tr class="${fId}" style="display:none;background:rgba(0,0,0,.15);cursor:pointer;border-bottom:1px solid var(--border)" onclick="
+                    document.querySelectorAll('.${gId}').forEach(el=>el.style.display=el.style.display==='none'?'table-row':'none');
+                    this.querySelector('.rt-tec-arr').textContent=this.querySelector('.rt-tec-arr').textContent==='▶'?'▼':'▶'">
+                    <td style="padding:5px 6px 5px 20px"><span class="rt-tec-arr">▶</span> <span style="color:var(--info)">${gre}</span></td>
+                    <td style="padding:5px;text-align:center">${gTot}</td><td style="padding:5px;text-align:center">${gRes.m}</td>
+                    <td style="padding:5px;text-align:center;color:var(--success)">${gRes.a}</td><td style="padding:5px;text-align:center">${gRes.l}</td>
+                    <td style="padding:5px;text-align:center">${gRes.p}%</td><td style="padding:5px;text-align:center">${gTot?((gRes.m/gTot)*100).toFixed(0):0}%</td>
+                </tr>`;
+
+                const cidsSet = [...new Set([...Object.keys(((techTree[fis]||{}).gres[gre]||{}).cidades||{}), ...Object.keys(((techTreeTotal[fis]||{}).gres[gre]||{}).cidades||{})])].sort();
+                cidsSet.forEach((cid, cIdx) => {
+                    const cId = 'rt-tec-c-' + fIdx + '-' + gIdx + '-' + cIdx;
+                    const cRes = (techTree[fis]&&techTree[fis].gres[gre]&&techTree[fis].gres[gre].cidades[cid]) ? calcOk(techTree[fis].gres[gre].cidades[cid]) : {m:0,a:0,l:0,p:0};
+                    const cSet = (techTreeTotal[fis]&&techTreeTotal[fis].gres[gre]&&techTreeTotal[fis].gres[gre].cidades[cid]) ? techTreeTotal[fis].gres[gre].cidades[cid] : new Set();
+                    html += `<tr class="${gId}" style="display:none;background:rgba(0,0,0,.25);cursor:pointer;border-bottom:1px solid var(--border)" onclick="
+                        document.querySelectorAll('.${cId}').forEach(el=>el.style.display=el.style.display==='none'?'table-row':'none');
+                        this.querySelector('.rt-tec-arr').textContent=this.querySelector('.rt-tec-arr').textContent==='▶'?'▼':'▶'">
+                        <td style="padding:4px 6px 4px 34px"><span class="rt-tec-arr">▶</span> 📍 ${cid}</td>
+                        <td style="text-align:center">${cSet.size}</td><td style="text-align:center">${cRes.m}</td>
+                        <td style="text-align:center;color:var(--success)">${cRes.a}</td><td style="text-align:center">${cRes.l}</td>
+                        <td style="text-align:center">${cRes.p}%</td><td style="text-align:center">${cSet.size?((cRes.m/cSet.size)*100).toFixed(0):0}%</td>
+                    </tr>`;
+                    const motsOk = (techTree[fis]&&techTree[fis].gres[gre]&&techTree[fis].gres[gre].cidades[cid]) ? techTree[fis].gres[gre].cidades[cid].motoristas : {};
+                    cSet.forEach(mot => {
+                        const tec = motsOk[mot] || null;
+                        html += `<tr class="${cId}" style="display:none;border-bottom:1px solid var(--border)">
+                            <td style="padding:3px 6px 3px 50px;color:var(--slate);font-size:9px">• ${mot}</td>
+                            <td style="text-align:center;color:var(--slate)">1</td>
+                            <td style="text-align:center">${tec?1:0}</td>
+                            <td style="text-align:center;color:var(--success)">${tec==='APP'?1:0}</td>
+                            <td style="text-align:center">${tec==='LINK'?1:0}</td>
+                            <td style="text-align:center">${tec==='APP'?'100':tec==='LINK'?'0':'-'}%</td>
+                            <td style="text-align:center">${tec?'100':'0'}%</td>
+                        </tr>`;
+                    });
+                });
+            });
+            fIdx++;
+        });
+
+        const tb = rtG('rt-tbodyTecnologia');
+        if (tb) tb.innerHTML = html || '<tr><td colspan="7" style="text-align:center;padding:15px;color:var(--slate)">Sem dados de tecnologia</td></tr>';
+        // Totais
+        const pApp = totOk > 0 ? ((totApp/totOk)*100).toFixed(0) : 0;
+        const pAb  = totTotal > 0 ? ((totOk/totTotal)*100).toFixed(0) : 0;
+        _setEl('rt-tec-tot-total', totTotal); _setEl('rt-tec-tot-ok', totOk);
+        _setEl('rt-tec-tot-app', totApp);     _setEl('rt-tec-tot-link', totLink);
+        _setEl('rt-tec-tot-papp', pApp + '%'); _setEl('rt-tec-tot-pab', pAb + '%');
     }
 
     function rtToggleAssid(visao) {
