@@ -1374,6 +1374,9 @@
         <span id="rt-countdown" style="font-size:9px;color:var(--slate);white-space:nowrap">🔄 próx. em --:--</span>
     </div>
 
+    <!-- Banner alertas GRE crítica — aparece dinamicamente -->
+    <div id="rt-alertas-gre" style="display:none;margin-bottom:14px"></div>
+
     <!-- KPIs linha 1 -->
     <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:10px">
         <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--info)">
@@ -3659,6 +3662,31 @@ function getNivelUsuario() {
 
             dadosRT = Papa.parse(csv.trim(), { header: true, skipEmptyLines: true }).data;
 
+            // Estado vazio — sem escala hoje (domingo, feriado, etc.)
+            if (!dadosRT.length) {
+                const hoje = new Date().toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
+                if (loading) {
+                    loading.style.display = 'block';
+                    loading.innerHTML = `
+                        <div style="padding:30px 20px;text-align:center">
+                            <div style="font-size:48px;margin-bottom:12px">📭</div>
+                            <div style="font-size:15px;font-weight:700;color:var(--slate);margin-bottom:8px">Sem escala para hoje</div>
+                            <div style="font-size:12px;color:var(--slate);opacity:.7;margin-bottom:16px">${hoje.charAt(0).toUpperCase() + hoje.slice(1)}</div>
+                            <div style="font-size:11px;color:var(--slate);opacity:.5">Nenhuma rota foi escalada para este dia.<br>A escala será carregada automaticamente quando disponível.</div>
+                        </div>`;
+                }
+                if (timeEl) { timeEl.innerText = '📭 Sem escala hoje'; timeEl.style.color = 'var(--slate)'; }
+                if (tabela) tabela.style.display = 'none';
+                // Zerar KPIs e sub-abas
+                ['rt-total','rt-concl','rt-and','rt-pend','rt-extras','rt-km','rt-mapeadas',
+                 'rt-mot-tot','rt-mot-com','rt-mot-sem','assid-rt-total','assid-rt-concl',
+                 'assid-rt-and','assid-rt-pend','assid-rt-pct','ext-rt-total','ext-rt-concl',
+                 'ext-rt-and','ext-rt-pend','cpl-rt-total','cpl-rt-concl','cpl-rt-assid',
+                 'cpl-rt-gargalos','cpl-rt-alertas','cpl-rt-km'].forEach(id => _setEl(id, '—'));
+                _rtIniciarCountdown();
+                return;
+            }
+
             const agora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
             if (timeEl) { timeEl.innerText = '✅ Atualizado às ' + agora; timeEl.style.color = 'var(--success)'; }
             if (loading) loading.style.display = 'none';
@@ -3687,7 +3715,12 @@ function getNivelUsuario() {
 
     function _rtIniciarAutoRefresh() {
         if (rtAutoInterval) clearInterval(rtAutoInterval);
-        rtAutoInterval = setInterval(() => carregarRT(false), RT_INTERVALO_MS);
+        // Só busca se a aba RT está visível — economiza fetch desnecessário
+        rtAutoInterval = setInterval(() => {
+            if (blocoAtivo === 'rt' && document.visibilityState === 'visible') {
+                carregarRT(false);
+            }
+        }, RT_INTERVALO_MS);
         _rtIniciarCountdown();
     }
 
@@ -3908,14 +3941,103 @@ function getNivelUsuario() {
             </tr>`;
         }).join('') || '<tr><td colspan="4" style="text-align:center;padding:10px;color:var(--slate)">Sem dados</td></tr>';
 
-        // Tabela de rotas
+        // Tabela de rotas — paginada
+        const RT_POR_PAGINA = 50;
+        let rtPaginaAtual = typeof window._rtPaginaAtual === 'number' ? window._rtPaginaAtual : 0;
+        window._rtDadosFiltrados = dados; // cache para paginação
+        window._rtPaginaAtual = 0; // reset ao filtrar
+        _rtRenderPagina(0);
+
+        // Atualiza gráfico de assiduidade + cards extras
+        _rtRenderChartAssid(dados);
+        _renderRTOcorrencias(dados);
+        _renderRTTecnologia(dados);
+        _renderRTRotasPorGre(dados);
+        _rtRenderAlertasGRE(dados);
+    }
+
+    function _rtRenderAlertasGRE(dados) {
+        const banner = rtG('rt-alertas-gre');
+        if (!banner) return;
+
+        const LIMIAR_CRITICO = 40;  // abaixo de 40% — crítico
+        const LIMIAR_ALERTA  = 70;  // abaixo de 70% — alerta
+
+        const greMap = {};
+        dados.forEach(r => {
+            const g = rtGre(r) || 'S/GRE';
+            if (!greMap[g]) greMap[g] = { t:0, ok:0 };
+            greMap[g].t++;
+            if (rtIsOk(r)) greMap[g].ok++;
+        });
+
+        // Só GREs com ao menos 3 rotas (evita falso positivo no início do dia)
+        const alertas = Object.entries(greMap)
+            .filter(([, v]) => v.t >= 3)
+            .map(([g, v]) => ({ g, pct: Math.round(v.ok / v.t * 100), t: v.t, ok: v.ok }))
+            .filter(d => d.pct < LIMIAR_ALERTA)
+            .sort((a, b) => a.pct - b.pct);
+
+        if (!alertas.length) { banner.style.display = 'none'; return; }
+
+        banner.style.display = 'block';
+        banner.innerHTML = `
+            <div style="background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.3);border-radius:12px;padding:12px 16px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                    <span style="font-size:14px">🚨</span>
+                    <span style="font-size:11px;font-weight:700;color:var(--danger);text-transform:uppercase;letter-spacing:.6px">Alertas de GRE — Assiduidade Crítica</span>
+                    <span style="margin-left:auto;font-size:9px;color:var(--slate)">${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px">
+                    ${alertas.map(d => {
+                        const critico = d.pct < LIMIAR_CRITICO;
+                        const cor = critico ? 'var(--danger)' : 'var(--warning)';
+                        const bg  = critico ? 'rgba(231,76,60,.15)' : 'rgba(241,196,15,.12)';
+                        const brd = critico ? 'rgba(231,76,60,.4)' : 'rgba(241,196,15,.35)';
+                        const ico = critico ? '🔴' : '🟠';
+                        return `<div style="background:${bg};border:1px solid ${brd};border-radius:10px;padding:6px 12px;display:flex;align-items:center;gap:8px">
+                            <span>${ico}</span>
+                            <div>
+                                <div style="font-size:10px;font-weight:700;color:${cor}">${d.g}</div>
+                                <div style="font-size:9px;color:var(--slate)">${d.ok}/${d.t} rotas · <strong style="color:${cor}">${d.pct}%</strong></div>
+                            </div>
+                        </div>`;
+                    }).join('')}
+                </div>
+                ${alertas.some(d => d.pct < LIMIAR_CRITICO) ? `<div style="margin-top:8px;font-size:9px;color:var(--danger);opacity:.8">⚠️ GREs em vermelho estão abaixo de ${LIMIAR_CRITICO}% de assiduidade — ação imediata recomendada.</div>` : ''}
+            </div>`;
+    }
+
+    function _rtRenderPagina(pagina) {
+        const RT_POR_PAGINA = 50;
+        const dados = window._rtDadosFiltrados || [];
+        const totalPags = Math.max(1, Math.ceil(dados.length / RT_POR_PAGINA));
+        pagina = Math.max(0, Math.min(pagina, totalPags - 1));
+        window._rtPaginaAtual = pagina;
+
+        const inicio = pagina * RT_POR_PAGINA;
+        const fatia  = dados.slice(inicio, inicio + RT_POR_PAGINA);
+
         const tbody = rtG('tbodyRT');
         const tabCount = rtG('rt-tabela-count');
-        if (tabCount) tabCount.innerText = `${dados.length} rotas`;
-        if (tbody) tbody.innerHTML = dados.map(r => {
+        const tabela = rtG('tabelaRT');
+
+        if (tabela) tabela.style.display = dados.length ? '' : 'none';
+        if (tabCount) tabCount.innerHTML = `
+            <span style="color:var(--slate)">${dados.length} rotas · pág. ${pagina+1}/${totalPags}</span>
+            ${pagina > 0 ? `<button onclick="_rtRenderPagina(${pagina-1})" style="margin-left:8px;padding:2px 10px;font-size:9px;font-weight:700;background:var(--card-bg);border:1px solid var(--border);color:var(--slate);border-radius:8px;cursor:pointer">‹ Ant.</button>` : ''}
+            ${pagina < totalPags-1 ? `<button onclick="_rtRenderPagina(${pagina+1})" style="margin-left:4px;padding:2px 10px;font-size:9px;font-weight:700;background:var(--card-bg);border:1px solid var(--border);color:var(--slate);border-radius:8px;cursor:pointer">Próx. ›</button>` : ''}
+            ${totalPags > 2 ? `<button onclick="_rtRenderPagina(${totalPags-1})" style="margin-left:4px;padding:2px 10px;font-size:9px;font-weight:700;background:var(--card-bg);border:1px solid var(--border);color:var(--slate);border-radius:8px;cursor:pointer">Última ››</button>` : ''}`;
+
+        if (!tbody) return;
+        if (!fatia.length) {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--slate)">Nenhuma rota encontrada com os filtros selecionados.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = fatia.map(r => {
             const st = rtSts(r);
             return `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:6px;font-size:9px;max-width:180px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis" title="${rtRota(r)}">${rtRota(r).substring(0, 40)}</td>
+                <td style="padding:6px;font-size:9px;max-width:180px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis" title="${rtRota(r)}">${rtRota(r).substring(0,40)}</td>
                 <td style="padding:6px;text-align:center;font-size:9px">${rtDir(r)}</td>
                 <td style="padding:6px;text-align:center;font-size:9px">${rtTurno(r)}</td>
                 <td style="padding:6px;font-size:9px">${rtMot(r)}</td>
@@ -3924,15 +4046,9 @@ function getNivelUsuario() {
                 <td style="padding:6px;font-size:9px">${rtFisc(r)}</td>
                 <td style="padding:6px;text-align:center;font-size:9px">${rtVei(r)}</td>
                 <td style="padding:6px;text-align:center">${rtBadgeStatus(st)}</td>
-                <td style="padding:6px;text-align:center;font-size:9px;font-weight:700">${r.percentual_conclusao || '0'}%</td>
+                <td style="padding:6px;text-align:center;font-size:9px;font-weight:700">${r.percentual_conclusao||'0'}%</td>
             </tr>`;
         }).join('');
-
-        // Atualiza gráfico de assiduidade + cards extras
-        _rtRenderChartAssid(dados);
-        _renderRTOcorrencias(dados);
-        _renderRTTecnologia(dados);
-        _renderRTRotasPorGre(dados);
     }
 
     function _renderRTRotasPorGre(dados) {
