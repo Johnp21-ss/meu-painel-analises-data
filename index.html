@@ -1555,37 +1555,64 @@
             </div>
         </div>
     </div>
+
+    <!-- ── Linha D: Fornecedores (ranking) | Ocorrências por Fiscal | Performance Campo ── -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
+        <!-- Ranking por Fornecedor -->
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;display:flex;flex-direction:column;border:1px solid rgba(52,152,219,.1)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px">🤝 Ranking Fornecedores</div>
+                <span style="font-size:8px;color:var(--info);background:rgba(52,152,219,.12);padding:2px 8px;border-radius:8px">Assid.</span>
+            </div>
+            <div style="flex:1;overflow-y:auto;max-height:260px">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead><tr style="background:var(--bg)">
+                        <th style="padding:6px;text-align:left">Fornecedor</th>
+                        <th style="padding:6px;text-align:center">Rotas</th>
+                        <th style="padding:6px;text-align:center">Ok</th>
+                        <th style="padding:6px;text-align:right">Assid.</th>
+                    </tr></thead>
+                    <tbody id="rt-tbodyForn"></tbody>
+                </table>
+            </div>
+        </div>
         <!-- Ocorrências por Fiscal -->
-        <div style="background:var(--card-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;max-height:300px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">📝 Ocorrências por Fiscal</div>
-            <div id="rt-container-obs" style="flex:1;overflow-y:auto;font-size:10px">
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;display:flex;flex-direction:column;border:1px solid rgba(230,126,34,.1)">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">📝 Ocorrências por Fiscal</div>
+            <div id="rt-container-obs" style="flex:1;overflow-y:auto;max-height:260px;font-size:10px">
                 <div style="padding:10px;color:var(--slate)">Sem ocorrências.</div>
             </div>
         </div>
-    </div>
-
-    <!-- Cards analíticos linha 4: Fornecedores (card largo) -->
-    <div style="margin-bottom:12px">
-        <div style="background:var(--card-bg);border-radius:12px;padding:14px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">🤝 Fornecedores</div>
-            <div style="overflow-x:auto">
+        <!-- Performance Campo Top 7 -->
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;display:flex;flex-direction:column;border:1px solid rgba(39,174,96,.1)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px">🎯 Performance Campo</div>
+                <span style="font-size:8px;color:var(--success);background:rgba(39,174,96,.12);padding:2px 8px;border-radius:8px">Top 7</span>
+            </div>
+            <div style="flex:1;overflow-y:auto;max-height:260px">
                 <table style="width:100%;border-collapse:collapse;font-size:10px">
-                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">Fornecedor</th><th style="padding:6px;text-align:right">Rotas</th><th style="padding:6px;text-align:right">Ok</th><th style="padding:6px;text-align:right">Assid.</th></tr></thead>
-                    <tbody id="rt-tbodyForn"></tbody>
+                    <thead><tr style="background:var(--bg)">
+                        <th style="padding:6px;text-align:center;width:24px">#</th>
+                        <th style="padding:6px;text-align:left">Fiscal</th>
+                        <th style="padding:6px;text-align:center">Rotas</th>
+                        <th style="padding:6px;text-align:center">Concl.</th>
+                        <th style="padding:6px;text-align:right">Assid.</th>
+                    </tr></thead>
+                    <tbody id="rt-tbodyFiscal"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Card Tecnologia — Origem da Localização (Fiscal › GRE › Cidade › Motorista) -->
-    <div style="background:var(--card-bg);border-radius:12px;padding:14px;margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">📱 Tecnologia — Origem da Localização (Fiscal › GRE › Cidade › Motorista)</div>
-        <p style="font-size:10px;color:var(--slate);margin-bottom:8px">Qtd. de motoristas únicos que concluíram rotas. Clique para expandir.</p>
+    <!-- Card Tecnologia -->
+    <div style="background:var(--card-bg);border-radius:14px;padding:16px;margin-bottom:14px;border:1px solid rgba(57,213,255,.1)">
+        <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">📱 Tecnologia — Origem da Localização (Fiscal › GRE › Cidade › Motorista)</div>
+        <p style="font-size:9px;color:var(--slate);margin-bottom:10px">Qtd. de motoristas únicos que concluíram rotas. Clique para expandir.</p>
         <div style="max-height:360px;overflow-y:auto;overflow-x:auto">
             <table id="rt-tblTecnologia" style="width:100%;border-collapse:collapse;font-size:10px;min-width:620px">
                 <thead>
                     <tr style="background:var(--bg);color:var(--slate)">
-                        <th style="padding:7px;text-align:left">Fiscal &gt; GRE &gt; Cidade &gt; Motorista</th>
+                        <th style="padding:7px;text-align:left">Fiscal › GRE › Cidade › Motorista</th>
                         <th style="padding:7px;text-align:center">Total Mots.</th>
                         <th style="padding:7px;text-align:center">Mots. OK</th>
                         <th style="padding:7px;text-align:center">Via App</th>
@@ -1608,14 +1635,21 @@
         </div>
     </div>
 
-    <!-- Tabela de rotas ao vivo -->
-    <div style="background:var(--card-bg);border-radius:12px;padding:15px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <div style="font-size:12px;font-weight:700;color:var(--slate);text-transform:uppercase">📋 Rotas em Tempo Real</div>
+    <!-- 📋 Rotas em Tempo Real — tabela completa filtrável de TODAS as rotas do dia ao vivo -->
+    <!-- Funciona como um "grid de fiscalização": mostra cada rota individual com status atual,  -->
+    <!-- motorista, veículo, fiscal responsável e % de conclusão. É o registro operacional vivo  -->
+    <!-- da escala — permite localizar uma rota específica, conferir quem está em campo e auditar -->
+    <!-- discrepâncias em tempo real sem precisar abrir o Fleetbus. -->
+    <div style="background:var(--card-bg);border-radius:14px;padding:16px;border:1px solid rgba(52,152,219,.08)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div>
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px">📋 Rotas em Tempo Real</div>
+                <div style="font-size:9px;color:var(--slate);margin-top:2px">Registro operacional vivo — todas as rotas do dia com status atual. Use os filtros acima.</div>
+            </div>
             <span id="rt-tabela-count" style="font-size:10px;color:var(--slate)"></span>
         </div>
         <div id="rt-loading" style="text-align:center;padding:40px;color:var(--slate);font-size:12px">
-            <i class="fas fa-satellite-dish" style="font-size:32px;margin-bottom:10px;display:block"></i>
+            <i class="fas fa-satellite-dish fa-spin" style="font-size:28px;margin-bottom:8px;display:block"></i>
             Carregando dados ao vivo...
         </div>
         <div style="overflow-x:auto">
@@ -1642,41 +1676,56 @@
 
 <!-- ═══ Assiduidade RT ═══ -->
 <section id="aba-rt-assid" class="content-section">
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:15px">
-        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--info)"><div style="font-size:24px;font-weight:900" id="assid-rt-total">0</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Total</div></div>
-        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--success)"><div style="font-size:24px;font-weight:900;color:var(--success)" id="assid-rt-concl">0</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Concluídas</div></div>
-        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--warning)"><div style="font-size:24px;font-weight:900;color:var(--warning)" id="assid-rt-and">0</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Em Andamento</div></div>
-        <div class="kpi-card" style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--gold)"><div style="font-size:24px;font-weight:900;color:var(--gold)" id="assid-rt-pct">0%</div><div style="font-size:9px;color:var(--slate);text-transform:uppercase;font-weight:700">Assiduidade</div></div>
+
+    <!-- KPIs -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px">
+        <div style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--info)"><div style="font-size:24px;font-weight:900" id="assid-rt-total">0</div><div style="font-size:8px;color:var(--slate);text-transform:uppercase;font-weight:700">Total Rotas</div></div>
+        <div style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--success)"><div style="font-size:24px;font-weight:900;color:var(--success)" id="assid-rt-concl">0</div><div style="font-size:8px;color:var(--slate);text-transform:uppercase;font-weight:700">Concluídas</div></div>
+        <div style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--warning)"><div style="font-size:24px;font-weight:900;color:var(--warning)" id="assid-rt-and">0</div><div style="font-size:8px;color:var(--slate);text-transform:uppercase;font-weight:700">Em Andamento</div></div>
+        <div style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--danger)"><div style="font-size:24px;font-weight:900;color:var(--danger)" id="assid-rt-pend">0</div><div style="font-size:8px;color:var(--slate);text-transform:uppercase;font-weight:700">Não Iniciadas</div></div>
+        <div style="background:var(--card-bg);border-radius:10px;padding:14px;text-align:center;border-left:3px solid var(--gold)"><div style="font-size:24px;font-weight:900;color:var(--gold)" id="assid-rt-pct">0%</div><div style="font-size:8px;color:var(--slate);text-transform:uppercase;font-weight:700">Assiduidade Geral</div></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <!-- Ranking por Motorista -->
-        <div style="background:var(--card-bg);border-radius:12px;padding:14px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">📊 Assiduidade por Motorista</div>
-            <div style="max-height:400px;overflow-y:auto">
-                <table style="width:100%;border-collapse:collapse;font-size:10px">
-                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">Motorista</th><th style="padding:6px;text-align:center">Total</th><th style="padding:6px;text-align:center">Concl.</th><th style="padding:6px;text-align:center">Assid.</th></tr></thead>
-                    <tbody id="assid-rt-tbody"></tbody>
-                </table>
-            </div>
+
+    <!-- Linha 1: Gráfico barras por GRE | Gráfico barras por Cidade -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;border:1px solid rgba(52,152,219,.1)">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">🗺️ Assiduidade por GRE</div>
+            <div id="assid-rt-barGre" style="max-height:280px;overflow-y:auto"></div>
         </div>
-        <!-- Ranking por GRE -->
-        <div style="background:var(--card-bg);border-radius:12px;padding:14px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:10px">🗺️ Assiduidade por GRE</div>
-            <div style="max-height:180px;overflow-y:auto;margin-bottom:12px">
-                <table style="width:100%;border-collapse:collapse;font-size:10px">
-                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">GRE</th><th style="padding:6px;text-align:center">Total</th><th style="padding:6px;text-align:center">Concl.</th><th style="padding:6px;text-align:center">Assid.</th></tr></thead>
-                    <tbody id="assid-rt-tbodyGre"></tbody>
-                </table>
-            </div>
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;margin-bottom:8px">🏙️ Assiduidade por Cidade</div>
-            <div style="max-height:180px;overflow-y:auto">
-                <table style="width:100%;border-collapse:collapse;font-size:10px">
-                    <thead><tr style="background:var(--bg)"><th style="padding:6px;text-align:left">Cidade</th><th style="padding:6px;text-align:center">Total</th><th style="padding:6px;text-align:center">Concl.</th><th style="padding:6px;text-align:center">Assid.</th></tr></thead>
-                    <tbody id="assid-rt-tbodyCid"></tbody>
-                </table>
-            </div>
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;border:1px solid rgba(52,152,219,.1)">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">🏙️ Top 15 Cidades — Assiduidade</div>
+            <div id="assid-rt-barCid" style="max-height:280px;overflow-y:auto"></div>
         </div>
     </div>
+
+    <!-- Linha 2: Ranking motoristas (completo, estilo Por Data) -->
+    <div style="background:var(--card-bg);border-radius:14px;padding:16px;margin-bottom:14px;border:1px solid rgba(52,152,219,.08)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px">📊 Ranking de Assiduidade por Motorista</div>
+            <div style="display:flex;gap:6px">
+                <button onclick="assidRTSetOrdem('asc')"  id="assid-rt-btn-asc"  style="padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--danger);background:var(--danger);color:#fff;border-radius:12px;cursor:pointer">Piores</button>
+                <button onclick="assidRTSetOrdem('desc')" id="assid-rt-btn-desc" style="padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--border);background:transparent;color:var(--slate);border-radius:12px;cursor:pointer">Melhores</button>
+            </div>
+        </div>
+        <div style="max-height:380px;overflow-y:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:10px">
+                <thead><tr style="background:var(--bg)">
+                    <th style="padding:7px;text-align:center;width:30px">#</th>
+                    <th style="padding:7px;text-align:left">Motorista</th>
+                    <th style="padding:7px;text-align:center">GRE</th>
+                    <th style="padding:7px;text-align:center">Cidade</th>
+                    <th style="padding:7px;text-align:center">Total</th>
+                    <th style="padding:7px;text-align:center">Concl.</th>
+                    <th style="padding:7px;text-align:center">And.</th>
+                    <th style="padding:7px;text-align:center">Não Ex.</th>
+                    <th style="padding:7px;text-align:center">Assid.</th>
+                    <th style="padding:7px;text-align:left" style="min-width:100px">Barra</th>
+                </tr></thead>
+                <tbody id="assid-rt-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
 </section>
 
 <!-- ═══ Extras RT ═══ -->
@@ -4146,70 +4195,124 @@ function getNivelUsuario() {
         ).join('');
     }
 
+    let assidRTOrdem = 'asc'; // piores primeiro por padrão
+    let _assidRTDados = []; // cache para re-renderizar sem refetch
+
+    function assidRTSetOrdem(ord) {
+        assidRTOrdem = ord;
+        const bA = rtG('assid-rt-btn-asc'), bD = rtG('assid-rt-btn-desc');
+        const on  = 'padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--danger);background:var(--danger);color:#fff;border-radius:12px;cursor:pointer';
+        const off = 'padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--border);background:transparent;color:var(--slate);border-radius:12px;cursor:pointer';
+        const onG = 'padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--success);background:var(--success);color:#fff;border-radius:12px;cursor:pointer';
+        if (bA) bA.style.cssText = ord === 'asc' ? on : off;
+        if (bD) bD.style.cssText = ord === 'desc' ? onG : off;
+        _renderAssidRTTabela(_assidRTDados);
+    }
+
+    function _renderAssidBarras(containerId, dados, labelKey, maxItens) {
+        const cont = rtG(containerId);
+        if (!cont) return;
+        const sorted = dados.slice(0, maxItens || 999);
+        const maxT = sorted[0]?.t || 1;
+        cont.innerHTML = sorted.map(d => {
+            const pct = d.t > 0 ? Math.round(d.c / d.t * 100) : 0;
+            const pctAnd = d.t > 0 ? Math.round((d.and || 0) / d.t * 100) : 0;
+            const pctPend = 100 - pct - pctAnd;
+            const cor = pct >= 80 ? 'var(--success)' : pct >= 60 ? 'var(--warning)' : 'var(--danger)';
+            return `<div style="margin-bottom:10px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                    <span style="font-size:10px;font-weight:600">${d[labelKey]}</span>
+                    <span style="font-size:9px;font-weight:700;color:${cor}">${pct}% <span style="color:var(--slate);font-weight:400">(${d.c}/${d.t})</span></span>
+                </div>
+                <div style="background:var(--bg);border-radius:5px;overflow:hidden;height:14px;display:flex">
+                    <div style="width:${pct}%;background:var(--success);opacity:.85" title="Concluídas: ${d.c}"></div>
+                    <div style="width:${pctAnd}%;background:var(--warning);opacity:.75" title="Em andamento: ${d.and||0}"></div>
+                    <div style="width:${Math.max(pctPend,0)}%;background:var(--danger);opacity:.6" title="Não iniciadas: ${d.pend||0}"></div>
+                </div>
+            </div>`;
+        }).join('') || '<div style="color:var(--slate);font-size:10px;padding:10px">Sem dados</div>';
+    }
+
+    function _renderAssidRTTabela(motList) {
+        const sorted = [...motList].sort((a, b) => assidRTOrdem === 'asc' ? a.pct - b.pct : b.pct - a.pct);
+        const tb = rtG('assid-rt-tbody');
+        if (!tb) return;
+        tb.innerHTML = sorted.map((l, i) => {
+            const cor = rtCorAssid(l.pct + '%');
+            const barW = l.pct;
+            return `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:6px;text-align:center;color:var(--slate);font-size:9px">${i+1}º</td>
+                <td style="padding:6px;font-size:9px;font-weight:600">${l.m}</td>
+                <td style="padding:6px;text-align:center;font-size:9px">${l.gre}</td>
+                <td style="padding:6px;text-align:center;font-size:9px">${l.cid}</td>
+                <td style="padding:6px;text-align:center">${l.t}</td>
+                <td style="padding:6px;text-align:center;color:var(--success)">${l.c}</td>
+                <td style="padding:6px;text-align:center;color:var(--warning)">${l.and}</td>
+                <td style="padding:6px;text-align:center;color:var(--danger)">${l.pend}</td>
+                <td style="padding:6px;text-align:center;font-weight:700;color:${cor}">${l.pct}%</td>
+                <td style="padding:6px;min-width:80px">
+                    <div style="background:var(--bg);border-radius:4px;overflow:hidden;height:10px;display:flex">
+                        <div style="width:${barW}%;background:${cor};opacity:.85"></div>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="10" style="text-align:center;padding:15px;color:var(--slate)">Sem dados</td></tr>';
+    }
+
     function renderRTAssid() {
         if (!dadosRT.length) return;
         const d = dadosRT;
         const total = d.length;
         const concl = d.filter(rtIsConcl).length;
         const andto = d.filter(r => { const s = rtSt(r); return s.includes('ANDAMENTO') || s.includes('EXECUTANDO'); }).length;
+        const pend  = total - concl - andto;
         _setEl('assid-rt-total', total);
         _setEl('assid-rt-concl', concl);
         _setEl('assid-rt-and',   andto);
+        _setEl('assid-rt-pend',  pend);
         _setEl('assid-rt-pct',   rtPct(concl + andto, total));
 
-        // Por motorista
-        const motMap2 = {};
-        d.forEach(r => {
-            const m = rtMot(r) || 'N/A';
-            if (!motMap2[m]) motMap2[m] = { t:0, c:0 };
-            motMap2[m].t++;
-            if (rtIsOk(r)) motMap2[m].c++;
-        });
-        const motOrd = Object.entries(motMap2).map(([m, v]) => ({ m, pct: Math.round(v.c/v.t*100), ...v })).sort((a,b) => a.pct - b.pct);
-        const tbAM = rtG('assid-rt-tbody');
-        if (tbAM) tbAM.innerHTML = motOrd.map(l =>
-            `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:5px;font-size:9px">${l.m}</td>
-                <td style="padding:5px;text-align:center">${l.t}</td>
-                <td style="padding:5px;text-align:center;color:var(--success)">${l.c}</td>
-                <td style="padding:5px;text-align:center;font-weight:700;color:${rtCorAssid(l.pct+'%')}">${l.pct}%</td>
-            </tr>`).join('');
-
-        // Por GRE
-        const greMap2 = {};
+        // Por GRE — barras
+        const greMap = {};
         d.forEach(r => {
             const g = rtGre(r) || 'S/GRE';
-            if (!greMap2[g]) greMap2[g] = { t:0, c:0 };
-            greMap2[g].t++;
-            if (rtIsOk(r)) greMap2[g].c++;
+            if (!greMap[g]) greMap[g] = { g, t:0, c:0, and:0, pend:0 };
+            greMap[g].t++;
+            if (rtIsConcl(r)) greMap[g].c++;
+            else if (rtIsOk(r)) greMap[g].and++;
+            else greMap[g].pend++;
         });
-        const tbAG = rtG('assid-rt-tbodyGre');
-        if (tbAG) tbAG.innerHTML = Object.entries(greMap2).sort((a,b) => b[1].c/b[1].t - a[1].c/a[1].t).map(([g, v]) => {
-            const pct = rtPct(v.c, v.t);
-            return `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:5px">${g}</td>
-                <td style="padding:5px;text-align:center">${v.t}</td>
-                <td style="padding:5px;text-align:center;color:var(--success)">${v.c}</td>
-                <td style="padding:5px;text-align:center;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
-            </tr>`;}).join('');
+        const greLista = Object.values(greMap).sort((a,b) => (b.c/b.t) - (a.c/a.t));
+        _renderAssidBarras('assid-rt-barGre', greLista, 'g');
 
-        // Por cidade
-        const cidMap2 = {};
+        // Por cidade (top 15) — barras
+        const cidMap = {};
         d.forEach(r => {
             const c = rtCid(r) || 'S/CIDADE';
-            if (!cidMap2[c]) cidMap2[c] = { t:0, c:0 };
-            cidMap2[c].t++;
-            if (rtIsOk(r)) cidMap2[c].c++;
+            if (!cidMap[c]) cidMap[c] = { c, t:0, c2:0, and:0, pend:0 };
+            cidMap[c].t++;
+            if (rtIsConcl(r)) cidMap[c].c2++;
+            else if (rtIsOk(r)) cidMap[c].and++;
+            else cidMap[c].pend++;
         });
-        const tbAC = rtG('assid-rt-tbodyCid');
-        if (tbAC) tbAC.innerHTML = Object.entries(cidMap2).sort((a,b) => b[1].c/b[1].t - a[1].c/a[1].t).map(([c, v]) => {
-            const pct = rtPct(v.c, v.t);
-            return `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:5px">${c}</td>
-                <td style="padding:5px;text-align:center">${v.t}</td>
-                <td style="padding:5px;text-align:center;color:var(--success)">${v.c}</td>
-                <td style="padding:5px;text-align:center;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
-            </tr>`;}).join('');
+        // Renomear c2 → c para _renderAssidBarras
+        const cidLista = Object.values(cidMap).map(x => ({ ...x, c: x.c2 })).sort((a,b) => (b.c/b.t)-(a.c/a.t));
+        _renderAssidBarras('assid-rt-barCid', cidLista, 'c', 15);
+
+        // Por motorista — tabela rica com cache
+        const motMap = {};
+        d.forEach(r => {
+            const m = rtMot(r) || 'N/A';
+            if (!motMap[m]) motMap[m] = { m, gre: rtGre(r)||'—', cid: rtCid(r)||'—', t:0, c:0, and:0, pend:0, pct:0 };
+            motMap[m].t++;
+            if (rtIsConcl(r)) motMap[m].c++;
+            else if (rtIsOk(r)) motMap[m].and++;
+            else motMap[m].pend++;
+        });
+        _assidRTDados = Object.values(motMap).map(x => ({ ...x, pct: x.t > 0 ? Math.round(x.c / x.t * 100) : 0 }));
+        _renderAssidRTTabela(_assidRTDados);
+        // Aplicar estilo do botão ativo
+        assidRTSetOrdem(assidRTOrdem);
     }
 
     function renderRTExtras() {
