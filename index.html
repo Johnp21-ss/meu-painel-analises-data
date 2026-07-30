@@ -3855,17 +3855,23 @@ function getNivelUsuario() {
         });
         const cidTodos = Object.entries(cidMap).filter(([, d]) => d.t >= 2);
 
-        // Melhores (maior assiduidade)
-        const cidMelhor = [...cidTodos].sort((a, b) => b[1].c / b[1].t - a[1].c / a[1].t).slice(0, 12);
+        // Todos os municípios — melhor → pior (sem limite)
+        const cidMelhor = [...cidTodos].sort((a, b) => b[1].c / b[1].t - a[1].c / a[1].t);
         const tbCidM = rtG('rt-tbodyCidMelhor');
         if (tbCidM) tbCidM.innerHTML = cidMelhor.map(([c, d], i) => {
             const pct = rtPct(d.c, d.t);
-            return `<tr style="border-bottom:1px solid var(--border)">
-                <td style="padding:5px;color:var(--slate)">${i+1}º</td>
-                <td style="padding:5px">${c}</td>
-                <td style="padding:5px;text-align:right">${d.t}</td>
-                <td style="padding:5px;text-align:right;color:var(--success)">${d.c}</td>
-                <td style="padding:5px;text-align:right;font-weight:700;color:${rtCorAssid(pct)}">${pct}</td>
+            const pctNum = d.t > 0 ? Math.round(d.c / d.t * 100) : 0;
+            const cor = rtCorAssid(pct);
+            const ico = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}º`;
+            // Separador visual quando assiduidade cai abaixo de 80%
+            const separador = (i > 0 && pctNum < 80 && Math.round(cidMelhor[i-1][1].c / cidMelhor[i-1][1].t * 100) >= 80)
+                ? '<tr><td colspan="5" style="padding:2px 6px"><div style="border-top:1px dashed rgba(231,76,60,.3);margin:2px 0"></div></td></tr>' : '';
+            return separador + `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:5px;text-align:center;font-size:${i<3?'12':'10'}px">${ico}</td>
+                <td style="padding:5px;font-size:9px">${c}</td>
+                <td style="padding:5px;text-align:center;font-size:9px">${d.t}</td>
+                <td style="padding:5px;text-align:center;color:var(--success);font-size:9px">${d.c}</td>
+                <td style="padding:5px;text-align:right;font-weight:700;color:${cor};font-size:9px">${pct}</td>
             </tr>`;
         }).join('') || '<tr><td colspan="5" style="text-align:center;padding:10px;color:var(--slate)">Sem dados</td></tr>';
 
@@ -3894,16 +3900,44 @@ function getNivelUsuario() {
         });
         const totMot = Object.keys(dados.reduce((a, r) => { const m = rtMot(r); if (m && m !== '---') a[m] = true; return a; }, {})).length;
         const totCom = Object.values(veiPorMot).filter(v => v).length;
-        _setEl('rt-mot-tot', totMot); _setEl('rt-mot-com', totCom); _setEl('rt-mot-sem', totMot - totCom);
+        const totSem = totMot - totCom;
+
+        // Montar lista global de motoristas sem veículo (para o modal)
+        const motsSemVei = Object.entries(veiPorMot)
+            .filter(([, temVei]) => !temVei)
+            .map(([m]) => {
+                const rota = dados.find(r => rtMot(r) === m);
+                return { nome: m, gre: rota ? rtGre(rota) : '—', cidade: rota ? rtCid(rota) : '—' };
+            })
+            .sort((a, b) => a.gre.localeCompare(b.gre) || a.nome.localeCompare(b.nome));
+
+        window._rtMotsSemVei = motsSemVei; // cache para o modal
+
+        _setEl('rt-mot-tot', totMot);
+        _setEl('rt-mot-com', totCom);
+        // Sem Veículo — clicável
+        const elSem = rtG('rt-mot-sem');
+        if (elSem) {
+            elSem.textContent = totSem;
+            elSem.style.cursor = totSem > 0 ? 'pointer' : 'default';
+            elSem.title = totSem > 0 ? 'Clique para ver motoristas sem veículo' : '';
+            elSem.onclick = totSem > 0 ? () => _rtAbrirModalSemVei() : null;
+            elSem.style.textDecoration = totSem > 0 ? 'underline dotted' : 'none';
+        }
+
         const tbMotGre = rtG('rt-tbodyMotGre');
         if (tbMotGre) tbMotGre.innerHTML = Object.entries(frotaGreMap).sort().map(([g, mots]) => {
             const total  = Object.keys(mots).length;
             const comVei = Object.values(mots).filter(v => v).length;
+            const semVei = total - comVei;
+            const semClick = semVei > 0
+                ? `onclick="_rtAbrirModalSemVei('${g}')" title="Ver motoristas sem veículo" style="padding:5px;text-align:center;color:var(--danger);cursor:pointer;text-decoration:underline dotted;font-weight:700"`
+                : `style="padding:5px;text-align:center;color:var(--slate)"`;
             return `<tr style="border-bottom:1px solid var(--border)">
                 <td style="padding:5px"><strong>${g}</strong></td>
                 <td style="padding:5px;text-align:center">${total}</td>
                 <td style="padding:5px;text-align:center;color:var(--success)">${comVei}</td>
-                <td style="padding:5px;text-align:center;color:${total-comVei>0?'var(--danger)':'var(--slate)'}">${total - comVei}</td>
+                <td ${semClick}>${semVei}</td>
             </tr>`;
         }).join('') || '<tr><td colspan="4" style="text-align:center;padding:10px;color:var(--slate)">Sem dados</td></tr>';
 
@@ -4053,6 +4087,44 @@ function getNivelUsuario() {
                 <td style="padding:6px;text-align:center;font-size:9px;font-weight:700">${r.percentual_conclusao||'0'}%</td>
             </tr>`;
         }).join('');
+    }
+
+    function _rtAbrirModalSemVei(greFiltro) {
+        const lista = (window._rtMotsSemVei || []).filter(m => !greFiltro || m.gre === greFiltro);
+        const titulo = greFiltro ? `Motoristas Sem Veículo — ${greFiltro}` : 'Motoristas Sem Veículo';
+        const conteudo = lista.length
+            ? `<table style="width:100%;border-collapse:collapse;font-size:11px">
+                <thead><tr style="background:var(--bg)">
+                    <th style="padding:7px;text-align:center;width:30px">#</th>
+                    <th style="padding:7px;text-align:left">Motorista</th>
+                    <th style="padding:7px;text-align:center">GRE</th>
+                    <th style="padding:7px;text-align:center">Cidade</th>
+                </tr></thead>
+                <tbody>${lista.map((m, i) => `
+                    <tr style="border-bottom:1px solid var(--border)">
+                        <td style="padding:6px;text-align:center;color:var(--slate)">${i+1}</td>
+                        <td style="padding:6px;font-weight:600;color:var(--danger)">${m.nome}</td>
+                        <td style="padding:6px;text-align:center">${m.gre}</td>
+                        <td style="padding:6px;text-align:center">${m.cidade}</td>
+                    </tr>`).join('')}
+                </tbody>
+               </table>`
+            : `<div style="text-align:center;padding:20px;color:var(--success)">✅ Nenhum motorista sem veículo${greFiltro ? ' nesta GRE' : ''}.</div>`;
+
+        // Reutiliza o modal existente do sistema
+        const overlay = document.getElementById('modalConfirmarRegistro');
+        const corpo   = document.getElementById('modalConfirmarConteudo');
+        const titulo_el = overlay ? overlay.querySelector('h3,h2,.modal-titulo,[class*="titulo"]') : null;
+
+        if (overlay && corpo) {
+            // Injeta título e conteúdo no modal existente
+            overlay.querySelector('.cpl-modal-box').innerHTML = `
+                <button class="cpl-modal-close" onclick="document.getElementById('modalConfirmarRegistro').classList.remove('open')" title="Fechar">✕</button>
+                <div style="font-size:13px;font-weight:700;color:var(--danger);margin-bottom:14px">🚨 ${titulo}</div>
+                <div style="font-size:10px;color:var(--slate);margin-bottom:12px">${lista.length} motorista${lista.length !== 1 ? 's' : ''} sem veículo atribuído</div>
+                <div style="max-height:350px;overflow-y:auto">${conteudo}</div>`;
+            overlay.classList.add('open');
+        }
     }
 
     function _renderRTRotasPorGre(dados) {
