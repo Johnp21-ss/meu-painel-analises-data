@@ -1416,17 +1416,41 @@
         </div>
     </div>
 
-    <!-- Assiduidade por Faixa Horária (tela cheia, sem Performance Campo duplicado) -->
-    <div style="background:var(--card-bg);border-radius:12px;padding:14px;margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.6px">⏰ Assiduidade por Faixa Horária</div>
-            <div style="display:flex;gap:5px">
-                <button id="rt-togFiscal" onclick="rtToggleAssid('fiscal')" style="padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--extra);background:var(--extra);color:#fff;border-radius:12px;cursor:pointer">Fiscal</button>
-                <button id="rt-togGre"    onclick="rtToggleAssid('gre')"    style="padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--border);background:transparent;color:var(--slate);border-radius:12px;cursor:pointer">GRE</button>
+    <!-- Linha 1: Ranking Fiscal Assiduidade | Assiduidade por Faixa Horária -->
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px;margin-bottom:14px">
+        <!-- Ranking Fiscal por Assiduidade -->
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;display:flex;flex-direction:column;border:1px solid rgba(241,196,15,.12)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px">🏆 Performance — Assiduidade</div>
+                <span style="font-size:8px;color:var(--gold);background:rgba(241,196,15,.12);padding:2px 8px;border-radius:8px">Por Fiscal</span>
+            </div>
+            <div style="flex:1;overflow-y:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:10px">
+                    <thead>
+                        <tr style="background:var(--bg)">
+                            <th style="padding:6px;text-align:center;width:28px">Pos</th>
+                            <th style="padding:6px;text-align:left">Responsável</th>
+                            <th style="padding:6px;text-align:center">Total</th>
+                            <th style="padding:6px;text-align:center">Concl.</th>
+                            <th style="padding:6px;text-align:right">Assid.</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rt-tbodyFiscalAssid"></tbody>
+                </table>
             </div>
         </div>
-        <div style="position:relative;height:200px"><canvas id="rt-chartAssid"></canvas></div>
-        <div id="rt-assidLeg" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;font-size:8px"></div>
+        <!-- Assiduidade por Faixa Horária -->
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;display:flex;flex-direction:column;border:1px solid rgba(52,152,219,.1)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px">⏰ Assiduidade por Faixa Horária</div>
+                <div style="display:flex;gap:5px">
+                    <button id="rt-togFiscal" onclick="rtToggleAssid('fiscal')" style="padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--extra);background:var(--extra);color:#fff;border-radius:12px;cursor:pointer">Fiscal</button>
+                    <button id="rt-togGre"    onclick="rtToggleAssid('gre')"    style="padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--border);background:transparent;color:var(--slate);border-radius:12px;cursor:pointer">GRE</button>
+                </div>
+            </div>
+            <div style="flex:1;position:relative;min-height:200px"><canvas id="rt-chartAssid"></canvas></div>
+            <div id="rt-assidLeg" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;font-size:8px"></div>
+        </div>
     </div>
 
     <!-- ── BLOCO ANALÍTICO 2×2: Regionais + Municípios ── -->
@@ -3757,7 +3781,42 @@ function getNivelUsuario() {
             fiscMap[f].t++;
             if (rtIsConcl(r)) fiscMap[f].c++;
         });
-        const fiscOrd = Object.entries(fiscMap).sort((a, b) => b[1].t - a[1].t).slice(0, 7);
+        // Ranking Fiscal por Assiduidade — melhores primeiro com medalhas
+        const fiscAssidMap = {};
+        dados.forEach(r => {
+            const f = rtFisc(r) || 'NÃO ID.';
+            if (!fiscAssidMap[f]) fiscAssidMap[f] = { t: 0, c: 0 };
+            fiscAssidMap[f].t++;
+            if (rtIsConcl(r)) fiscAssidMap[f].c++;
+        });
+        const fiscAssidOrd = Object.entries(fiscAssidMap)
+            .map(([f, d]) => ({ f, t: d.t, c: d.c, pct: d.t > 0 ? Math.round(d.c / d.t * 100) : 0 }))
+            .sort((a, b) => b.pct - a.pct);
+        const medalhas = ['🥇', '🥈', '🥉'];
+        const tbFA = rtG('rt-tbodyFiscalAssid');
+        if (tbFA) tbFA.innerHTML = fiscAssidOrd.map((d, i) => {
+            const cor    = rtCorAssid(d.pct + '%');
+            const barCor = d.pct >= 80 ? 'var(--success)' : d.pct >= 60 ? 'var(--warning)' : 'var(--danger)';
+            const pos    = medalhas[i]
+                ? `<span style="font-size:13px">${medalhas[i]}</span>`
+                : `<span style="color:var(--slate);font-weight:700">${i+1}º</span>`;
+            return `<tr style="border-bottom:1px solid var(--border)${i < 3 ? ';background:rgba(255,255,255,.015)' : ''}">
+                <td style="padding:6px;text-align:center">${pos}</td>
+                <td style="padding:6px">
+                    <div style="font-size:9px;font-weight:600">${d.f.length > 28 ? d.f.substring(0,28)+'…' : d.f}</div>
+                    <div style="margin-top:3px;background:var(--bg);border-radius:3px;overflow:hidden;height:4px">
+                        <div style="width:${d.pct}%;background:${barCor};height:4px;border-radius:3px;transition:width .4s"></div>
+                    </div>
+                </td>
+                <td style="padding:6px;text-align:center;color:var(--slate)">${d.t}</td>
+                <td style="padding:6px;text-align:center;color:var(--success)">${d.c}</td>
+                <td style="padding:6px;text-align:right;font-weight:700;color:${cor}">${d.pct}%</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="5" style="text-align:center;padding:15px;color:var(--slate)">Sem dados</td></tr>';
+
+        // Performance Campo — Top 7 por volume de rotas
+        if (!fiscMap) { var fiscMap = {}; dados.forEach(r => { const f = rtFisc(r)||'NÃO ID.'; if (!fiscMap[f]) fiscMap[f]={t:0,c:0}; fiscMap[f].t++; if (rtIsConcl(r)) fiscMap[f].c++; }); }
+        const fiscOrd = Object.entries(fiscAssidMap).sort((a, b) => b[1].t - a[1].t).slice(0, 7);
         const tbFisc = rtG('rt-tbodyFiscal');
         if (tbFisc) tbFisc.innerHTML = fiscOrd.map(([f, d], i) => {
             const pct = rtPct(d.c, d.t);
