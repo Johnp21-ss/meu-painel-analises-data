@@ -3773,15 +3773,7 @@ function getNivelUsuario() {
         _setEl('rt-km',       km.toLocaleString('pt-BR', { minimumFractionDigits: 1 }) + ' km');
         _setEl('rt-mapeadas', mapeadas);
 
-        // Performance por Fiscal (top 7)
-        const fiscMap = {};
-        dados.forEach(r => {
-            const f = rtFisc(r) || 'NÃO ID.';
-            if (!fiscMap[f]) fiscMap[f] = { t: 0, c: 0 };
-            fiscMap[f].t++;
-            if (rtIsConcl(r)) fiscMap[f].c++;
-        });
-        // Ranking Fiscal por Assiduidade — melhores primeiro com medalhas
+        // Performance Fiscal — mapa único usado pelos dois cards
         const fiscAssidMap = {};
         dados.forEach(r => {
             const f = rtFisc(r) || 'NÃO ID.';
@@ -3789,6 +3781,7 @@ function getNivelUsuario() {
             fiscAssidMap[f].t++;
             if (rtIsConcl(r)) fiscAssidMap[f].c++;
         });
+        // Ranking Fiscal por Assiduidade — melhores primeiro com medalhas
         const fiscAssidOrd = Object.entries(fiscAssidMap)
             .map(([f, d]) => ({ f, t: d.t, c: d.c, pct: d.t > 0 ? Math.round(d.c / d.t * 100) : 0 }))
             .sort((a, b) => b.pct - a.pct);
@@ -3815,7 +3808,6 @@ function getNivelUsuario() {
         }).join('') || '<tr><td colspan="5" style="text-align:center;padding:15px;color:var(--slate)">Sem dados</td></tr>';
 
         // Performance Campo — Top 7 por volume de rotas
-        if (!fiscMap) { var fiscMap = {}; dados.forEach(r => { const f = rtFisc(r)||'NÃO ID.'; if (!fiscMap[f]) fiscMap[f]={t:0,c:0}; fiscMap[f].t++; if (rtIsConcl(r)) fiscMap[f].c++; }); }
         const fiscOrd = Object.entries(fiscAssidMap).sort((a, b) => b[1].t - a[1].t).slice(0, 7);
         const tbFisc = rtG('rt-tbodyFiscal');
         if (tbFisc) tbFisc.innerHTML = fiscOrd.map(([f, d], i) => {
