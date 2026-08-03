@@ -1089,6 +1089,7 @@
     <div class="nav-sub" id="sub-hist">
         <button class="tab-btn active" onclick="switchTab(event,'aba-historico')" style="color:var(--gold)">📊 Análise Diária</button>
         <button class="tab-btn" onclick="switchTab(event,'aba-historico-semanal')" style="color:var(--gold)">📅 Análise Semanal</button>
+        <button class="tab-btn" onclick="switchTab(event,'aba-historico-mensal')" style="color:var(--gold)">📆 Análise Mensal</button>
     </div>
 
     <!-- Sub-abas: Gestão -->
@@ -2483,6 +2484,84 @@
 </section>
 
 <!-- ══════════════════════════════════════════════════════════
+     ABA HISTÓRICO MENSAL
+══════════════════════════════════════════════════════════ -->
+<section id="aba-historico-mensal" class="content-section">
+    <div class="header-controls">
+        <div>
+            <div style="font-size:14px;font-weight:900">📆 Análise Mensal por Fiscal</div>
+            <div style="font-size:9px;color:var(--slate);margin-top:2px">Coeficiente médio de assiduidade por mês — base: Histórico_Fiscais</div>
+        </div>
+        <span id="hist-men-status" style="font-size:9px;color:var(--slate)"></span>
+        <button onclick="carregarHistoricoMensal()" class="btn-action" style="background:var(--gold);color:#1a1a1a;font-size:10px;padding:6px 14px"><i class="fas fa-sync-alt"></i> ATUALIZAR</button>
+    </div>
+
+    <!-- Filtro de fiscais -->
+    <div style="background:var(--card-bg);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--slate);font-weight:700">FISCAIS:</span>
+        <select id="hist-men-sel-fiscal" multiple style="flex:1;min-width:200px;max-width:500px;height:60px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:10px;padding:4px" onchange="renderHistoricoMensal()"></select>
+        <button onclick="document.querySelectorAll('#hist-men-sel-fiscal option').forEach(o=>o.selected=true);renderHistoricoMensal()" style="padding:4px 12px;font-size:9px;font-weight:700;background:var(--card-bg);border:1px solid var(--border);color:var(--slate);border-radius:6px;cursor:pointer">Todos</button>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+            <span style="font-size:9px;color:var(--slate)">Ordenar:</span>
+            <button id="hist-men-ord-nome" onclick="setHistMenOrdem('nome',this)" style="padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--gold);background:var(--gold);color:#1a1a1a;border-radius:10px;cursor:pointer">Nome</button>
+            <button id="hist-men-ord-media" onclick="setHistMenOrdem('media',this)" style="padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--border);background:transparent;color:var(--slate);border-radius:10px;cursor:pointer">Média</button>
+        </div>
+    </div>
+
+    <!-- Gráfico de barras mensais -->
+    <div style="background:var(--card-bg);border-radius:14px;padding:16px;margin-bottom:14px;border:1px solid rgba(241,196,15,.12)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px">📊 Coeficiente Médio Mensal por Fiscal</div>
+            <div id="hist-men-chart-legenda" style="display:flex;flex-wrap:wrap;gap:6px;font-size:8px"></div>
+        </div>
+        <div style="position:relative;height:260px"><canvas id="hist-men-chart"></canvas></div>
+    </div>
+
+    <!-- Tabela de ranking mensal -->
+    <div style="background:var(--card-bg);border-radius:14px;padding:16px;margin-bottom:14px;border:1px solid rgba(241,196,15,.1)">
+        <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">🏆 Ranking Mensal — Coeficiente de Assiduidade</div>
+        <div style="overflow-x:auto">
+            <table id="hist-men-tabela" style="width:100%;border-collapse:collapse;font-size:10px;min-width:500px">
+                <thead id="hist-men-thead">
+                    <tr style="background:var(--bg);color:var(--slate)">
+                        <th style="padding:8px;text-align:center;width:30px">#</th>
+                        <th style="padding:8px;text-align:left">Fiscal</th>
+                        <!-- colunas de meses injetadas dinamicamente -->
+                        <th style="padding:8px;text-align:center;background:rgba(241,196,15,.08);color:var(--gold)">Média Geral</th>
+                    </tr>
+                </thead>
+                <tbody id="hist-men-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Cards de destaque: Melhor / Pior / Mais Consistente -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;border:1px solid rgba(39,174,96,.2);text-align:center">
+            <div style="font-size:10px;color:var(--slate);text-transform:uppercase;font-weight:700;margin-bottom:8px">🥇 Melhor Média Geral</div>
+            <div id="hist-men-melhor-nome" style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">—</div>
+            <div id="hist-men-melhor-pct"  style="font-size:28px;font-weight:900;color:var(--success)">—</div>
+        </div>
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;border:1px solid rgba(231,76,60,.2);text-align:center">
+            <div style="font-size:10px;color:var(--slate);text-transform:uppercase;font-weight:700;margin-bottom:8px">⚠️ Pior Média Geral</div>
+            <div id="hist-men-pior-nome" style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">—</div>
+            <div id="hist-men-pior-pct"  style="font-size:28px;font-weight:900;color:var(--danger)">—</div>
+        </div>
+        <div style="background:var(--card-bg);border-radius:14px;padding:16px;border:1px solid rgba(52,152,219,.2);text-align:center">
+            <div style="font-size:10px;color:var(--slate);text-transform:uppercase;font-weight:700;margin-bottom:8px">📈 Mais Consistente</div>
+            <div style="font-size:9px;color:var(--slate);margin-bottom:6px">Menor variação mês a mês</div>
+            <div id="hist-men-consist-nome" style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">—</div>
+            <div id="hist-men-consist-val"  style="font-size:18px;font-weight:900;color:var(--info)">—</div>
+        </div>
+    </div>
+
+    <div id="hist-men-loading" style="text-align:center;padding:60px;color:var(--slate);display:none">
+        <i class="fas fa-calendar-alt" style="font-size:40px;margin-bottom:12px;display:block;color:var(--gold)"></i>
+        <div style="font-size:12px">Carregando análise mensal...</div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
      ABA GESTÃO DE ACESSOS (ADMIN)
 ══════════════════════════════════════════════════════════ -->
 <section id="aba-gestao" class="content-section">
@@ -3513,7 +3592,7 @@ function getNivelUsuario() {
         if (tabId === 'aba-rt-extras')      renderRTExtras();
         if (tabId === 'aba-rt-compliance')  renderRTCompliance();
         if (tabId === 'aba-frota-compliance') processarFrotaCompliance();
-        if (tabId === 'aba-frota-historico')  { if (!_dadosHistFrota.length) carregarHistoricoFrota(); else filtrarHistoricoFrota(); }
+        if (tabId === 'aba-historico-mensal' && !window._histMensalCarregado) { carregarHistoricoMensal(); }
     }
 
     // ══════════════════════════════════════════════
@@ -4855,8 +4934,190 @@ function getNivelUsuario() {
     }
 
     // ══════════════════════════════════════════════
-    // FROTA
+    // HISTÓRICO MENSAL
     // ══════════════════════════════════════════════
+    let _histMensalOrdem = 'nome';
+    let _histMensalChart = null;
+
+    function setHistMenOrdem(ord, btn) {
+        _histMensalOrdem = ord;
+        document.querySelectorAll('#aba-historico-mensal button[id^="hist-men-ord"]').forEach(b => {
+            b.style.cssText = 'padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--border);background:transparent;color:var(--slate);border-radius:10px;cursor:pointer';
+        });
+        if (btn) btn.style.cssText = 'padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--gold);background:var(--gold);color:#1a1a1a;border-radius:10px;cursor:pointer';
+        renderHistoricoMensal();
+    }
+
+    async function carregarHistoricoMensal() {
+        const token   = sessionStorage.getItem('token');
+        const loading = document.getElementById('hist-men-loading');
+        const status  = document.getElementById('hist-men-status');
+        if (loading) loading.style.display = 'block';
+
+        try {
+            // Reutiliza os dados já carregados pela aba diária se disponíveis
+            if (!_histSeriesRaw.length) {
+                const res = await fetch('/api/historico', { headers:{ Authorization:'Bearer '+token }, signal: AbortSignal.timeout(20000) });
+                if (_checkAuth401(res)) return;
+                if (!res.ok) throw new Error('Erro '+res.status);
+                const json = await res.json();
+                if (!json.ok || !json.series) throw new Error(json.msg||'Sem dados');
+                _histSeriesRaw = json.series;
+            }
+
+            // Popular select de fiscais
+            const sel = document.getElementById('hist-men-sel-fiscal');
+            if (sel && sel.options.length === 0) {
+                _histSeriesRaw.forEach(f => {
+                    const o = document.createElement('option');
+                    o.value = f.nome; o.text = f.nome; o.selected = true;
+                    sel.appendChild(o);
+                });
+            }
+
+            window._histMensalCarregado = true;
+            if (loading) loading.style.display = 'none';
+            if (status) { status.innerText = '✅ ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+            renderHistoricoMensal();
+
+        } catch(err) {
+            if (loading) loading.innerHTML = `<i class="fas fa-exclamation-triangle" style="font-size:32px;color:var(--danger);display:block;margin-bottom:8px"></i><div style="color:var(--danger)">${err.message}</div>`;
+        }
+    }
+
+    function renderHistoricoMensal() {
+        if (!_histSeriesRaw.length) return;
+
+        const sel = document.getElementById('hist-men-sel-fiscal');
+        const fiscaisSel = sel ? [...sel.selectedOptions].map(o => o.value) : _histSeriesRaw.map(s => s.nome);
+        const series = _histSeriesRaw.filter(s => fiscaisSel.includes(s.nome));
+
+        // Agrupar todos os dados por mês (YYYY-MM)
+        const mesesSet = new Set();
+        series.forEach(f => f.dados.forEach(d => {
+            if (d.data && d.data.length >= 7) mesesSet.add(d.data.substring(0,7));
+        }));
+        const meses = [...mesesSet].sort();
+
+        if (!meses.length) return;
+
+        // Calcular média mensal por fiscal
+        // Fórmula: média dos percentuais diários do mês (excluindo dias sem dados = null)
+        const fiscaisData = series.map(f => {
+            const mediasMes = meses.map(m => {
+                const diasMes = f.dados.filter(d => d.data && d.data.startsWith(m));
+                if (!diasMes.length) return null;
+                const vals = diasMes.map(d => parseFloat(d.percentual)||0).filter(v => !isNaN(v));
+                return vals.length ? parseFloat((vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1)) : null;
+            });
+            const valsValidos = mediasMes.filter(v => v !== null);
+            const mediaGeral = valsValidos.length
+                ? parseFloat((valsValidos.reduce((a,b)=>a+b,0)/valsValidos.length).toFixed(1)) : 0;
+            // Consistência = desvio padrão (menor = mais consistente)
+            const dp = valsValidos.length > 1
+                ? parseFloat(Math.sqrt(valsValidos.reduce((a,v)=>a+Math.pow(v-mediaGeral,2),0)/valsValidos.length).toFixed(1)) : 0;
+            return { nome: f.nome, mediasMes, mediaGeral, dp };
+        });
+
+        // Ordenar
+        const fiscaisOrdenados = [...fiscaisData].sort((a,b) =>
+            _histMensalOrdem === 'media' ? b.mediaGeral - a.mediaGeral : a.nome.localeCompare(b.nome)
+        );
+
+        // ── Gráfico de linhas ──
+        const CORES = ['#f1c40f','#3498db','#2ecc71','#e74c3c','#9b59b6','#1abc9c','#e67e22','#e84393','#00b894','#6c5ce7'];
+        const labels = meses.map(m => {
+            const [ano, mes] = m.split('-');
+            return new Date(+ano, +mes-1).toLocaleDateString('pt-BR',{month:'short',year:'2-digit'});
+        });
+
+        const ctx = document.getElementById('hist-men-chart');
+        if (_histMensalChart) _histMensalChart.destroy();
+        if (ctx) {
+            _histMensalChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: fiscaisOrdenados.map((f,i) => ({
+                        label: f.nome,
+                        data: f.mediasMes,
+                        borderColor: CORES[i % CORES.length],
+                        backgroundColor: CORES[i % CORES.length] + '15',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: 0.3,
+                        spanGaps: true
+                    }))
+                },
+                options: {
+                    maintainAspectRatio: false, responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y !== null ? ctx.parsed.y+'%' : 'sem dados'}` }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color:'#7d8590', font:{size:9} }, grid: { color:'rgba(255,255,255,.04)' } },
+                        y: { min:0, max:100, ticks:{ color:'#7d8590', font:{size:9}, callback: v=>v+'%' }, grid:{ color:'rgba(255,255,255,.05)' } }
+                    }
+                }
+            });
+        }
+
+        // Legenda manual do gráfico
+        const leg = document.getElementById('hist-men-chart-legenda');
+        if (leg) leg.innerHTML = fiscaisOrdenados.map((f,i) =>
+            `<span style="display:inline-flex;align-items:center;gap:3px">
+                <span style="width:12px;height:3px;background:${CORES[i%CORES.length]};display:inline-block;border-radius:2px"></span>
+                <span style="color:var(--slate);font-size:8px">${f.nome.split(' ')[0]}</span>
+            </span>`
+        ).join('');
+
+        // ── Tabela ranking ──
+        const thead = document.getElementById('hist-men-thead');
+        const tbody = document.getElementById('hist-men-tbody');
+        if (thead) {
+            thead.innerHTML = `<tr style="background:var(--bg);color:var(--slate)">
+                <th style="padding:8px;text-align:center;width:30px">#</th>
+                <th style="padding:8px;text-align:left">Fiscal</th>
+                ${meses.map(m => {
+                    const [ano, mes] = m.split('-');
+                    const label = new Date(+ano,+mes-1).toLocaleDateString('pt-BR',{month:'short',year:'2-digit'});
+                    return `<th style="padding:8px;text-align:center">${label}</th>`;
+                }).join('')}
+                <th style="padding:8px;text-align:center;background:rgba(241,196,15,.08);color:var(--gold)">Média</th>
+            </tr>`;
+        }
+        if (tbody) tbody.innerHTML = fiscaisOrdenados.map((f, i) => {
+            const corMedia = f.mediaGeral >= 80 ? 'var(--success)' : f.mediaGeral >= 60 ? 'var(--warning)' : 'var(--danger)';
+            return `<tr style="border-bottom:1px solid var(--border)${i < 3 && _histMensalOrdem==='media' ? ';background:rgba(255,255,255,.015)' : ''}">
+                <td style="padding:7px;text-align:center;color:var(--slate)">${i+1}º</td>
+                <td style="padding:7px;font-weight:600;font-size:10px">${f.nome}</td>
+                ${f.mediasMes.map(v => {
+                    if (v === null) return `<td style="padding:7px;text-align:center;color:var(--slate);font-size:9px">—</td>`;
+                    const cor = v >= 80 ? 'var(--success)' : v >= 60 ? 'var(--warning)' : 'var(--danger)';
+                    return `<td style="padding:7px;text-align:center;font-weight:600;color:${cor};font-size:10px">${v}%</td>`;
+                }).join('')}
+                <td style="padding:7px;text-align:center;font-weight:900;font-size:12px;color:${corMedia};background:rgba(241,196,15,.04)">${f.mediaGeral}%</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="99" style="text-align:center;padding:20px;color:var(--slate)">Sem dados</td></tr>';
+
+        // ── Cards de destaque ──
+        const porMedia = [...fiscaisData].sort((a,b) => b.mediaGeral - a.mediaGeral);
+        const melhor = porMedia[0];
+        const pior   = porMedia[porMedia.length-1];
+        const consist = [...fiscaisData].filter(f => f.dp > 0).sort((a,b) => a.dp - b.dp)[0];
+
+        const _setEl2 = (id, v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+        _setEl2('hist-men-melhor-nome', melhor?.nome || '—');
+        _setEl2('hist-men-melhor-pct',  melhor ? melhor.mediaGeral+'%' : '—');
+        _setEl2('hist-men-pior-nome',   pior?.nome || '—');
+        _setEl2('hist-men-pior-pct',    pior ? pior.mediaGeral+'%' : '—');
+        _setEl2('hist-men-consist-nome', consist?.nome || '—');
+        _setEl2('hist-men-consist-val',  consist ? '±'+consist.dp+'%' : '—');
+    }
     let dadosFrota = [];
 
     async function carregarFrota() {
