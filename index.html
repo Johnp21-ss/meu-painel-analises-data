@@ -5036,6 +5036,23 @@ function getNivelUsuario() {
         cont.innerHTML = html + '</tbody></table>';
     }
 
+    // Normaliza percentuais do histórico: decimal (0.717) → percentual (71.7)
+    // ou string "71.7%" → 71.7
+    function _normalizarHistSeries(series) {
+        return series.map(f => ({
+            ...f,
+            dados: f.dados.map(d => {
+                let v = d.percentual;
+                if (typeof v === 'string') v = parseFloat(v.replace('%','').replace(',','.'));
+                else v = parseFloat(v);
+                if (isNaN(v)) v = 0;
+                // Detectar se veio como decimal fracionado (0 < v ≤ 1.0)
+                if (v > 0 && v <= 1.0) v = parseFloat((v * 100).toFixed(1));
+                return { ...d, percentual: v };
+            })
+        }));
+    }
+
     // ── Pills de seleção reutilizáveis (Fiscais / Meses) ──
     function _renderPills(containerId, itens, callback, corAtiva, label) {
         const cont = document.getElementById(containerId);
@@ -5136,14 +5153,20 @@ function getNivelUsuario() {
         if (loading) loading.style.display = 'block';
 
         try {
-            // Reutiliza os dados já carregados pela aba diária se disponíveis
+            // Reutiliza cache ou dados já carregados
             if (!_histSeriesRaw.length) {
-                const res = await fetch('/api/historico', { headers:{ Authorization:'Bearer '+token }, signal: AbortSignal.timeout(20000) });
-                if (_checkAuth401(res)) return;
-                if (!res.ok) throw new Error('Erro '+res.status);
-                const json = await res.json();
-                if (!json.ok || !json.series) throw new Error(json.msg||'Sem dados');
-                _histSeriesRaw = json.series;
+                if (_histCache && (Date.now() - _histCacheTs) < HIST_CACHE_TTL) {
+                    _histSeriesRaw = _histCache;
+                } else {
+                    const res = await fetch('/api/historico', { headers:{ Authorization:'Bearer '+token }, signal: AbortSignal.timeout(30000) });
+                    if (_checkAuth401(res)) return;
+                    if (!res.ok) throw new Error('Erro '+res.status);
+                    const json = await res.json();
+                    if (!json.ok || !json.series) throw new Error(json.msg||'Sem dados');
+                    _histSeriesRaw = _normalizarHistSeries(json.series);
+                    _histCache = _histSeriesRaw;
+                    _histCacheTs = Date.now();
+                }
             }
 
             // Popular select de fiscais
@@ -5988,12 +6011,28 @@ function aplicarPeriodoCustomSemanal() {
     let chartHistoricoNovo = null;
     const HIST_CORES = ['#2ecc71','#3498db','#f1c40f','#9b59b6','#e67e22','#e74c3c','#1abc9c','#e84393','#00b894','#6c5ce7'];
 
-    async function carregarHistorico() {
+    let _histCache = null;
+    let _histCacheTs = 0;
+    const HIST_CACHE_TTL = 10 * 60 * 1000; // 10 minutos
+
+    async function carregarHistorico(forcarRecarga = false) {
         const token = sessionStorage.getItem('token');
         const loading   = document.getElementById('hist-novo-loading');
         const content   = document.getElementById('hist-novo-content');
         const tabelaBox = document.getElementById('hist-tabela-box');
         const statusEl  = document.getElementById('hist-status-novo');
+
+        // Cache válido — usar sem fetch
+        const agora = Date.now();
+        if (!forcarRecarga && _histCache && (agora - _histCacheTs) < HIST_CACHE_TTL) {
+            _histSeriesRaw = _histCache;
+            if (loading)   loading.style.display='none';
+            if (content)   content.style.display='block';
+            if (tabelaBox) tabelaBox.style.display='block';
+            if (statusEl)  statusEl.innerText='✅ (cache) '+new Date(_histCacheTs).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+            setHistNovoPeriodo(7, document.getElementById('hnBtn7'));
+            return;
+        }
 
         if (loading)   { loading.style.display='block'; loading.innerHTML='<i class="fas fa-chart-line fa-spin" style="font-size:40px;margin-bottom:12px;display:block;color:var(--gold)"></i><div>Carregando histórico...</div>'; }
         if (content)   content.style.display='none';
@@ -6002,15 +6041,16 @@ function aplicarPeriodoCustomSemanal() {
         _atualizarPainelDiasRemovidos();
 
         try {
-            const res = await fetch('/api/historico', { headers:{ Authorization:'Bearer '+token }, signal: AbortSignal.timeout(20000) });
+            const res = await fetch('/api/historico', { headers:{ Authorization:'Bearer '+token }, signal: AbortSignal.timeout(30000) });
             if (_checkAuth401(res)) return;
             if (!res.ok) throw new Error('Erro '+res.status);
             const json = await res.json();
             if (!json.ok || !json.series) throw new Error(json.msg||'Sem dados');
 
-            _histSeriesRaw = json.series;
+            _histSeriesRaw = _normalizarHistSeries(json.series);
+            _histCache    = _histSeriesRaw;
+            _histCacheTs  = Date.now();
             _popularPillsFiscais(_histSeriesRaw);
-            // Compatibilidade: popular o select oculto também
             const sel = document.getElementById('hist-sel-fiscal');
             if (sel) { sel.innerHTML = ''; _histSeriesRaw.forEach(f => { const o=document.createElement('option'); o.value=f.nome; o.text=f.nome; o.selected=true; sel.appendChild(o); }); }
             if (loading)   loading.style.display='none';
@@ -6020,7 +6060,7 @@ function aplicarPeriodoCustomSemanal() {
             setHistNovoPeriodo(7, document.getElementById('hnBtn7'));
 
         } catch(err) {
-            if (loading) loading.innerHTML='<i class="fas fa-exclamation-triangle" style="font-size:40px;margin-bottom:12px;display:block;color:var(--danger)"></i><div style="color:var(--danger)">Erro: '+err.message+'</div>';
+            if (loading) loading.innerHTML='<i class="fas fa-exclamation-triangle" style="font-size:40px;margin-bottom:12px;display:block;color:var(--danger)"></i><div style="color:var(--danger)">Erro: '+err.message+'<br><br><button onclick="carregarHistorico(true)" style="padding:6px 16px;background:var(--gold);color:#1a1a1a;border:none;border-radius:8px;font-weight:700;cursor:pointer">Tentar novamente</button></div>';
         }
     }
 
@@ -6246,12 +6286,19 @@ function aplicarPeriodoCustomSemanal() {
 
         try {
             if (!_histSeriesRaw.length) {
-                const res = await fetch('/api/historico', { headers:{ Authorization:'Bearer '+token }, signal: AbortSignal.timeout(20000) });
-                if (_checkAuth401(res)) return;
-                if (!res.ok) throw new Error('Erro '+res.status);
-                const json = await res.json();
-                if (!json.ok || !json.series) throw new Error(json.msg||'Sem dados');
-                _histSeriesRaw = json.series;
+                // Tentar usar cache antes de fazer novo fetch
+                if (_histCache && (Date.now() - _histCacheTs) < HIST_CACHE_TTL) {
+                    _histSeriesRaw = _histCache;
+                } else {
+                    const res = await fetch('/api/historico', { headers:{ Authorization:'Bearer '+token }, signal: AbortSignal.timeout(30000) });
+                    if (_checkAuth401(res)) return;
+                    if (!res.ok) throw new Error('Erro '+res.status);
+                    const json = await res.json();
+                    if (!json.ok || !json.series) throw new Error(json.msg||'Sem dados');
+                    _histSeriesRaw = _normalizarHistSeries(json.series);
+                    _histCache = _histSeriesRaw;
+                    _histCacheTs = Date.now();
+                }
             }
 
             const sel = document.getElementById('hs-sel-fiscal');
