@@ -1049,8 +1049,8 @@
     <!-- ══ NAVEGAÇÃO PRINCIPAL — BLOCOS ══ -->
     <nav class="nav-blocos no-print" id="navBlocos">
         <div class="logo-box">🛰️ LOG-PI<span>TRANSPORTE ESCOLAR</span></div>
-        <button class="bloco-btn bloco-rt"    onclick="selecionarBloco('rt')"    id="bloco-rt">⚡ Tempo Real</button>
-        <button class="bloco-btn bloco-data active" onclick="selecionarBloco('data')" id="bloco-data">📅 Por Data</button>
+        <button class="bloco-btn bloco-rt active" onclick="selecionarBloco('rt')"    id="bloco-rt">⚡ Tempo Real</button>
+        <button class="bloco-btn bloco-data"      onclick="selecionarBloco('data')"  id="bloco-data">📅 Por Data</button>
         <button class="bloco-btn bloco-frota" onclick="selecionarBloco('frota')" id="bloco-frota">🚛 Frota</button>
         <button class="bloco-btn bloco-hist"  onclick="selecionarBloco('hist')"  id="bloco-hist">📈 Histórico</button>
         <button class="bloco-btn bloco-gestao" onclick="selecionarBloco('gestao')" id="bloco-gestao">🔐 Gestão</button>
@@ -2481,6 +2481,12 @@
         </div>
     </div>
 
+    <!-- Bloco Tendência Semanal -->
+    <div style="background:var(--card-bg);border-radius:14px;padding:16px;margin-bottom:14px;border:1px solid rgba(52,152,219,.1)">
+        <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">📈 Tendência — Evolução Semana a Semana</div>
+        <div id="hist-sem-tendencia" style="overflow-x:auto"></div>
+    </div>
+
     <div id="hs-loading" style="text-align:center;padding:60px;color:var(--slate);display:none">
         <i class="fas fa-chart-line" style="font-size:40px;margin-bottom:12px;display:block;color:var(--gold)"></i>
         <div style="font-size:12px">Clique em <strong>ATUALIZAR</strong> para carregar</div>
@@ -2573,6 +2579,12 @@
             <div id="hist-men-consist-nome" style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">—</div>
             <div id="hist-men-consist-val"  style="font-size:18px;font-weight:900;color:var(--info)">—</div>
         </div>
+    </div>
+
+    <!-- Bloco Tendência Mensal -->
+    <div style="background:var(--card-bg);border-radius:14px;padding:16px;margin-bottom:14px;border:1px solid rgba(52,152,219,.1)">
+        <div style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">📈 Tendência — Evolução Mês a Mês</div>
+        <div id="hist-men-tendencia" style="overflow-x:auto"></div>
     </div>
 
     <div id="hist-men-loading" style="text-align:center;padding:60px;color:var(--slate);display:none">
@@ -3330,8 +3342,9 @@
             // Atualiza user-badge no novo nav
             const badge = document.getElementById("user-badge");
             if (badge) badge.innerText = (payload.nome || payload.usuario) + " · " + payload.nivel;
-            // Aplica permissões e carrega dados
-            aplicarPermissoesBloco(blocoAtivo);
+            // Aplica permissões e carrega dados — abre na aba Tempo Real
+            aplicarPermissoesBloco('rt');
+            selecionarBloco('rt');
             carregarDadosAsync();
         } else {
             msgErro.style.display = "block";
@@ -3544,7 +3557,7 @@ function getNivelUsuario() {
         gestao:{ sub: 'sub-gestao',primeiraAba: 'aba-gestao'    }
     };
 
-    let blocoAtivo = 'data';
+    let blocoAtivo = 'rt';
 
     function selecionarBloco(bloco) {
         blocoAtivo = bloco;
@@ -4953,6 +4966,76 @@ function getNivelUsuario() {
         }).join('') || '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--success)">✅ Nenhuma rota para auditoria</td></tr>';
     }
 
+    // ── Bloco de Tendência reutilizável ──
+    function _renderTendencia(containerId, fiscaisData, periodos, labelFn) {
+        const cont = document.getElementById(containerId);
+        if (!cont) return;
+        if (!fiscaisData.length || periodos.length < 2) {
+            cont.innerHTML = '<div style="color:var(--slate);font-size:10px;padding:10px">Mínimo de 2 períodos necessários para análise de tendência.</div>';
+            return;
+        }
+
+        const transicoes = [];
+        for (let i = 1; i < periodos.length; i++) {
+            transicoes.push({ de: periodos[i-1], para: periodos[i], label: `${labelFn(periodos[i-1])} → ${labelFn(periodos[i])}` });
+        }
+
+        const rows = [...fiscaisData].sort((a, b) => b.mediaGeral - a.mediaGeral);
+        const colW = Math.max(90, Math.floor(600 / transicoes.length));
+
+        let html = `<table style="width:100%;border-collapse:collapse;font-size:10px;min-width:${transicoes.length * colW + 200}px">
+            <thead>
+                <tr style="background:var(--bg);color:var(--slate)">
+                    <th style="padding:7px;text-align:left;min-width:160px">Fiscal</th>
+                    ${transicoes.map(t => `<th style="padding:7px;text-align:center;min-width:${colW}px;font-size:9px">${t.label}</th>`).join('')}
+                    <th style="padding:7px;text-align:center;min-width:80px;background:rgba(52,152,219,.08);color:var(--info)">Tendência</th>
+                </tr>
+            </thead><tbody>`;
+
+        rows.forEach(f => {
+            const vals = f.mediasMes || f.mediasSemanais || [];
+            const variacoes = transicoes.map(t => {
+                const iDe   = periodos.indexOf(t.de);
+                const iPara = periodos.indexOf(t.para);
+                const vDe   = vals[iDe];
+                const vPara = vals[iPara];
+                if (vDe === null || vPara === null || vDe === undefined || vPara === undefined) return null;
+                return parseFloat((vPara - vDe).toFixed(1));
+            });
+
+            const varsValidas = variacoes.filter(v => v !== null);
+            const somaVar = varsValidas.reduce((a, b) => a + b, 0);
+            let tendLabel, tendCor, tendIco;
+            if (!varsValidas.length) { tendLabel = '—'; tendCor = 'var(--slate)'; tendIco = '—'; }
+            else if (somaVar > 3)    { tendLabel = `+${somaVar.toFixed(1)}%`; tendCor = 'var(--success)'; tendIco = '↑'; }
+            else if (somaVar < -3)   { tendLabel = `${somaVar.toFixed(1)}%`;  tendCor = 'var(--danger)';  tendIco = '↓'; }
+            else                     { tendLabel = `${somaVar >= 0 ? '+' : ''}${somaVar.toFixed(1)}%`; tendCor = 'var(--warning)'; tendIco = '→'; }
+
+            html += `<tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:7px;font-weight:600;font-size:9px">${f.nome}</td>
+                ${variacoes.map(v => {
+                    if (v === null) return `<td style="padding:7px;text-align:center;color:var(--slate)">—</td>`;
+                    const cor  = v > 2 ? 'var(--success)' : v < -2 ? 'var(--danger)' : 'var(--warning)';
+                    const ico  = v > 2 ? '▲' : v < -2 ? '▼' : '►';
+                    const barW = Math.min(Math.abs(v), 40);
+                    return `<td style="padding:6px;text-align:center">
+                        <div style="display:inline-flex;align-items:center;gap:4px">
+                            <span style="color:${cor};font-size:9px">${ico}</span>
+                            <span style="font-weight:700;color:${cor};font-size:10px">${v >= 0 ? '+' : ''}${v}%</span>
+                            <div style="width:${barW}px;height:5px;background:${cor};border-radius:3px;opacity:.55;min-width:3px"></div>
+                        </div>
+                    </td>`;
+                }).join('')}
+                <td style="padding:7px;text-align:center;background:rgba(52,152,219,.04)">
+                    <span style="font-size:15px">${tendIco}</span>
+                    <span style="font-weight:700;color:${tendCor};font-size:10px;display:block">${tendLabel}</span>
+                </td>
+            </tr>`;
+        });
+
+        cont.innerHTML = html + '</tbody></table>';
+    }
+
     // ── Pills de seleção reutilizáveis (Fiscais / Meses) ──
     function _renderPills(containerId, itens, callback, corAtiva, label) {
         const cont = document.getElementById(containerId);
@@ -5131,8 +5214,14 @@ function getNivelUsuario() {
             return { nome: f.nome, mediasMes, mediaGeral, dp };
         });
 
-        // Ordenar
-        const fiscaisOrdenados = [...fiscaisData].sort((a,b) =>
+        // Rank fixo por média (independente da ordem de exibição)
+        const fiscaisComRank = fiscaisData.map((f, _, arr) => ({
+            ...f,
+            rank: arr.filter(x => x.mediaGeral > f.mediaGeral).length + 1
+        }));
+
+        // Ordenar por preferência visual (nome ou média)
+        const fiscaisOrdenados = [...fiscaisComRank].sort((a,b) =>
             _histMensalOrdem === 'media' ? b.mediaGeral - a.mediaGeral : a.nome.localeCompare(b.nome)
         );
 
@@ -5202,10 +5291,11 @@ function getNivelUsuario() {
                 <th style="padding:8px;text-align:center;background:rgba(241,196,15,.08);color:var(--gold)">Média</th>
             </tr>`;
         }
-        if (tbody) tbody.innerHTML = fiscaisOrdenados.map((f, i) => {
+        if (tbody) tbody.innerHTML = fiscaisOrdenados.map((f) => {
             const corMedia = f.mediaGeral >= 80 ? 'var(--success)' : f.mediaGeral >= 60 ? 'var(--warning)' : 'var(--danger)';
-            return `<tr style="border-bottom:1px solid var(--border)${i < 3 && _histMensalOrdem==='media' ? ';background:rgba(255,255,255,.015)' : ''}">
-                <td style="padding:7px;text-align:center;color:var(--slate)">${i+1}º</td>
+            const medalha = f.rank === 1 ? '🥇' : f.rank === 2 ? '🥈' : f.rank === 3 ? '🥉' : `${f.rank}º`;
+            return `<tr style="border-bottom:1px solid var(--border)${f.rank <= 3 ? ';background:rgba(255,255,255,.015)' : ''}">
+                <td style="padding:7px;text-align:center;font-size:${f.rank<=3?'12':'10'}px">${medalha}</td>
                 <td style="padding:7px;font-weight:600;font-size:10px">${f.nome}</td>
                 ${f.mediasMes.map(v => {
                     if (v === null) return `<td style="padding:7px;text-align:center;color:var(--slate);font-size:9px">—</td>`;
@@ -5229,6 +5319,10 @@ function getNivelUsuario() {
         _setEl2('hist-men-pior-pct',    pior ? pior.mediaGeral+'%' : '—');
         _setEl2('hist-men-consist-nome', consist?.nome || '—');
         _setEl2('hist-men-consist-val',  consist ? '±'+consist.dp+'%' : '—');
+
+        // Tendência mensal
+        const labelMes = m => { const [a,ms]=m.split('-'); return new Date(+a,+ms-1).toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}); };
+        _renderTendencia('hist-men-tendencia', fiscaisComRank, meses, labelMes);
     }
     let dadosFrota = [];
 
@@ -6210,6 +6304,15 @@ if (window._hsDtCustomIni && window._hsDtCustomFim) {
 
         _renderHistoricoSemanal(semanasOrd, seriesAgrup);
         _renderTabelaSemanal(semanasOrd, seriesAgrup);
+
+        // Tendência semana a semana
+        const fiscaisSemData = seriesAgrup.map(f => {
+            const mediasMes = f.dados.map(d => d.percentual !== null && d.percentual !== undefined ? parseFloat(d.percentual) : null);
+            const valsV = mediasMes.filter(v => v !== null);
+            const mediaGeral = valsV.length ? parseFloat((valsV.reduce((a,b)=>a+b,0)/valsV.length).toFixed(1)) : 0;
+            return { nome: f.nome, mediasMes, mediaGeral };
+        });
+        _renderTendencia('hist-sem-tendencia', fiscaisSemData, semanasOrd, _labelSemana);
     }
 
     function _renderHistoricoSemanal(semanasOrd, seriesAgrup) {
