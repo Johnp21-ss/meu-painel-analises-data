@@ -2348,16 +2348,18 @@
         <label style="display:flex;align-items:center;gap:5px;font-size:10px;cursor:pointer">
             <input type="checkbox" id="hist-ocultar-fer" onchange="filtrarHistoricoNovo()" style="accent-color:var(--gold)"> 🎉 Ocultar Feriados
         </label>
+    </div>
 
-        <!-- Seleção de fiscais -->
-        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-            <select id="hist-sel-fiscal" multiple style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px;min-width:180px;height:60px" onchange="filtrarHistoricoNovo()"></select>
-            <div style="display:flex;flex-direction:column;gap:4px">
-                <button onclick="selecionarTodosFiscais(true)"  style="background:var(--surface2);border:none;border-radius:4px;padding:3px 8px;color:var(--text);font-size:9px;cursor:pointer">Todos</button>
-                <button onclick="selecionarTodosFiscais(false)" style="background:var(--surface2);border:none;border-radius:4px;padding:3px 8px;color:var(--text);font-size:9px;cursor:pointer">Limpar</button>
-            </div>
+    <!-- Fiscais checkboxes — pills visuais -->
+    <div style="background:var(--card-bg);border-radius:10px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">
+        <span style="font-size:9px;color:var(--slate);font-weight:700;padding-top:4px;white-space:nowrap">FISCAIS:</span>
+        <div id="hist-fiscais-pills" style="display:flex;flex-wrap:wrap;gap:6px;flex:1"></div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+            <button onclick="histPillsTodos('hist-fiscais-pills','filtrarHistoricoNovo')" style="padding:3px 10px;font-size:9px;font-weight:700;background:var(--gold);color:#1a1a1a;border:none;border-radius:8px;cursor:pointer">Todos</button>
+            <button onclick="histPillsLimpar('hist-fiscais-pills','filtrarHistoricoNovo')" style="padding:3px 10px;font-size:9px;font-weight:700;background:var(--card-bg);color:var(--slate);border:1px solid var(--border);border-radius:8px;cursor:pointer">Limpar</button>
         </div>
     </div>
+    <div style="display:none"><select id="hist-sel-fiscal" multiple></select></div>
 
     <!-- Gráfico -->
     <div style="background:var(--card-bg);border-radius:12px;padding:16px;margin-bottom:12px" id="hist-novo-content">
@@ -2439,16 +2441,18 @@
     <label style="display:flex;align-items:center;gap:5px;font-size:10px;cursor:pointer">
         <input type="checkbox" id="hs-ocultar-fer" onchange="filtrarHistoricoSemanal()" style="accent-color:var(--gold)"> 🎉 Ocultar Feriados
     </label>
+    </div>
 
-    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-        <select id="hs-sel-fiscal" multiple style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:10px;min-width:180px;height:60px" onchange="filtrarHistoricoSemanal()"></select>
-        <div style="display:flex;flex-direction:column;gap:4px">
-
-                <button onclick="selecionarTodosFiscaisSem(true)"  style="background:var(--surface2);border:none;border-radius:4px;padding:3px 8px;color:var(--text);font-size:9px;cursor:pointer">Todos</button>
-                <button onclick="selecionarTodosFiscaisSem(false)" style="background:var(--surface2);border:none;border-radius:4px;padding:3px 8px;color:var(--text);font-size:9px;cursor:pointer">Limpar</button>
-            </div>
+    <!-- Fiscais checkboxes semanal -->
+    <div style="background:var(--card-bg);border-radius:10px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">
+        <span style="font-size:9px;color:var(--slate);font-weight:700;padding-top:4px;white-space:nowrap">FISCAIS:</span>
+        <div id="hs-fiscais-pills" style="display:flex;flex-wrap:wrap;gap:6px;flex:1"></div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+            <button onclick="histPillsTodos('hs-fiscais-pills','filtrarHistoricoSemanal')" style="padding:3px 10px;font-size:9px;font-weight:700;background:var(--gold);color:#1a1a1a;border:none;border-radius:8px;cursor:pointer">Todos</button>
+            <button onclick="histPillsLimpar('hs-fiscais-pills','filtrarHistoricoSemanal')" style="padding:3px 10px;font-size:9px;font-weight:700;background:var(--card-bg);color:var(--slate);border:1px solid var(--border);border-radius:8px;cursor:pointer">Limpar</button>
         </div>
     </div>
+    <div style="display:none"><select id="hs-sel-fiscal" multiple></select></div>
 
     <!-- Gráfico -->
     <div style="background:var(--card-bg);border-radius:12px;padding:16px;margin-bottom:12px" id="hs-content">
@@ -2496,17 +2500,33 @@
         <button onclick="carregarHistoricoMensal()" class="btn-action" style="background:var(--gold);color:#1a1a1a;font-size:10px;padding:6px 14px"><i class="fas fa-sync-alt"></i> ATUALIZAR</button>
     </div>
 
-    <!-- Filtro de fiscais -->
-    <div style="background:var(--card-bg);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <span style="font-size:10px;color:var(--slate);font-weight:700">FISCAIS:</span>
-        <select id="hist-men-sel-fiscal" multiple style="flex:1;min-width:200px;max-width:500px;height:60px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:10px;padding:4px" onchange="renderHistoricoMensal()"></select>
-        <button onclick="document.querySelectorAll('#hist-men-sel-fiscal option').forEach(o=>o.selected=true);renderHistoricoMensal()" style="padding:4px 12px;font-size:9px;font-weight:700;background:var(--card-bg);border:1px solid var(--border);color:var(--slate);border-radius:6px;cursor:pointer">Todos</button>
-        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-            <span style="font-size:9px;color:var(--slate)">Ordenar:</span>
-            <button id="hist-men-ord-nome" onclick="setHistMenOrdem('nome',this)" style="padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--gold);background:var(--gold);color:#1a1a1a;border-radius:10px;cursor:pointer">Nome</button>
-            <button id="hist-men-ord-media" onclick="setHistMenOrdem('media',this)" style="padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--border);background:transparent;color:var(--slate);border-radius:10px;cursor:pointer">Média</button>
+    <!-- Fiscais checkboxes mensal + filtro de meses -->
+    <div style="background:var(--card-bg);border-radius:10px;padding:12px 16px;margin-bottom:14px">
+        <!-- Linha fiscais -->
+        <div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+            <span style="font-size:9px;color:var(--slate);font-weight:700;padding-top:4px;white-space:nowrap">FISCAIS:</span>
+            <div id="hist-men-fiscais-pills" style="display:flex;flex-wrap:wrap;gap:6px;flex:1"></div>
+            <div style="display:flex;gap:6px;flex-shrink:0">
+                <button onclick="histPillsTodos('hist-men-fiscais-pills','renderHistoricoMensal')" style="padding:3px 10px;font-size:9px;font-weight:700;background:var(--gold);color:#1a1a1a;border:none;border-radius:8px;cursor:pointer">Todos</button>
+                <button onclick="histPillsLimpar('hist-men-fiscais-pills','renderHistoricoMensal')" style="padding:3px 10px;font-size:9px;font-weight:700;background:var(--card-bg);color:var(--slate);border:1px solid var(--border);border-radius:8px;cursor:pointer">Limpar</button>
+            </div>
+        </div>
+        <!-- Linha meses -->
+        <div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:10px">
+            <span style="font-size:9px;color:var(--slate);font-weight:700;padding-top:4px;white-space:nowrap">MESES:</span>
+            <div id="hist-men-meses-pills" style="display:flex;flex-wrap:wrap;gap:6px;flex:1"></div>
+            <div style="display:flex;gap:6px;flex-shrink:0">
+                <button onclick="histPillsTodos('hist-men-meses-pills','renderHistoricoMensal')" style="padding:3px 10px;font-size:9px;font-weight:700;background:rgba(52,152,219,.2);color:var(--info);border:1px solid rgba(52,152,219,.3);border-radius:8px;cursor:pointer">Todos</button>
+                <button onclick="histPillsLimpar('hist-men-meses-pills','renderHistoricoMensal')" style="padding:3px 10px;font-size:9px;font-weight:700;background:var(--card-bg);color:var(--slate);border:1px solid var(--border);border-radius:8px;cursor:pointer">Limpar</button>
+            </div>
+            <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+                <span style="font-size:9px;color:var(--slate)">Ordenar:</span>
+                <button id="hist-men-ord-nome"  onclick="setHistMenOrdem('nome',this)"  style="padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--gold);background:var(--gold);color:#1a1a1a;border-radius:10px;cursor:pointer">Nome</button>
+                <button id="hist-men-ord-media" onclick="setHistMenOrdem('media',this)" style="padding:3px 10px;font-size:9px;font-weight:700;border:1px solid var(--border);background:transparent;color:var(--slate);border-radius:10px;cursor:pointer">Média</button>
+            </div>
         </div>
     </div>
+    <div style="display:none"><select id="hist-men-sel-fiscal" multiple></select></div>
 
     <!-- Gráfico de barras mensais -->
     <div style="background:var(--card-bg);border-radius:14px;padding:16px;margin-bottom:14px;border:1px solid rgba(241,196,15,.12)">
@@ -4933,9 +4953,87 @@ function getNivelUsuario() {
         }).join('') || '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--success)">✅ Nenhuma rota para auditoria</td></tr>';
     }
 
-    // ══════════════════════════════════════════════
-    // HISTÓRICO MENSAL
-    // ══════════════════════════════════════════════
+    // ── Pills de seleção reutilizáveis (Fiscais / Meses) ──
+    function _renderPills(containerId, itens, callback, corAtiva, label) {
+        const cont = document.getElementById(containerId);
+        if (!cont) return;
+        cont.innerHTML = itens.map(item => {
+            const id = `pill-${containerId}-${item.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_-]/g,'')}`;
+            return `<label for="${id}" style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;cursor:pointer;border:1px solid var(--border);background:var(--bg);font-size:9px;font-weight:600;color:var(--slate);transition:.15s;user-select:none"
+                onmouseover="this.style.borderColor='${corAtiva}'" onmouseout="_pillHoverOut(this,'${id}','${corAtiva}')">
+                <input type="checkbox" id="${id}" value="${item}" checked
+                    style="display:none"
+                    onchange="_pillChange(this,'${corAtiva}');${callback}()">
+                <span class="pill-dot" style="width:7px;height:7px;border-radius:50%;background:${corAtiva};display:inline-block;flex-shrink:0"></span>
+                ${label ? label(item) : item.split(' ')[0]}
+            </label>`;
+        }).join('');
+        // Aplicar estilo inicial ativo
+        cont.querySelectorAll('input[type=checkbox]').forEach(cb => _pillChange(cb, corAtiva));
+    }
+
+    function _pillChange(cb, cor) {
+        const lbl = cb.closest('label');
+        if (!lbl) return;
+        if (cb.checked) {
+            lbl.style.background = cor + '20';
+            lbl.style.borderColor = cor;
+            lbl.style.color = '#fff';
+            lbl.querySelector('.pill-dot').style.background = cor;
+        } else {
+            lbl.style.background = 'var(--bg)';
+            lbl.style.borderColor = 'var(--border)';
+            lbl.style.color = 'var(--slate)';
+            lbl.querySelector('.pill-dot').style.background = 'var(--border)';
+        }
+    }
+
+    function _pillHoverOut(lbl, id, cor) {
+        const cb = document.getElementById(id);
+        if (cb && !cb.checked) { lbl.style.borderColor = 'var(--border)'; }
+    }
+
+    function histPillsTodos(containerId, callback) {
+        document.querySelectorAll(`#${containerId} input[type=checkbox]`).forEach(cb => {
+            cb.checked = true;
+            const cor = cb.closest('label')?.style.borderColor || 'var(--gold)';
+            _pillChange(cb, cb.dataset.cor || '#f1c40f');
+        });
+        window[callback]?.();
+    }
+
+    function histPillsLimpar(containerId, callback) {
+        document.querySelectorAll(`#${containerId} input[type=checkbox]`).forEach(cb => {
+            cb.checked = false;
+            _pillChange(cb, '');
+        });
+        window[callback]?.();
+    }
+
+    function _getPillsSelected(containerId) {
+        return [...document.querySelectorAll(`#${containerId} input[type=checkbox]:checked`)].map(cb => cb.value);
+    }
+
+    // ── Popular pills nas 3 abas quando dados chegam ──
+    function _popularPillsFiscais(series) {
+        const nomes = series.map(s => s.nome);
+        const COR_GOLD = '#f1c40f';
+        _renderPills('hist-fiscais-pills',     nomes, 'filtrarHistoricoNovo',     COR_GOLD);
+        _renderPills('hs-fiscais-pills',        nomes, 'filtrarHistoricoSemanal',  COR_GOLD);
+        _renderPills('hist-men-fiscais-pills',  nomes, 'renderHistoricoMensal',    COR_GOLD);
+    }
+
+    function _popularPillsMeses(meses) {
+        const COR_BLUE = '#3498db';
+        _renderPills('hist-men-meses-pills', meses, 'renderHistoricoMensal', COR_BLUE, m => {
+            const [ano, mes] = m.split('-');
+            return new Date(+ano, +mes-1).toLocaleDateString('pt-BR',{month:'short', year:'2-digit'});
+        });
+    }
+
+    // Compatibilidade com funções antigas
+    function selecionarTodosFiscais(sel) { sel ? histPillsTodos('hist-fiscais-pills','filtrarHistoricoNovo') : histPillsLimpar('hist-fiscais-pills','filtrarHistoricoNovo'); }
+    function selecionarTodosFiscaisSem(sel) { sel ? histPillsTodos('hs-fiscais-pills','filtrarHistoricoSemanal') : histPillsLimpar('hs-fiscais-pills','filtrarHistoricoSemanal'); }
     let _histMensalOrdem = 'nome';
     let _histMensalChart = null;
 
@@ -4978,6 +5076,10 @@ function getNivelUsuario() {
             window._histMensalCarregado = true;
             if (loading) loading.style.display = 'none';
             if (status) { status.innerText = '✅ ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+            // Popular pills de fiscais (se ainda não foram populadas pela aba diária)
+            if (!document.querySelector('#hist-men-fiscais-pills input')) {
+                _popularPillsFiscais(_histSeriesRaw);
+            }
             renderHistoricoMensal();
 
         } catch(err) {
@@ -4988,16 +5090,26 @@ function getNivelUsuario() {
     function renderHistoricoMensal() {
         if (!_histSeriesRaw.length) return;
 
-        const sel = document.getElementById('hist-men-sel-fiscal');
-        const fiscaisSel = sel ? [...sel.selectedOptions].map(o => o.value) : _histSeriesRaw.map(s => s.nome);
+        const pillsFiscais = _getPillsSelected('hist-men-fiscais-pills');
+        const fiscaisSel = pillsFiscais.length ? pillsFiscais : _histSeriesRaw.map(s => s.nome);
         const series = _histSeriesRaw.filter(s => fiscaisSel.includes(s.nome));
 
-        // Agrupar todos os dados por mês (YYYY-MM)
+        // Todos os meses disponíveis
         const mesesSet = new Set();
         series.forEach(f => f.dados.forEach(d => {
             if (d.data && d.data.length >= 7) mesesSet.add(d.data.substring(0,7));
         }));
-        const meses = [...mesesSet].sort();
+        const mesesTodos = [...mesesSet].sort();
+
+        // Popular pills de meses na primeira vez
+        const menMesesCont = document.getElementById('hist-men-meses-pills');
+        if (menMesesCont && menMesesCont.children.length === 0 && mesesTodos.length) {
+            _popularPillsMeses(mesesTodos);
+        }
+
+        // Filtrar pelos meses selecionados nos pills
+        const pillsMeses = _getPillsSelected('hist-men-meses-pills');
+        const meses = pillsMeses.length ? mesesTodos.filter(m => pillsMeses.includes(m)) : mesesTodos;
 
         if (!meses.length) return;
 
@@ -5803,11 +5915,10 @@ function aplicarPeriodoCustomSemanal() {
             if (!json.ok || !json.series) throw new Error(json.msg||'Sem dados');
 
             _histSeriesRaw = json.series;
+            _popularPillsFiscais(_histSeriesRaw);
+            // Compatibilidade: popular o select oculto também
             const sel = document.getElementById('hist-sel-fiscal');
-            if (sel) {
-                sel.innerHTML = '';
-                _histSeriesRaw.forEach(f => { const o=document.createElement('option'); o.value=f.nome; o.text=f.nome; o.selected=true; sel.appendChild(o); });
-            }
+            if (sel) { sel.innerHTML = ''; _histSeriesRaw.forEach(f => { const o=document.createElement('option'); o.value=f.nome; o.text=f.nome; o.selected=true; sel.appendChild(o); }); }
             if (loading)   loading.style.display='none';
             if (content)   content.style.display='block';
             if (tabelaBox) tabelaBox.style.display='block';
@@ -5839,8 +5950,9 @@ function aplicarPeriodoCustomSemanal() {
         if (!_histSeriesRaw.length) return;
         const ocFds = document.getElementById('hist-ocultar-fds')?.checked;
         const ocFer = document.getElementById('hist-ocultar-fer')?.checked;
-        const sel   = document.getElementById('hist-sel-fiscal');
-        const fiscaisSel = sel ? [...sel.selectedOptions].map(o=>o.value) : _histSeriesRaw.map(s=>s.nome);
+        // Ler fiscais dos pills (se existirem) ou do select oculto como fallback
+        const pillsSel = _getPillsSelected('hist-fiscais-pills');
+        const fiscaisSel = pillsSel.length ? pillsSel : _histSeriesRaw.map(s=>s.nome);
 
         let datas = [...new Set(_histSeriesRaw.flatMap(s=>s.dados.map(d=>d.data)))].sort();
         if (_histDtCustomIni && _histDtCustomFim) datas = datas.filter(d=>d>=_histDtCustomIni&&d<=_histDtCustomFim);
@@ -6077,8 +6189,8 @@ function aplicarPeriodoCustomSemanal() {
 
     function filtrarHistoricoSemanal() {
         if (!_histSeriesRaw.length) return;
-        const sel = document.getElementById('hs-sel-fiscal');
-        const fiscaisSel = sel ? [...sel.selectedOptions].map(o=>o.value) : _histSeriesRaw.map(s=>s.nome);
+        const pillsSel = _getPillsSelected('hs-fiscais-pills');
+        const fiscaisSel = pillsSel.length ? pillsSel : _histSeriesRaw.map(s=>s.nome);
 
         // Pega todas as datas disponíveis
 let datas = [...new Set(_histSeriesRaw.flatMap(s=>s.dados.map(d=>d.data)))].sort();
