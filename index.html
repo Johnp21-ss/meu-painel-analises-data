@@ -5036,9 +5036,25 @@ function getNivelUsuario() {
         cont.innerHTML = html + '</tbody></table>';
     }
 
-    // Normaliza percentuais do histórico: limpa string "57.2%" → 57.2
-    // NÃO multiplica por 100 — a planilha já guarda em percentual (57.2, não 0.572)
+    // Normaliza percentuais do histórico
+    // Detecta automaticamente se os valores são decimais (0.572) ou percentuais (57.2)
+    // baseado no valor máximo encontrado na série completa
     function _normalizarHistSeries(series) {
+        // Primeiro passo: coletar todos os valores numéricos brutos
+        const todosValores = [];
+        series.forEach(f => f.dados.forEach(d => {
+            let v = d.percentual;
+            if (typeof v === 'string') v = parseFloat(v.replace('%','').replace(',','.').trim());
+            else v = parseFloat(v);
+            if (!isNaN(v) && v > 0) todosValores.push(v);
+        }));
+
+        // Se o valor máximo for <= 1.0, todos os valores são decimais fracionados
+        const maxVal = todosValores.length ? Math.max(...todosValores) : 0;
+        const precisaMultiplicar = maxVal > 0 && maxVal <= 1.0;
+
+        console.log('[Histórico] Max valor bruto:', maxVal, '| Multiplica x100:', precisaMultiplicar);
+
         return series.map(f => ({
             ...f,
             dados: f.dados.map(d => {
@@ -5046,6 +5062,7 @@ function getNivelUsuario() {
                 if (typeof v === 'string') v = parseFloat(v.replace('%','').replace(',','.').trim());
                 else v = parseFloat(v);
                 if (isNaN(v) || v < 0) v = 0;
+                if (precisaMultiplicar && v > 0) v = parseFloat((v * 100).toFixed(1));
                 return { ...d, percentual: v };
             })
         }));
@@ -6592,7 +6609,8 @@ function carregarDadosAsync() {
                     popularFiltros();
                     popularFiltrosFraude();
                     popularFiltrosExtras();
-                    processarDados();
+                    // Só processar dados visuais se o bloco Por Data estiver ativo
+                    if (blocoAtivo === 'data') processarDados();
 
                     resolve();
                 },
