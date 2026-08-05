@@ -1061,7 +1061,7 @@
     </nav>
 
     <!-- Sub-abas: Tempo Real -->
-    <div class="nav-sub" id="sub-rt">
+    <div class="nav-sub active" id="sub-rt">
         <button class="tab-btn active rt" onclick="switchTab(event,'aba-rt-escala')">📡 Escala ao Vivo</button>
         <button class="tab-btn rt" onclick="switchTab(event,'aba-rt-assid')">⏱️ Assiduidade</button>
         <button class="tab-btn rt" onclick="switchTab(event,'aba-rt-extras')">🚀 Extras</button>
@@ -1070,7 +1070,7 @@
     </div>
 
     <!-- Sub-abas: Por Data -->
-    <div class="nav-sub active" id="sub-data">
+    <div class="nav-sub" id="sub-data">
         <button class="tab-btn active" onclick="switchTab(event,'aba-escala')">📡 Dados Escala</button>
         <button class="tab-btn" onclick="switchTab(event,'aba-assiduidade')">⏱️ Assiduidade Temporal</button>
         <button class="tab-btn" onclick="switchTab(event,'aba-extras')">🚀 Rotas Extras</button>
@@ -1100,7 +1100,7 @@
     <!-- ══════════════════════════════════════════════════════════
          ABA DADOS ESCALA
     ══════════════════════════════════════════════════════════ -->
-    <section id="aba-escala" class="content-section active">
+    <section id="aba-escala" class="content-section">
 
         <div class="header-controls">
             <div>
@@ -1353,7 +1353,7 @@
 <!-- ══════════════════════════════════════════════════════════
      BLOCO TEMPO REAL — ESCALA AO VIVO
 ══════════════════════════════════════════════════════════ -->
-<section id="aba-rt-escala" class="content-section">
+<section id="aba-rt-escala" class="content-section active">
     <div class="header-controls">
         <div>
             <h2 style="margin:0;font-size:14px;">⚡ Escala ao Vivo</h2>
@@ -5045,20 +5045,18 @@ function getNivelUsuario() {
     // Detecta automaticamente se os valores são decimais (0.572) ou percentuais (57.2)
     // baseado no valor máximo encontrado na série completa
     function _normalizarHistSeries(series) {
-        // Coletar todos os valores brutos não-zero
-        const todosValores = [];
+        // Coletar valores não-zero para detectar o formato
+        const amostra = [];
         series.forEach(f => f.dados.forEach(d => {
             let v = d.percentual;
             if (typeof v === 'string') v = parseFloat(v.replace('%','').replace(',','.').trim());
             else v = parseFloat(v);
-            if (!isNaN(v) && v > 0) todosValores.push(v);
+            if (!isNaN(v) && v > 0 && v !== 100) amostra.push(v);
         }));
 
-        // Detectar formato: se mais de 80% dos valores são <= 1.0, são decimais fracionados
-        const qtdDecimal = todosValores.filter(v => v <= 1.0).length;
-        const precisaMultiplicar = todosValores.length > 0 && (qtdDecimal / todosValores.length) > 0.8;
-
-        console.log('[Histórico] Valores amostrados:', todosValores.slice(0,10), '| Decimal?', precisaMultiplicar);
+        // Se todos os valores não-zero (excluindo 100) forem <= 1.5, são decimais
+        // Ex: 0.572, 0.622, 1.0 → decimal | 57.2, 62.2, 100 → já é %
+        const precisaMultiplicar = amostra.length > 0 && amostra.every(v => v <= 1.5);
 
         return series.map(f => ({
             ...f,
