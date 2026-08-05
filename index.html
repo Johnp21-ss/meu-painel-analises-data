@@ -5036,18 +5036,16 @@ function getNivelUsuario() {
         cont.innerHTML = html + '</tbody></table>';
     }
 
-    // Normaliza percentuais do histórico: decimal (0.717) → percentual (71.7)
-    // ou string "71.7%" → 71.7
+    // Normaliza percentuais do histórico: limpa string "57.2%" → 57.2
+    // NÃO multiplica por 100 — a planilha já guarda em percentual (57.2, não 0.572)
     function _normalizarHistSeries(series) {
         return series.map(f => ({
             ...f,
             dados: f.dados.map(d => {
                 let v = d.percentual;
-                if (typeof v === 'string') v = parseFloat(v.replace('%','').replace(',','.'));
+                if (typeof v === 'string') v = parseFloat(v.replace('%','').replace(',','.').trim());
                 else v = parseFloat(v);
-                if (isNaN(v)) v = 0;
-                // Detectar se veio como decimal fracionado (0 < v ≤ 1.0)
-                if (v > 0 && v <= 1.0) v = parseFloat((v * 100).toFixed(1));
+                if (isNaN(v) || v < 0) v = 0;
                 return { ...d, percentual: v };
             })
         }));
@@ -6013,7 +6011,7 @@ function aplicarPeriodoCustomSemanal() {
 
     let _histCache = null;
     let _histCacheTs = 0;
-    const HIST_CACHE_TTL = 10 * 60 * 1000; // 10 minutos
+    const HIST_CACHE_TTL = 0; // Cache desabilitado — evita contaminação entre abas
 
     async function carregarHistorico(forcarRecarga = false) {
         const token = sessionStorage.getItem('token');
