@@ -3587,6 +3587,11 @@ function getNivelUsuario() {
         if (bloco === 'gestao') initGestaoAcessos();
         if (bloco === 'hist')   carregarHistorico();
         if (bloco === 'frota' && !window._frotaCarregada) { carregarFrota(); window._frotaCarregada = true; }
+        if (bloco === 'data') {
+            // Se dados já carregados em background, renderizar agora
+            if (typeof bruto !== 'undefined' && bruto && bruto.length > 0) processarDados();
+            else carregarDadosAsync();
+        }
         if (bloco === 'rt') {
             // Primeira carga automática + ativa auto-refresh
             if (!dadosRT.length) carregarRT(true);
@@ -5040,7 +5045,7 @@ function getNivelUsuario() {
     // Detecta automaticamente se os valores são decimais (0.572) ou percentuais (57.2)
     // baseado no valor máximo encontrado na série completa
     function _normalizarHistSeries(series) {
-        // Primeiro passo: coletar todos os valores numéricos brutos
+        // Coletar todos os valores brutos não-zero
         const todosValores = [];
         series.forEach(f => f.dados.forEach(d => {
             let v = d.percentual;
@@ -5049,11 +5054,11 @@ function getNivelUsuario() {
             if (!isNaN(v) && v > 0) todosValores.push(v);
         }));
 
-        // Se o valor máximo for <= 1.0, todos os valores são decimais fracionados
-        const maxVal = todosValores.length ? Math.max(...todosValores) : 0;
-        const precisaMultiplicar = maxVal > 0 && maxVal <= 1.0;
+        // Detectar formato: se mais de 80% dos valores são <= 1.0, são decimais fracionados
+        const qtdDecimal = todosValores.filter(v => v <= 1.0).length;
+        const precisaMultiplicar = todosValores.length > 0 && (qtdDecimal / todosValores.length) > 0.8;
 
-        console.log('[Histórico] Max valor bruto:', maxVal, '| Multiplica x100:', precisaMultiplicar);
+        console.log('[Histórico] Valores amostrados:', todosValores.slice(0,10), '| Decimal?', precisaMultiplicar);
 
         return series.map(f => ({
             ...f,
@@ -6609,7 +6614,7 @@ function carregarDadosAsync() {
                     popularFiltros();
                     popularFiltrosFraude();
                     popularFiltrosExtras();
-                    // Só processar dados visuais se o bloco Por Data estiver ativo
+                    // Só renderizar visualmente se Por Data estiver ativo
                     if (blocoAtivo === 'data') processarDados();
 
                     resolve();
