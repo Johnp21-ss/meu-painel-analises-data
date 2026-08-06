@@ -5045,19 +5045,9 @@ function getNivelUsuario() {
     // Detecta automaticamente se os valores são decimais (0.572) ou percentuais (57.2)
     // baseado no valor máximo encontrado na série completa
     function _normalizarHistSeries(series) {
-        // Coletar valores não-zero para detectar o formato
-        const amostra = [];
-        series.forEach(f => f.dados.forEach(d => {
-            let v = d.percentual;
-            if (typeof v === 'string') v = parseFloat(v.replace('%','').replace(',','.').trim());
-            else v = parseFloat(v);
-            if (!isNaN(v) && v > 0 && v !== 100) amostra.push(v);
-        }));
-
-        // Se todos os valores não-zero (excluindo 100) forem <= 1.5, são decimais
-        // Ex: 0.572, 0.622, 1.0 → decimal | 57.2, 62.2, 100 → já é %
-        const precisaMultiplicar = amostra.length > 0 && amostra.every(v => v <= 1.5);
-
+        // O Apps Script (retornarHistoricoFiscais) já converte os valores corretamente:
+        // números decimais da planilha (0.572) → percentual (57.2)
+        // Aqui apenas garantimos que o tipo é number e limpamos valores inválidos
         return series.map(f => ({
             ...f,
             dados: f.dados.map(d => {
@@ -5065,7 +5055,7 @@ function getNivelUsuario() {
                 if (typeof v === 'string') v = parseFloat(v.replace('%','').replace(',','.').trim());
                 else v = parseFloat(v);
                 if (isNaN(v) || v < 0) v = 0;
-                if (precisaMultiplicar && v > 0) v = parseFloat((v * 100).toFixed(1));
+                // Sem multiplicação — valor já vem em % correto do Apps Script
                 return { ...d, percentual: v };
             })
         }));
@@ -6031,7 +6021,7 @@ function aplicarPeriodoCustomSemanal() {
 
     let _histCache = null;
     let _histCacheTs = 0;
-    const HIST_CACHE_TTL = 0; // Cache desabilitado — evita contaminação entre abas
+    const HIST_CACHE_TTL = 0; // sem cache por ora
 
     async function carregarHistorico(forcarRecarga = false) {
         const token = sessionStorage.getItem('token');
@@ -6066,7 +6056,6 @@ function aplicarPeriodoCustomSemanal() {
             if (!json.ok || !json.series) throw new Error(json.msg||'Sem dados');
 
             _histSeriesRaw = _normalizarHistSeries(json.series);
-            _histCache    = _histSeriesRaw;
             _histCacheTs  = Date.now();
             _popularPillsFiscais(_histSeriesRaw);
             const sel = document.getElementById('hist-sel-fiscal');
