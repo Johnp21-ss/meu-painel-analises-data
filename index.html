@@ -2328,9 +2328,9 @@
     <div style="background:var(--card-bg);border-radius:12px;padding:14px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:center">
     <!-- Período rápido -->
     <div style="display:flex;gap:4px">
-        <button class="hist-novo-btn active" id="hnBtn7"  onclick="setHistNovoPeriodo(7,this)">📅 7d</button>
+        <button class="hist-novo-btn" id="hnBtn7"  onclick="setHistNovoPeriodo(7,this)">📅 7d</button>
         <button class="hist-novo-btn" id="hnBtn15" onclick="setHistNovoPeriodo(15,this)">📅 15d</button>
-        <button class="hist-novo-btn" id="hnBtn30" onclick="setHistNovoPeriodo(30,this)">📅 30d</button>
+        <button class="hist-novo-btn active" id="hnBtn30" onclick="setHistNovoPeriodo(30,this)">📅 30d</button>
     </div>
 
         <!-- Período personalizado -->
@@ -6011,7 +6011,7 @@ function aplicarPeriodoCustomSemanal() {
         return dias[d.getDay()] + ' ' + dia + '/' + mes;
     }
     let _histSeriesRaw = [];
-    let _histPeriodoNovo = 7;
+    let _histPeriodoNovo = 30;
     let _histDtCustomIni = null;
     let _histDtCustomFim = null;
     let _histDiasRemovidosSet = new Set();
@@ -6037,7 +6037,7 @@ function aplicarPeriodoCustomSemanal() {
             if (content)   content.style.display='block';
             if (tabelaBox) tabelaBox.style.display='block';
             if (statusEl)  statusEl.innerText='✅ (cache) '+new Date(_histCacheTs).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-            setHistNovoPeriodo(7, document.getElementById('hnBtn7'));
+            setHistNovoPeriodo(30, document.getElementById('hnBtn30'));
             return;
         }
 
@@ -6063,7 +6063,7 @@ function aplicarPeriodoCustomSemanal() {
             if (content)   content.style.display='block';
             if (tabelaBox) tabelaBox.style.display='block';
             if (statusEl)  statusEl.innerText='✅ '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-            setHistNovoPeriodo(7, document.getElementById('hnBtn7'));
+            setHistNovoPeriodo(30, document.getElementById('hnBtn30'));
 
         } catch(err) {
             if (loading) loading.innerHTML='<i class="fas fa-exclamation-triangle" style="font-size:40px;margin-bottom:12px;display:block;color:var(--danger)"></i><div style="color:var(--danger)">Erro: '+err.message+'<br><br><button onclick="carregarHistorico(true)" style="padding:6px 16px;background:var(--gold);color:#1a1a1a;border:none;border-radius:8px;font-weight:700;cursor:pointer">Tentar novamente</button></div>';
@@ -6165,17 +6165,6 @@ function aplicarPeriodoCustomSemanal() {
     }
 
     function _renderTabelaHistorico(datas, series) {
-        // LOG — ver datas disponíveis vs datas usadas
-        if (series[0]) {
-            const s0 = series[0];
-            const datasDisponiveis = s0.dados.map(d => d.data).filter(d => d).slice(0, 10);
-            console.warn('[DATAS HIST raw]', datasDisponiveis.join(' | '));
-            const amostra = datas.slice(0, 5).map(dt => {
-                const d = s0.dados.find(x => x.data === dt);
-                return `${dt}:${d ? JSON.stringify(d.percentual) : 'NÃO ENCONTRADO'}`;
-            });
-            console.warn('[TABELA HIST]', s0.nome, '|', amostra.join(' | '));
-        }
         const thead=document.getElementById('hist-tabela-head');
         const tbody=document.getElementById('hist-tabela-body');
         if (!thead||!tbody) return;
