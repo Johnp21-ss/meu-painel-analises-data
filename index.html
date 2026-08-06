@@ -6055,7 +6055,14 @@ function aplicarPeriodoCustomSemanal() {
             if (!json.ok || !json.series) throw new Error(json.msg||'Sem dados');
 
             _histSeriesRaw = _normalizarHistSeries(json.series);
-            _histCacheTs  = Date.now();
+            // LOG DEFINITIVO — remover após diagnóstico
+            const _s0 = json.series[0];
+            if (_s0) {
+                const _naoZero = _s0.dados.filter(d => d.percentual && d.percentual !== '0%' && d.percentual !== 0 && d.percentual !== '0').slice(0,8);
+                console.error('[API BRUTO]', _s0.nome, JSON.stringify(_naoZero));
+                const _d31 = _s0.dados.find(d => d.data === '2026-07-31');
+                console.error('[31/07 BRUTO]', JSON.stringify(_d31));
+            }
             _popularPillsFiscais(_histSeriesRaw);
             const sel = document.getElementById('hist-sel-fiscal');
             if (sel) { sel.innerHTML = ''; _histSeriesRaw.forEach(f => { const o=document.createElement('option'); o.value=f.nome; o.text=f.nome; o.selected=true; sel.appendChild(o); }); }
