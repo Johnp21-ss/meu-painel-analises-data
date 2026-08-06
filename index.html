@@ -3593,8 +3593,7 @@ function getNivelUsuario() {
             else carregarDadosAsync();
         }
         if (bloco === 'rt') {
-            // Primeira carga automática + ativa auto-refresh
-            if (!dadosRT.length) carregarRT(true);
+            carregarRT(true);
             _rtIniciarAutoRefresh();
         } else {
             // Pausa o auto-refresh ao sair do bloco RT
@@ -6166,6 +6165,15 @@ function aplicarPeriodoCustomSemanal() {
     }
 
     function _renderTabelaHistorico(datas, series) {
+        // LOG — ver o que está nos dados antes de renderizar
+        if (series[0]) {
+            const s0 = series[0];
+            const amostra = datas.slice(0,5).map(dt => {
+                const d = s0.dados.find(x => x.data === dt);
+                return `${dt}:${d ? JSON.stringify(d.percentual) : 'NÃO ENCONTRADO'}`;
+            });
+            console.warn('[TABELA HIST]', s0.nome, '|', amostra.join(' | '));
+        }
         const thead=document.getElementById('hist-tabela-head');
         const tbody=document.getElementById('hist-tabela-body');
         if (!thead||!tbody) return;
