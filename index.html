@@ -4455,7 +4455,7 @@ function getNivelUsuario() {
                     <td style="padding:5px;text-align:center">${gRes.p}%</td><td style="padding:5px;text-align:center">${gTot?((gRes.m/gTot)*100).toFixed(0):0}%</td>
                 </tr>`;
 
-                const cidsSet = [...new Set([...Object.keys(((techTree[fis]||{}).gres[gre]||{}).cidades||{}), ...Object.keys(((techTreeTotal[fis]||{}).gres[gre]||{}).cidades||{})])].sort();
+                const cidsSet = [...new Set([...Object.keys(((techTree[fis]||{}).gres||{})[gre]?.cidades||{}), ...Object.keys(((techTreeTotal[fis]||{}).gres||{})[gre]?.cidades||{})])].sort();
                 cidsSet.forEach((cid, cIdx) => {
                     const cId = 'rt-tec-c-' + fIdx + '-' + gIdx + '-' + cIdx;
                     const cRes = (techTree[fis]&&techTree[fis].gres[gre]&&techTree[fis].gres[gre].cidades[cid]) ? calcOk(techTree[fis].gres[gre].cidades[cid]) : {m:0,a:0,l:0,p:0};
@@ -6056,14 +6056,6 @@ function aplicarPeriodoCustomSemanal() {
             if (!json.ok || !json.series) throw new Error(json.msg||'Sem dados');
 
             _histSeriesRaw = _normalizarHistSeries(json.series);
-            // LOG v2 — ver dados brutos direto do json antes de normalizar
-            const _s0v2 = json.series && json.series[0];
-            if (_s0v2) {
-                const _d31v2 = _s0v2.dados && _s0v2.dados.find(d => d.data === '2026-07-31');
-                const _top5  = _s0v2.dados && _s0v2.dados.filter(d => d.percentual > 0).slice(0,5);
-                console.error('[V2-31/07]', JSON.stringify(_d31v2));
-                console.error('[V2-TOP5]',  JSON.stringify(_top5));
-            }
             _popularPillsFiscais(_histSeriesRaw);
             const sel = document.getElementById('hist-sel-fiscal');
             if (sel) { sel.innerHTML = ''; _histSeriesRaw.forEach(f => { const o=document.createElement('option'); o.value=f.nome; o.text=f.nome; o.selected=true; sel.appendChild(o); }); }
