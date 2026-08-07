@@ -3593,7 +3593,8 @@ function getNivelUsuario() {
             else carregarDadosAsync();
         }
         if (bloco === 'rt') {
-            carregarRT(true);
+            // Só recarrega se não tem dados ou se o auto-refresh já limpou
+            if (!dadosRT.length) carregarRT(true);
             _rtIniciarAutoRefresh();
         } else {
             // Pausa o auto-refresh ao sair do bloco RT
