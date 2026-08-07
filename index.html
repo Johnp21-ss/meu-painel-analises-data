@@ -6055,13 +6055,13 @@ function aplicarPeriodoCustomSemanal() {
             if (!json.ok || !json.series) throw new Error(json.msg||'Sem dados');
 
             _histSeriesRaw = _normalizarHistSeries(json.series);
-            // LOG DEFINITIVO — remover após diagnóstico
-            const _s0 = json.series[0];
-            if (_s0) {
-                const _naoZero = _s0.dados.filter(d => d.percentual && d.percentual !== '0%' && d.percentual !== 0 && d.percentual !== '0').slice(0,8);
-                console.error('[API BRUTO]', _s0.nome, JSON.stringify(_naoZero));
-                const _d31 = _s0.dados.find(d => d.data === '2026-07-31');
-                console.error('[31/07 BRUTO]', JSON.stringify(_d31));
+            // LOG v2 — ver dados brutos direto do json antes de normalizar
+            const _s0v2 = json.series && json.series[0];
+            if (_s0v2) {
+                const _d31v2 = _s0v2.dados && _s0v2.dados.find(d => d.data === '2026-07-31');
+                const _top5  = _s0v2.dados && _s0v2.dados.filter(d => d.percentual > 0).slice(0,5);
+                console.error('[V2-31/07]', JSON.stringify(_d31v2));
+                console.error('[V2-TOP5]',  JSON.stringify(_top5));
             }
             _popularPillsFiscais(_histSeriesRaw);
             const sel = document.getElementById('hist-sel-fiscal');
